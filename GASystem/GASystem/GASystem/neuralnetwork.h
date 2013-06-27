@@ -13,18 +13,21 @@ class NeuralNetwork
 {
 public:
     //actually pass an xml file here
-    NeuralNetwork(NNParameters _params);
-    NeuralNetwork(char* _structure);
+    NeuralNetwork(char* _fileName);
     NeuralNetwork(const NeuralNetwork& _other);
+    NeuralNetwork& operator = (const NeuralNetwork& _other);
     ~NeuralNetwork();
 
-    vector<float> evaluate(vector<float> _inputs);
-    char* getStructure();
+    vector<float> evaluate(map<uint, double> _inputs);
+    void printStructure(char* _fileName);
+
+private:
+    void constructNNStructure(char* _fileName);
 
 private:
     vector<Neuron*> mOutput;
     map<uint, Neuron*> mNeuronCache;
-    long counter;
+    long mCounter;
 
 private
     NeuralNetwork(){}

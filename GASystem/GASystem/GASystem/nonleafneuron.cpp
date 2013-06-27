@@ -1,11 +1,9 @@
 #include "nonleafneuron.h"
 
-NonLeafNeuron::NonLeafNeuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, ActivationFunction _activationFunction) : Neuron(_neuronCache, _weights, _activationFunction)
-{
+NonLeafNeuron::NonLeafNeuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, ActivationFunction _activationFunction) : Neuron(_neuronCache, _weights, _activationFunction){
 }
 
-NonLeafNeuron::NonLeafNeuron(const NonLeafNeuron& _other)
-{
+NonLeafNeuron::NonLeafNeuron(const NonLeafNeuron& _other){
     mNeuronCache = _other.mNeuronCache;
     mWeights = _other.mWeights;
     mCurrentCounter = -1;
@@ -14,8 +12,7 @@ NonLeafNeuron::NonLeafNeuron(const NonLeafNeuron& _other)
     mPredecessors = _other.mPredecessors;
 }
 
-NonLeafNeuron::NonLeafNeuron& operator = (const NonLeafNeuron& _other)
-{
+NonLeafNeuron::NonLeafNeuron& operator = (const NonLeafNeuron& _other){
     mNeuronCache = _other.mNeuronCache;
     mWeights = _other.mWeights;
     mCurrentCounter = -1;
@@ -26,18 +23,15 @@ NonLeafNeuron::NonLeafNeuron& operator = (const NonLeafNeuron& _other)
     return *this;
 }
 
-NonLeafNeuron::~NonLeafNeuron()
-{
+NonLeafNeuron::~NonLeafNeuron(){
     mNeuronCache = 0;
     mPredecessors.clear();
 }
 
-double NonLeafNeuron::evaluate(long _counter, vector<double> *_inputs)
-{
+double NonLeafNeuron::evaluate(long _counter){
     if(_counter == mCurrentCounter)
         return mLastOutput;
-    else
-    {
+    else{
         mCurrentCounter = _counter;
 
         double netInputSignal = 0;
@@ -53,19 +47,41 @@ double NonLeafNeuron::evaluate(long _counter, vector<double> *_inputs)
     }
 }
 
-void NonLeafNeuron::setInputs(set<uint> _inputs)
-{
+bool NonLeafNeuron::checkLoop(Neuron* _loopNeuron){
+    for(int k = 0; k < mPredecessors.size(); k++)
+        if(mPredecessors[k] == _loopNeuron)
+            return true;
+
+    for(int k = 0; k < mPredecessors.size(); k++)
+        if(mPredecessors[k]->checkLoop(_loopNeuron))
+            return true;
+
+    return false;
+}
+
+void NonLeafNeuron::setInput(set<uint> _inputs, bool _checkLoops){
     assert(_inputs.size() + 1 == mWeights.size());
-    for(set<uint>::iterator iter = _inputs.begin(); iter != _inputs.end(); iter++)
-    {
-        map<uint, Neuron*>::const_iterator neuronIter = mNeuronCache->find(name);
+    for(set<uint>::iterator iter = _inputs.begin(); iter != _inputs.end(); iter++){
+        map<uint, Neuron*>::const_iterator neuronIter = mNeuronCache->find(*iter);
+
         if(neuronIter == mNeuronCache->end())
         {
             mPredecessors.clear();
             cerr << "Error: Cannot find the neuron ID " << *iter << " to link to non-leaf neuron" << endl;
             return;
         }
+
+        if(_checkLoops && mNeuronCache[*iter]->checkLoop(this))
+        {
+            mPredecessors.clear();
+            cerr << "Error: a loop was found when attempting to link the neuron with ID " << *iter <<  " to a non-leaf neuron" << endl;
+            return;
+        }
         
         mPredecessors.push_back(mNeuronCache[*iter]);
     }
+}
+
+void NonLeafNeuron::setInput(double _input){
+    cerr << "Error: cannot set input value for non-leaf node" << endl;
 }

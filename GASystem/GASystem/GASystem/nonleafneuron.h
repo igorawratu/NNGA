@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <map>
+#include <assert.h>
 
 #include "neuron.h"
 
@@ -16,8 +17,10 @@ public:
     NonLeafNeuron& operator = (const NonLeafNeuron& _other);
     ~NonLeafNeuron();
     
-    virtual double evaluate(long _counter, vector<double> *_inputs);
-    virtual void setInputs(set<uint> _inputs);
+    virtual double evaluate(long _counter);
+    virtual void setInput(set<uint> _inputs, bool _checkForLoops)=0;
+    virtual void setInput(double _inputs)=0;
+    virtual bool checkLoop(Neuron* _loopNeuron);
 
 private:
     vector<Neuron*> mPredecessors;

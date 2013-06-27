@@ -1,7 +1,7 @@
 #include "leafneuron.h"
 
-LeafNeuron::LeafNeuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, ActivationFunction _activationFunction) : Neuron(_neuronCache, _weights, _activationFunction){
-    
+LeafNeuron::LeafNeuron(map<uint, Neuron*> *_neuronCache, vector<double> _weightse) : Neuron(_neuronCache, _weights, SIGMOID){
+    mInputValue = 0;
 }
 
 LeafNeuron::LeafNeuron(const LeafNeuron& _other){
@@ -10,7 +10,7 @@ LeafNeuron::LeafNeuron(const LeafNeuron& _other){
     mCurrentCounter = -1;
     mLastOutput = 0;
     mActivationFunction = _other.mActivationFunction;
-    mInputMask = _other.mInputMask;
+    mInputValue = _other.mInputValue;
 }
 
 LeafNeuron::LeafNeuron& operator = (const LeafNeuron& _other){
@@ -19,6 +19,7 @@ LeafNeuron::LeafNeuron& operator = (const LeafNeuron& _other){
     mCurrentCounter = -1;
     mLastOutput = 0;
     mActivationFunction = _other.mActivationFunction;
+    mInputValue = _other.mInputValue;
 
     return *this;
 }
@@ -27,30 +28,18 @@ LeafNeuron::~LeafNeuron(){
     mNeuronCache = 0;
 }
     
-double LeafNeuron::evaluate(long _counter, vector<double> *_inputs){
-    if(_counter == mCurrentCounter)
-        return mLastOutput;
-    else
-    {
-        assert(mInputMask.size() > 0);
-        assert(mInputMask.size() < _inputs->size());
-        assert(mWeights.size() == _inputs->size() + 1);
-        
-        mCurrentCounter = _counter;
-
-        double netInputSignal = 0;
-
-        uint k;
-
-        for(set<uint>::iterator iter = mInputMask.begin(), k = 0; iter != mInputMask.end(); ++iter, k++)
-            netInputSignal += *_inputs[*iter] * mWeights[k];
-
-        netInputSignal += -1 * mWeights[k];
-
-        return calculateActivationEnergy(netInputSignal);    
-    }
+double LeafNeuron::evaluate(long _counter){
+    return mInputValue;
 }
 
-void LeafNeuron::setInputs(set<uint> _inputs){
-    mInputMask = _inputs;
+void LeafNeuron::setInput(set<uint> _inputs, bool _checkForLoops){
+    cerr << "Error: Cannot set a predecessor nodes for an input node" << endl;
+}
+
+void LeafNeuron::setInput(double _input){
+    mInputValue = _input;
+}
+
+bool checkLoop(Neuron* _loopNeuron){
+    return false;
 }

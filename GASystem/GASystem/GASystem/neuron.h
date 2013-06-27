@@ -3,15 +3,18 @@
 
 #include <map>
 #include <vector>
+#include <math.h>
 
 using namespace std;
+
+const double e = 2.71828182845904523536;
 
 enum ActivationFunction{SIGMOID};
 
 class Neuron
 {
 public:
-    Neuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, ActivationFunction _activationFunction, ActivationFunction _activationFunction) {
+    Neuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, ActivationFunction _activationFunction, ActivationFunction _activationFunction){
         mNeuronCache = _neuronCache;
         mWeights = _weights;
         mCurrentCounter = -1;
@@ -25,22 +28,31 @@ public:
     }
 
     //gets the output of the neuron
-    virtual double evaluate(long _counter, vector<double> *_inputs)=0;
+    virtual double evaluate(long _counter)=0;
 
     //sets the inputs allowed for the neuron
-    virtual void setInputs(set<uint> _inputs)=0;
+    virtual void setInput(set<uint> _inputs, bool _checkForLoops)=0;
+    virtual void setInput(double _inputs)=0;
+
+    virtual bool checkLoop(Neuron* _loopNeuron)=0;
 
     //returns a reference to the weights of the neuron
-    vector<double>& getWeights() {
+    vector<double>& getWeights(){
         return mWeights;
     }
 
 protected:
-    double calculateActivationEnergy(double _netSignal)
-    {
+    double calculateActivationEnergy(double _netSignal){
         double output;
         
-
+        switch(mActivationFunction){
+            case ActivationFunction.SIGMOID:
+                output = 1/(1 + pow(e, _netSignal));
+                break;
+            default:
+                cout << "Error: unable to determine the activation function type" << endl;
+                break;
+        }
 
         return output;
     }

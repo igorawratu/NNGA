@@ -175,6 +175,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\neuralnetwork.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\nonleafneuron.cpp"
 				>
 			</File>
