@@ -1,6 +1,7 @@
 #include "nonleafneuron.h"
 
 NonLeafNeuron::NonLeafNeuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, ActivationFunction _activationFunction) : Neuron(_neuronCache, _weights, _activationFunction){
+    mNeuronType = NONLEAF;
 }
 
 NonLeafNeuron::NonLeafNeuron(const NonLeafNeuron& _other){
@@ -10,9 +11,10 @@ NonLeafNeuron::NonLeafNeuron(const NonLeafNeuron& _other){
     mLastOutput = 0;
     mActivationFunction = _other.mActivationFunction;
     mPredecessors = _other.mPredecessors;
+    mNeuronType = NONLEAF;
 }
 
-NonLeafNeuron::NonLeafNeuron& operator = (const NonLeafNeuron& _other){
+NonLeafNeuron& NonLeafNeuron::operator = (const NonLeafNeuron& _other){
     mNeuronCache = _other.mNeuronCache;
     mWeights = _other.mWeights;
     mCurrentCounter = -1;
@@ -39,7 +41,7 @@ double NonLeafNeuron::evaluate(long _counter){
         uint k;
 
         for(k = 0; k < mPredecessors.size(); k++)
-            netInputSignal += mPredecessors[k]->evaluate(_inputs) * mWeights[k];
+            netInputSignal += mPredecessors[k]->evaluate(_counter) * mWeights[k];
 
         netInputSignal += -1 * mWeights[k];
 

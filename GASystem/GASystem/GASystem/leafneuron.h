@@ -19,8 +19,8 @@ public:
     ~LeafNeuron();
     
     virtual double evaluate(long _counter);
-    virtual void setInput(set<uint> _inputs, bool _checkForLoops)=0;
-    virtual void setInput(double _inputs)=0;
+    virtual void setInput(set<uint> _inputs, bool _checkForLoops);
+    virtual void setInput(double _inputs);
     virtual bool checkLoop(Neuron* _loopNeuron);
 
 private:

@@ -3,9 +3,15 @@
 
 #include <vector>
 #include <map>
+#include <cstring>
 
 #include "common.h"
 #include "neuron.h"
+#include "leafneuron.h"
+#include "nonleafneuron.h"
+
+#include "boost/random.hpp"
+#include "boost/generator_iterator.hpp"
 
 using namespace std;
 
@@ -13,23 +19,24 @@ class NeuralNetwork
 {
 public:
     //actually pass an xml file here
-    NeuralNetwork(char* _fileName);
+    NeuralNetwork(xmldoc* _file, bool _checkLoops);
+    NeuralNetwork(xmldoc* _file, map<uint, vector<double>> _weights);
     NeuralNetwork(const NeuralNetwork& _other);
     NeuralNetwork& operator = (const NeuralNetwork& _other);
     ~NeuralNetwork();
 
-    vector<float> evaluate(map<uint, double> _inputs);
-    void printStructure(char* _fileName);
+    vector<double> evaluate(map<uint, double> _inputs);
+    xmldoc getStructure();
 
 private:
-    void constructNNStructure(char* _fileName);
+    void constructNNStructure(xmldoc* _file, bool _withWeights, bool _checkLoops);
 
 private:
-    vector<Neuron*> mOutput;
+    map<uint, Neuron*> mOutput;
     map<uint, Neuron*> mNeuronCache;
     long mCounter;
 
-private
+private:
     NeuralNetwork(){}
 };
 

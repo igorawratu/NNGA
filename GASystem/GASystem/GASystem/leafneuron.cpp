@@ -1,7 +1,8 @@
 #include "leafneuron.h"
 
-LeafNeuron::LeafNeuron(map<uint, Neuron*> *_neuronCache, vector<double> _weightse) : Neuron(_neuronCache, _weights, SIGMOID){
+LeafNeuron::LeafNeuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights) : Neuron(_neuronCache, _weights, SIGMOID){
     mInputValue = 0;
+    mNeuronType = LEAF;
 }
 
 LeafNeuron::LeafNeuron(const LeafNeuron& _other){
@@ -11,9 +12,10 @@ LeafNeuron::LeafNeuron(const LeafNeuron& _other){
     mLastOutput = 0;
     mActivationFunction = _other.mActivationFunction;
     mInputValue = _other.mInputValue;
+    mNeuronType = LEAF;
 }
 
-LeafNeuron::LeafNeuron& operator = (const LeafNeuron& _other){
+LeafNeuron& LeafNeuron::operator = (const LeafNeuron& _other){
     mNeuronCache = _other.mNeuronCache;
     mWeights = _other.mWeights;
     mCurrentCounter = -1;

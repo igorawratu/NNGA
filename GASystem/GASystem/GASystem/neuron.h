@@ -4,17 +4,22 @@
 #include <map>
 #include <vector>
 #include <math.h>
+#include <iostream>
+#include <set>
+
+#include "common.h"
 
 using namespace std;
 
 const double e = 2.71828182845904523536;
 
 enum ActivationFunction{SIGMOID};
+enum NeuronType{LEAF, NONLEAF};
 
 class Neuron
 {
 public:
-    Neuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, ActivationFunction _activationFunction, ActivationFunction _activationFunction){
+    Neuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, ActivationFunction _activationFunction){
         mNeuronCache = _neuronCache;
         mWeights = _weights;
         mCurrentCounter = -1;
@@ -37,16 +42,18 @@ public:
     virtual bool checkLoop(Neuron* _loopNeuron)=0;
 
     //returns a reference to the weights of the neuron
-    vector<double>& getWeights(){
+    vector<double>& weights(){
         return mWeights;
     }
+
+    NeuronType getNeuronType(){return mNeuronType;}
 
 protected:
     double calculateActivationEnergy(double _netSignal){
         double output;
         
         switch(mActivationFunction){
-            case ActivationFunction.SIGMOID:
+            case SIGMOID:
                 output = 1/(1 + pow(e, _netSignal));
                 break;
             default:
@@ -56,6 +63,7 @@ protected:
 
         return output;
     }
+    Neuron(){}
 
 protected:
     map<uint, Neuron*> *mNeuronCache;
@@ -63,6 +71,7 @@ protected:
     double mLastOutput;
     long mCurrentCounter;
     vector<double> mWeights;
+    NeuronType mNeuronType;
 };
 
 #endif

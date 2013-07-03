@@ -182,6 +182,10 @@
 				RelativePath=".\nonleafneuron.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\pugixml.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -206,6 +210,14 @@
 			</File>
 			<File
 				RelativePath=".\nonleafneuron.h"
+				>
+			</File>
+			<File
+				RelativePath=".\pugiconfig.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\pugixml.hpp"
 				>
 			</File>
 		</Filter>
