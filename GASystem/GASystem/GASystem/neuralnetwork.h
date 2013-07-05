@@ -26,7 +26,7 @@ public:
     ~NeuralNetwork();
 
     vector<double> evaluate(map<uint, double> _inputs);
-    xmldoc getStructure();
+    void getStructure(xmldoc& _doc);
 
 private:
     void constructNNStructure(xmldoc* _file, bool _withWeights, bool _checkLoops);

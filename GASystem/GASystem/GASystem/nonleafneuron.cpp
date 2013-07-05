@@ -1,7 +1,6 @@
 #include "nonleafneuron.h"
 
 NonLeafNeuron::NonLeafNeuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, ActivationFunction _activationFunction) : Neuron(_neuronCache, _weights, _activationFunction){
-    mNeuronType = NONLEAF;
 }
 
 NonLeafNeuron::NonLeafNeuron(const NonLeafNeuron& _other){
@@ -11,7 +10,6 @@ NonLeafNeuron::NonLeafNeuron(const NonLeafNeuron& _other){
     mLastOutput = 0;
     mActivationFunction = _other.mActivationFunction;
     mPredecessors = _other.mPredecessors;
-    mNeuronType = NONLEAF;
 }
 
 NonLeafNeuron& NonLeafNeuron::operator = (const NonLeafNeuron& _other){
@@ -40,8 +38,8 @@ double NonLeafNeuron::evaluate(long _counter){
 
         uint k;
 
-        for(k = 0; k < mPredecessors.size(); k++)
-            netInputSignal += mPredecessors[k]->evaluate(_counter) * mWeights[k];
+        for(set<uint>::iterator iter = mPredecessors.begin(); iter != mPredecessors.end(); iter++)
+            netInputSignal += (*mNeuronCache)[*iter]->evaluate(_counter) * mWeights[k];
 
         netInputSignal += -1 * mWeights[k];
 
@@ -50,12 +48,12 @@ double NonLeafNeuron::evaluate(long _counter){
 }
 
 bool NonLeafNeuron::checkLoop(Neuron* _loopNeuron){
-    for(int k = 0; k < mPredecessors.size(); k++)
-        if(mPredecessors[k] == _loopNeuron)
+    for(set<uint>::iterator iter = mPredecessors.begin(); iter != mPredecessors.end(); iter++)
+        if((*mNeuronCache)[*iter] == _loopNeuron)
             return true;
 
-    for(int k = 0; k < mPredecessors.size(); k++)
-        if(mPredecessors[k]->checkLoop(_loopNeuron))
+    for(set<uint>::iterator iter = mPredecessors.begin(); iter != mPredecessors.end(); iter++)
+        if((*mNeuronCache)[*iter]->checkLoop(_loopNeuron))
             return true;
 
     return false;
@@ -73,15 +71,15 @@ void NonLeafNeuron::setInput(set<uint> _inputs, bool _checkLoops){
             return;
         }
 
-        if(_checkLoops && mNeuronCache[*iter]->checkLoop(this))
+        if(_checkLoops && (*mNeuronCache)[*iter]->checkLoop(this))
         {
             mPredecessors.clear();
             cerr << "Error: a loop was found when attempting to link the neuron with ID " << *iter <<  " to a non-leaf neuron" << endl;
             return;
         }
-        
-        mPredecessors.push_back(mNeuronCache[*iter]);
     }
+
+    mPredecessors = _inputs;
 }
 
 void NonLeafNeuron::setInput(double _input){

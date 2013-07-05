@@ -41,12 +41,18 @@ public:
 
     virtual bool checkLoop(Neuron* _loopNeuron)=0;
 
-    //returns a reference to the weights of the neuron
-    vector<double>& weights(){
+    vector<double> getWeights(){
         return mWeights;
     }
 
-    NeuronType getNeuronType(){return mNeuronType;}
+    void setWeights(vector<double> _weights){
+        mWeights = _weights;
+    }
+
+    ActivationFunction getActivationFunction(){return mActivationFunction;}
+
+    virtual NeuronType getNeuronType()=0;
+    virtual set<uint> getPredecessors()=0;
 
 protected:
     double calculateActivationEnergy(double _netSignal){
@@ -71,7 +77,6 @@ protected:
     double mLastOutput;
     long mCurrentCounter;
     vector<double> mWeights;
-    NeuronType mNeuronType;
 };
 
 #endif

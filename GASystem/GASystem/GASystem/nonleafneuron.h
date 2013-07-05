@@ -22,9 +22,11 @@ public:
     virtual void setInput(set<uint> _inputs, bool _checkForLoops);
     virtual void setInput(double _inputs);
     virtual bool checkLoop(Neuron* _loopNeuron);
+    virtual NeuronType getNeuronType(){return NONLEAF;}
+    virtual set<uint> getPredecessors(){return mPredecessors;}
 
 private:
-    vector<Neuron*> mPredecessors;
+    set<uint> mPredecessors;
 
 private:
     NonLeafNeuron(){}

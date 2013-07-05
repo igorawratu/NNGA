@@ -2,7 +2,6 @@
 
 LeafNeuron::LeafNeuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights) : Neuron(_neuronCache, _weights, SIGMOID){
     mInputValue = 0;
-    mNeuronType = LEAF;
 }
 
 LeafNeuron::LeafNeuron(const LeafNeuron& _other){
@@ -12,7 +11,6 @@ LeafNeuron::LeafNeuron(const LeafNeuron& _other){
     mLastOutput = 0;
     mActivationFunction = _other.mActivationFunction;
     mInputValue = _other.mInputValue;
-    mNeuronType = LEAF;
 }
 
 LeafNeuron& LeafNeuron::operator = (const LeafNeuron& _other){
@@ -42,6 +40,6 @@ void LeafNeuron::setInput(double _input){
     mInputValue = _input;
 }
 
-bool checkLoop(Neuron* _loopNeuron){
+bool LeafNeuron::checkLoop(Neuron* _loopNeuron){
     return false;
 }

@@ -12,7 +12,7 @@ NeuralNetwork::NeuralNetwork(xmldoc* _file, map<uint, vector<double>> _weights){
     constructNNStructure(_file, false, false);
 
     for(map<uint, vector<double>>::iterator iter = _weights.begin(); iter != _weights.end(); iter++)
-        mNeuronCache[iter->first]->weights() = iter->second;
+        mNeuronCache[iter->first]->setWeights(iter->second);
 
 }
 
@@ -52,7 +52,7 @@ void NeuralNetwork::constructNNStructure(xmldoc* _file, bool _withWeights, bool 
                 pugi::xml_node weightRoot = node.child("Weights");
                 if(strcmp(weightRoot.attribute("dist").value(), "Fixed")){
                     for(pugi::xml_node weightNode = weightRoot.first_child(); weightNode; weightNode = weightNode.next_sibling())
-                        weights.push_back(atof(weightNode.child_value()));
+                        weights.push_back(atof(weightNode.attribute("value").value()));
                 }
                 else{
                     //set the amount of weights needed to deal with the inputs, +1 for the bias
@@ -78,7 +78,7 @@ void NeuralNetwork::constructNNStructure(xmldoc* _file, bool _withWeights, bool 
             }
             neuron = new NonLeafNeuron(&mNeuronCache, weights, activationFunction);
 
-            if(strcmp(node.attribute("Type").value(), "Input"))
+            if(strcmp(node.attribute("Type").value(), "Output"))
                 mOutput[neuronID] = neuron;
 
         }
@@ -92,11 +92,21 @@ void NeuralNetwork::constructNNStructure(xmldoc* _file, bool _withWeights, bool 
 }
 
 NeuralNetwork::NeuralNetwork(const NeuralNetwork& _other){
+    mCounter = -1;
     
+    xmldoc structure;
+    _other.getStructure(structure);
+
+    constructNNStructure(&structure, false, false);
 }
 
 NeuralNetwork& NeuralNetwork::operator = (const NeuralNetwork& _other){
+    mCounter = -1;
     
+    xmldoc structure;
+    _other.getStructure(structure);
+
+    constructNNStructure(&structure, false, false);
     
     return *this;
 }
@@ -135,18 +145,52 @@ vector<double> NeuralNetwork::evaluate(map<uint, double> _inputs){
     return output;
 }
 
-xmldoc NeuralNetwork::getStructure(){
-    xmldoc doc;
-    doc.append_child("NeuralNetwork");
+void NeuralNetwork::getStructure(xmldoc& _doc){
+    if(!_doc.empty()){
+        cout << "Error: please pass through an empty xml doc" << endl;
+        return;
+    }
 
-    pugi::xml_node root = _file->child("NeuralNetwork");
+    pugi::xml_node root = _doc.append_child("NeuralNetwork");
     
     for(map<uint, Neuron*>::iterator iter = mNeuronCache.begin(); iter != mNeuronCache.end(); iter++){
-        if(iter->second->getNeuronType() == LEAF){
-            pugi::xml_node currentNeuron;
-            currentNeuron.set_name("Neuron");
-            
-            pugi::xml_attribute idAtt, typeAtt, 
+        pugi::xml_node currentNeuron = root.append_child("Neuron");
+        
+        //set neuron ID
+        currentNeuron.append_attribute("ID") = iter->first;
+
+        if(iter->second->getNeuronType() == LEAF)
+            //set neuron type
+            currentNeuron.append_attribute("Type") = "Input";
+        else{
+            map<uint, Neuron*>::const_iterator neuronIter = mOutput.find(iter->first);
+
+            //set neuron type
+            if(neuronIter == mOutput.end())
+                currentNeuron.append_attribute("Type") = "Hidden";
+            else currentNeuron.append_attribute("Type") = "Output";
+        
+            //set activation function type
+            switch(iter->second->getActivationFunction()){
+                case SIGMOID:
+                    currentNeuron.append_attribute("ActivationFunction") = "Sigmoid";
+                    break;
+                default:
+                    break;
+            }
+
+            //set weight data
+            pugi::xml_node weightRoot = currentNeuron.append_child("Weights");
+            vector<double> weights = iter->second->getWeights();
+            for(int k = 0; k < weights.size(); k++)
+                weightRoot.append_child("Weight").append_attribute("value") = weights[k];
+
+            //set predecessor data
+            pugi::xml_node predecessorRoot = currentNeuron.append_child("Predecessors");
+            set<uint> predecessors = iter->second->getPredecessors();
+            for(set<uint>::iterator predIter = predecessors.begin(); predIter != predecessors.end(); predIter++)
+                predecessorRoot.append_child("Predecessor").append_attribute("ID") = *predIter;
+
         }
     }
 }
