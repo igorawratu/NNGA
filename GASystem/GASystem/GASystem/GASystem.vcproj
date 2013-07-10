@@ -201,11 +201,23 @@
 				>
 			</File>
 			<File
-				RelativePath=".\GASystem.h"
+				RelativePath=".\crossover.h"
+				>
+			</File>
+			<File
+				RelativePath=".\gaengine.h"
+				>
+			</File>
+			<File
+				RelativePath=".\geneticalgorithm.h"
 				>
 			</File>
 			<File
 				RelativePath=".\leafneuron.h"
+				>
+			</File>
+			<File
+				RelativePath=".\mutation.h"
 				>
 			</File>
 			<File
@@ -221,11 +233,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\population.h"
+				>
+			</File>
+			<File
 				RelativePath=".\pugiconfig.hpp"
 				>
 			</File>
 			<File
 				RelativePath=".\pugixml.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\selection.h"
 				>
 			</File>
 			<File
