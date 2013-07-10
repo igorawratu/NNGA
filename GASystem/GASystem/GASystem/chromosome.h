@@ -16,12 +16,8 @@ public:
     Chromosome(){}
     virtual ~Chromosome(){}
 
-    //templatize this shit to allow for different mutation algorithms
-    virtual void mutate()=0;
-    
-
-private:
-    double mFitness;
+    virtual void mutate(MutationAlgorithm* _mutationAlgorithm)=0;
+    virtual void getFitness()=0;
 
 };
 
