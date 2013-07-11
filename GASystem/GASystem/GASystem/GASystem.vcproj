@@ -205,6 +205,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\factory.h"
+				>
+			</File>
+			<File
 				RelativePath=".\gaengine.h"
 				>
 			</File>

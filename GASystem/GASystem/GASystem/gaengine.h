@@ -5,6 +5,8 @@
 
 #include "common.h"
 #include "solution.h"
+#include "geneticalgorithm.h"
+#include "simulationcontainer.h"
 
 using namespace std;
 
@@ -14,7 +16,7 @@ public:
     GAEngine();
     ~GAEngine();
 
-    Solution train(string _geneticAlgorithm, string _simulation);
+    Solution train(GeneticAlgorithm* _geneticAlgorithm, SimulationContainer* _simulation);
 
 private:
     GAEngine(const GAEngine& other){}
