@@ -27,6 +27,10 @@ LeafNeuron& LeafNeuron::operator = (const LeafNeuron& _other){
 LeafNeuron::~LeafNeuron(){
     mNeuronCache = 0;
 }
+
+Neuron* LeafNeuron::clone(){
+    return new LeafNeuron(*this);
+}
     
 double LeafNeuron::evaluate(long _counter){
     return mInputValue;

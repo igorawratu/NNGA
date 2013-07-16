@@ -24,6 +24,7 @@ public:
     virtual bool checkLoop(Neuron* _loopNeuron);
     virtual NeuronType getNeuronType(){return LEAF;}
     virtual set<uint> getPredecessors(){cout << "Error: cannot obtain predecessors of a leaf node" << endl; return set<uint>();}
+    virtual Neuron* clone();
 
 private:
     double mInputValue;

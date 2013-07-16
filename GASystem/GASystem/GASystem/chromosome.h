@@ -17,10 +17,11 @@ public:
     virtual ~Chromosome(){}
 
     virtual void mutate(string _mutationType)=0;
-    virtual double getFitness()=0;
 
     virtual map<uint, vector<double>> getWeightData()=0;
     virtual map<uint, NeuronInfo> getFullStructureData()=0;
+
+    double mFitness;
 
 };
 

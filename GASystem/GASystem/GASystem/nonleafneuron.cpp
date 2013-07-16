@@ -28,6 +28,10 @@ NonLeafNeuron::~NonLeafNeuron(){
     mPredecessors.clear();
 }
 
+Neuron* NonLeafNeuron::clone(){
+    return new NonLeafNeuron(*this);
+}
+
 double NonLeafNeuron::evaluate(long _counter){
     if(_counter == mCurrentCounter)
         return mLastOutput;

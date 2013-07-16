@@ -24,6 +24,7 @@ public:
     virtual bool checkLoop(Neuron* _loopNeuron);
     virtual NeuronType getNeuronType(){return NONLEAF;}
     virtual set<uint> getPredecessors(){return mPredecessors;}
+    virtual Neuron* clone();
 
 private:
     set<uint> mPredecessors;

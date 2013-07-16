@@ -49,6 +49,12 @@ public:
         mWeights = _weights;
     }
 
+    void setNeuronCache(map<uint, Neuron*> *_neuronCache){
+        mNeuronCache = _neuronCache;
+    }
+
+    virtual Neuron* clone()=0;
+
     ActivationFunction getActivationFunction(){return mActivationFunction;}
 
     virtual NeuronType getNeuronType()=0;
