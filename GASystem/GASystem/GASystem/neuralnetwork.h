@@ -15,17 +15,23 @@
 
 using namespace std;
 
+struct NeuronInfo
+{
+
+};
+
 class NeuralNetwork
 {
 public:
     //actually pass an xml file here
     NeuralNetwork(xmldoc* _file, bool _checkLoops);
-    NeuralNetwork(xmldoc* _file, map<uint, vector<double>> _weights);
+    NeuralNetwork(map<uint, NeuronInfo> _neuronInfo);
     NeuralNetwork(const NeuralNetwork& _other);
     NeuralNetwork& operator = (const NeuralNetwork& _other);
     ~NeuralNetwork();
 
     vector<double> evaluate(map<uint, double> _inputs);
+    void setWeights(map<uint, vector<double>> _weights);
     void getStructure(xmldoc& _doc);
 
 private:

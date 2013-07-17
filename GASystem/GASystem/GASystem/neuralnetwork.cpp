@@ -6,6 +6,7 @@ NeuralNetwork::NeuralNetwork(xmldoc* _file, bool _checkLoops){
     constructNNStructure(_file, true, _checkLoops);
 }
 
+//change this to neuroinfo
 NeuralNetwork::NeuralNetwork(xmldoc* _file, map<uint, vector<double>> _weights){
     mCounter = -1;
     
@@ -94,19 +95,33 @@ void NeuralNetwork::constructNNStructure(xmldoc* _file, bool _withWeights, bool 
 NeuralNetwork::NeuralNetwork(const NeuralNetwork& _other){
     mCounter = -1;
     
-    xmldoc structure;
-    _other.getStructure(structure);
+    map<uint, Neuron*> mOutput;
+    map<uint, Neuron*> mNeuronCache;
 
-    constructNNStructure(&structure, false, false);
+
+    for(map<uint, Neuron*>::const_iterator iter = _other.mNeuronCache.begin(); iter != _other.mNeuronCache.end(); iter++){
+        mNeuronCache[iter->first] = iter->second->clone();
+        mNeuronCache[iter->first]->setNeuronCache(&mNeuronCache);
+    }
+
+    for(map<uint, Neuron*>::const_iterator iter = _other.mOutput.begin(); iter!= _other.mOutput.end(); iter++)
+        mOutput[iter->first] = mNeuronCache[iter->first];
 }
 
 NeuralNetwork& NeuralNetwork::operator = (const NeuralNetwork& _other){
     mCounter = -1;
     
-    xmldoc structure;
-    _other.getStructure(structure);
+    map<uint, Neuron*> mOutput;
+    map<uint, Neuron*> mNeuronCache;
 
-    constructNNStructure(&structure, false, false);
+
+    for(map<uint, Neuron*>::const_iterator iter = _other.mNeuronCache.begin(); iter != _other.mNeuronCache.end(); iter++){
+        mNeuronCache[iter->first] = iter->second->clone();
+        mNeuronCache[iter->first]->setNeuronCache(&mNeuronCache);
+    }
+
+    for(map<uint, Neuron*>::const_iterator iter = _other.mOutput.begin(); iter!= _other.mOutput.end(); iter++)
+        mOutput[iter->first] = mNeuronCache[iter->first];
     
     return *this;
 }
