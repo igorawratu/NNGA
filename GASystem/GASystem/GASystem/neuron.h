@@ -14,7 +14,15 @@ using namespace std;
 const double e = 2.71828182845904523536;
 
 enum ActivationFunction{SIGMOID};
-enum NeuronType{LEAF, NONLEAF};
+enum NeuronType{LEAF, NONLEAF, OUTPUT};
+
+struct NeuronInfo
+{
+    NeuronType neuronType;
+    ActivationFunction activationFunction;
+    set<uint> predecessors;
+    vector<double> weights;
+};
 
 class Neuron
 {

@@ -175,6 +175,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\gaengine.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\leafneuron.cpp"
 				>
 			</File>
@@ -258,6 +262,14 @@
 			</File>
 			<File
 				RelativePath=".\selection.h"
+				>
+			</File>
+			<File
+				RelativePath=".\simulation.h"
+				>
+			</File>
+			<File
+				RelativePath=".\simulationcontainer.h"
 				>
 			</File>
 			<File

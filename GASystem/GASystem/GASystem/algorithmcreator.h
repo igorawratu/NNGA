@@ -33,8 +33,8 @@ public:
     Crossover* createCrossoverAlgorithm(string _algorithmName, map<string, double> _parameters);
 
 private:
-    void startup();
-    void shutdown();
+    static void startup();
+    static void shutdown();
 
     //helper functions
     void startupSelectionAlgorithms();

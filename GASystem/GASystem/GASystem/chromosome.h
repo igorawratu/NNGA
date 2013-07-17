@@ -18,11 +18,13 @@ public:
 
     virtual void mutate(string _mutationType)=0;
 
-    virtual map<uint, vector<double>> getWeightData()=0;
-    virtual map<uint, NeuronInfo> getFullStructureData()=0;
+    virtual vector<map<uint, vector<double>>> getWeightData()=0;
+    virtual vector<map<uint, NeuronInfo>> getFullStructureData()=0;
 
+    double& fitness(){return mFitness;}
+
+protected:
     double mFitness;
-
 };
 
 #endif

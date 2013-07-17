@@ -7,6 +7,7 @@
 #include "solution.h"
 #include "geneticalgorithm.h"
 #include "simulationcontainer.h"
+#include "algorithmcreator.h"
 
 using namespace std;
 

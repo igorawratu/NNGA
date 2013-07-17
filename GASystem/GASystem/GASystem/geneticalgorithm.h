@@ -5,7 +5,7 @@
 #include <string>
 
 #include "population.h"
-#include "simulation.h"
+#include "simulationcontainer.h"
 
 using namespace std;
 
@@ -13,12 +13,12 @@ class GeneticAlgorithm
 {
 public:
     GeneticAlgorithm(){}
-    virtual GeneticAlgorithm(){}
+    virtual ~GeneticAlgorithm(){}
 
-    virtual Solution train(string _simulation);
+    virtual Solution train(SimulationContainer* _simulationContainer)=0;
 
 protected:
-    vector<Population*> populations;
+    vector<Population*> mPopulations;
 };
 
 #endif

@@ -3,21 +3,28 @@
 NeuralNetwork::NeuralNetwork(xmldoc* _file, bool _checkLoops){
     mCounter = -1;
 
-    constructNNStructure(_file, true, _checkLoops);
+    constructNNStructure(_file, _checkLoops);
 }
 
 //change this to neuroinfo
-NeuralNetwork::NeuralNetwork(xmldoc* _file, map<uint, vector<double>> _weights){
+NeuralNetwork::NeuralNetwork(map<uint, NeuronInfo> _neuronInfo){
     mCounter = -1;
-    
-    constructNNStructure(_file, false, false);
 
-    for(map<uint, vector<double>>::iterator iter = _weights.begin(); iter != _weights.end(); iter++)
-        mNeuronCache[iter->first]->setWeights(iter->second);
+    for(map<uint, NeuronInfo>::iterator iter = _neuronInfo.begin(); iter != _neuronInfo.end(); iter++){
+        if(iter->second.neuronType == LEAF)
+            mNeuronCache[iter->first] = new LeafNeuron(&mNeuronCache, vector<double>());
+        else{
+            Neuron* currNeuron = new NonLeafNeuron(&mNeuronCache, iter->second.weights, iter->second.activationFunction);
+            currNeuron->setInput(iter->second.predecessors, false);
+            mNeuronCache[iter->first] = currNeuron;
+            if(iter->second.neuronType == OUTPUT)
+                mOutput[iter->first] = currNeuron;
+        }
+    }
 
 }
 
-void NeuralNetwork::constructNNStructure(xmldoc* _file, bool _withWeights, bool _checkLoops){
+void NeuralNetwork::constructNNStructure(xmldoc* _file, bool _checkLoops){
     pugi::xml_node travNode = _file->child("NeuralNetwork");
     map<uint, set<uint>> predecessorMap;
     boost::mt19937 rng(rand());
@@ -49,34 +56,33 @@ void NeuralNetwork::constructNNStructure(xmldoc* _file, bool _withWeights, bool 
             predecessorMap[neuronID] = predecessors;
 
             //assign weights
-            if(_withWeights){
-                pugi::xml_node weightRoot = node.child("Weights");
-                if(strcmp(weightRoot.attribute("dist").value(), "Fixed")){
-                    for(pugi::xml_node weightNode = weightRoot.first_child(); weightNode; weightNode = weightNode.next_sibling())
-                        weights.push_back(atof(weightNode.attribute("value").value()));
+            pugi::xml_node weightRoot = node.child("Weights");
+            if(strcmp(weightRoot.attribute("dist").value(), "Fixed")){
+                for(pugi::xml_node weightNode = weightRoot.first_child(); weightNode; weightNode = weightNode.next_sibling())
+                    weights.push_back(atof(weightNode.attribute("value").value()));
+            }
+            else{
+                //set the amount of weights needed to deal with the inputs, +1 for the bias
+                uint weightCount = predecessors.size() + 1;
+
+                //initialize random weights
+                if(strcmp(weightRoot.attribute("dist").value(), "Uniform")){
+                    boost::uniform_real<double> weightDist(atoi(weightRoot.attribute("min").value()), atoi(weightRoot.attribute("max").value()));
+                    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genWeight(rng, weightDist);                  
+
+                    for(int k = 0; k < weightCount; k++)
+                        weights.push_back(genWeight());
                 }
                 else{
-                    //set the amount of weights needed to deal with the inputs, +1 for the bias
-                    uint weightCount = predecessors.size() + 1;
+                    cerr << "Error: Invalid distribution found for neuron " << neuronID << ", defaulting to Uniform" << endl;
+                    boost::uniform_real<double> weightDist(atoi(weightRoot.attribute("min").value()), atoi(weightRoot.attribute("max").value()));
+                    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genWeight(rng, weightDist);                  
 
-                    //initialize random weights
-                    if(strcmp(weightRoot.attribute("dist").value(), "Uniform")){
-                        boost::uniform_real<double> weightDist(atoi(weightRoot.attribute("min").value()), atoi(weightRoot.attribute("max").value()));
-                        boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genWeight(rng, weightDist);                  
-
-                        for(int k = 0; k < weightCount; k++)
-                            weights.push_back(genWeight());
-                    }
-                    else{
-                        cerr << "Error: Invalid distribution found for neuron " << neuronID << ", defaulting to Uniform" << endl;
-                        boost::uniform_real<double> weightDist(atoi(weightRoot.attribute("min").value()), atoi(weightRoot.attribute("max").value()));
-                        boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genWeight(rng, weightDist);                  
-
-                        for(int k = 0; k < weightCount; k++)
-                            weights.push_back(genWeight());
-                    }
+                    for(int k = 0; k < weightCount; k++)
+                        weights.push_back(genWeight());
                 }
             }
+
             neuron = new NonLeafNeuron(&mNeuronCache, weights, activationFunction);
 
             if(strcmp(node.attribute("Type").value(), "Output"))
@@ -160,7 +166,7 @@ vector<double> NeuralNetwork::evaluate(map<uint, double> _inputs){
     return output;
 }
 
-void NeuralNetwork::getStructure(xmldoc& _doc){
+void NeuralNetwork::getXMLStructure(xmldoc& _doc){
     if(!_doc.empty()){
         cout << "Error: please pass through an empty xml doc" << endl;
         return;
@@ -208,4 +214,41 @@ void NeuralNetwork::getStructure(xmldoc& _doc){
 
         }
     }
+}
+
+map<uint, NeuronInfo> NeuralNetwork::getMapStructure(){
+    map<uint, NeuronInfo> output;
+    for(map<uint, Neuron*>::iterator iter = mNeuronCache.begin(); iter != mNeuronCache.end(); iter++){
+        NeuronInfo currNeuronInfo;
+
+        if(iter->second->getNeuronType() == LEAF)
+            currNeuronInfo.neuronType = LEAF;
+        else{
+            map<uint, Neuron*>::const_iterator outputCheckIterator = mOutput.find(iter->first);
+            if(outputCheckIterator != mOutput.end())
+                currNeuronInfo.neuronType = OUTPUT;
+            else currNeuronInfo.neuronType = NONLEAF;
+            
+            currNeuronInfo.activationFunction = iter->second->getActivationFunction();
+            currNeuronInfo.predecessors = iter->second->getPredecessors();
+            currNeuronInfo.weights = iter->second->getWeights();
+        }
+        output[iter->first] = currNeuronInfo;
+    }
+
+    return output;
+}
+
+map<uint, vector<double>> NeuralNetwork::getWeights(){
+    map<uint, vector<double>> output;
+    for(map<uint, Neuron*>::iterator iter = mNeuronCache.begin(); iter != mNeuronCache.end(); iter++)
+        if(iter->second->getNeuronType() == NONLEAF)
+            output[iter->first] = iter->second->getWeights();
+    
+    return output;
+}
+
+void NeuralNetwork::setWeights(map<uint, vector<double>> _weights){
+    for(map<uint, vector<double>>::iterator iter = _weights.begin(); iter != _weights.end(); iter++)
+        mNeuronCache[iter->first]->setWeights(iter->second);
 }

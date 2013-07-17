@@ -15,11 +15,6 @@
 
 using namespace std;
 
-struct NeuronInfo
-{
-
-};
-
 class NeuralNetwork
 {
 public:
@@ -32,10 +27,12 @@ public:
 
     vector<double> evaluate(map<uint, double> _inputs);
     void setWeights(map<uint, vector<double>> _weights);
-    void getStructure(xmldoc& _doc);
+    void getXMLStructure(xmldoc& _doc);
+    map<uint, NeuronInfo> getMapStructure();
+    map<uint, vector<double>> getWeights();
 
 private:
-    void constructNNStructure(xmldoc* _file, bool _withWeights, bool _checkLoops);
+    void constructNNStructure(xmldoc* _file, bool _checkLoops);
 
 private:
     map<uint, Neuron*> mOutput;
