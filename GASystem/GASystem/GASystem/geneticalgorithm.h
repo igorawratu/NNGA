@@ -16,9 +16,6 @@ public:
     virtual ~GeneticAlgorithm(){}
 
     virtual Solution train(SimulationContainer* _simulationContainer)=0;
-
-protected:
-    vector<Population*> mPopulations;
 };
 
 #endif

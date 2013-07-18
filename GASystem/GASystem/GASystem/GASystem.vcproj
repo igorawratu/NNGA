@@ -194,6 +194,10 @@
 				RelativePath=".\pugixml.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\solution.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"

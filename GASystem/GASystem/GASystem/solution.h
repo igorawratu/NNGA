@@ -16,10 +16,11 @@ class Solution
 {
 public:
     Solution(string _filename);
-    Solution(vector<map<uint, NeuronInfo>>);
+    Solution(vector<NeuralNetwork>);
     
-    vector<vector<double>> evaluateAllNeuralNetworks();
-    vector<double> evaluateNeuralNetwork(uint _index);
+    vector<vector<double>> evaluateAllNeuralNetworks(vector<map<uint, double>> _inputs);
+    vector<double> evaluateNeuralNetwork(uint _index, map<uint, double> _inputs);
+    void printToFile(string _filename);
 
     double& fitness(){return mFitness;}
 
