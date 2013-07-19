@@ -1,6 +1,7 @@
 #include "gaengine.h"
 
 GAEngine::GAEngine(){
+    srand(time(0));
     AlgorithmCreator::startup();
 }
 

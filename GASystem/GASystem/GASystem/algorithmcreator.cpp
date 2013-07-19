@@ -15,11 +15,11 @@ Crossover* AlgorithmCreator::createCrossoverAlgorithm(string _algorithmName, map
 
 
 void AlgorithmCreator::startup(){
-    initialized = true;
+    AlgorithmCreator::initialized = true;
 
-    algorithmCreator.startupSelectionAlgorithms();
-    algorithmCreator.startupMutationAlgorithms();
-    algorithmCreator.startupCrossoverAlgorithms();
+    AlgorithmCreator::algorithmCreator.startupSelectionAlgorithms();
+    AlgorithmCreator::algorithmCreator.startupMutationAlgorithms();
+    AlgorithmCreator::algorithmCreator.startupCrossoverAlgorithms();
 }
 
 void AlgorithmCreator::shutdown(){
@@ -27,7 +27,7 @@ void AlgorithmCreator::shutdown(){
     algorithmCreator.mSelectionFactory.clear();
     algorithmCreator.mCrossoverFactory.clear();
 
-    initialized = false;
+    AlgorithmCreator::initialized = false;
 }
 
 

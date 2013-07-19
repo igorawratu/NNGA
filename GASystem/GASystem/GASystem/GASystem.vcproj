@@ -229,11 +229,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\gaussianmutation.h"
+				>
+			</File>
+			<File
 				RelativePath=".\geneticalgorithm.h"
 				>
 			</File>
 			<File
 				RelativePath=".\leafneuron.h"
+				>
+			</File>
+			<File
+				RelativePath=".\multipointcrossover.h"
 				>
 			</File>
 			<File
@@ -250,10 +258,6 @@
 			</File>
 			<File
 				RelativePath=".\nonleafneuron.h"
-				>
-			</File>
-			<File
-				RelativePath=".\population.h"
 				>
 			</File>
 			<File

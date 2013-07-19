@@ -7,13 +7,13 @@ Solution::Solution(string _filename){
 
     while(getline(file, line)){
         xmldoc doc;
-        pugi::xml_parse_result result = doc.load_file(string.c_str());
+        pugi::xml_parse_result result = doc.load_file(line.c_str());
         if(!result){
             cerr << "Error: unable to parse the file " << line << endl;
             continue;
         }
 
-        mNeuralNets.push_back(NeuralNetwork(&doc, false);
+        mNeuralNets.push_back(NeuralNetwork(&doc, false));
     }
 
     file.close();
@@ -47,5 +47,25 @@ vector<double> Solution::evaluateNeuralNetwork(uint _index, map<uint, double> _i
 }
 
 void Solution::printToFile(string _filename){
+    ofstream outputFile;
+    outputFile.open(_filename.c_str());
 
+    for(uint k = 0; k < mNeuralNets.size(); k++){
+        char buf[10];
+        sprintf(buf, "%d", k);
+
+        xmldoc doc;
+        mNeuralNets[k].getXMLStructure(doc);
+
+        string currDocName = _filename;
+        currDocName.append(buf);
+
+        doc.save_file(currDocName.c_str());
+        outputFile << currDocName;
+
+        if(k != mNeuralNets.size() - 1)
+            outputFile << endl;
+    }
+
+    outputFile.close();
 }

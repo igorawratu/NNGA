@@ -4,7 +4,6 @@
 #include <vector>
 #include <string>
 
-#include "population.h"
 #include "simulationcontainer.h"
 
 using namespace std;

@@ -14,7 +14,7 @@ public:
     Crossover(){}
     virtual ~Crossover(){}
 
-    virtual vector<Chromosome*> execute(vector<Chromosome*> _population)=0;
+    virtual vector<Chromosome*> execute(vector<Chromosome*> _population, uint numOffspring)=0;
     void setParameters(map<string, double> _parameters){mParameters = _parameters;}
 
 protected:
