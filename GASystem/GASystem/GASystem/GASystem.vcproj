@@ -187,6 +187,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\nnchromosome.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\nonleafneuron.cpp"
 				>
 			</File>
@@ -254,6 +258,10 @@
 			</File>
 			<File
 				RelativePath=".\neuron.h"
+				>
+			</File>
+			<File
+				RelativePath=".\nnchromosome.h"
 				>
 			</File>
 			<File

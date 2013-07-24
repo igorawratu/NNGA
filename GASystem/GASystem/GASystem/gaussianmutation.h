@@ -13,7 +13,7 @@ using namespace std;
 class GaussianMutation : public Mutation
 {
 public:
-    GaussianMutation() : mRNGMutationProb(rand()), mRNGMutation(rand()){}
+    GaussianMutation(){}
     virtual ~GaussianMutation(){}
 
     virtual void execute(vector<double>& _weights){
@@ -30,6 +30,8 @@ public:
 
         if(!getParameter(mParameters, minConstraint, "MinConstraint"))
             return;
+
+        boost::mt19937 mRNGMutationProb(rand()), mRNGMutation(rand());
 
         boost::uniform_real<double> mutationProbDist(0, 1);
         boost::normal_distribution<> mMutationDist(0, deviation);
@@ -77,9 +79,7 @@ public:
                 _weights[k[ = minConstraint;
         }
     }
-
-private:
-    boost::mt19937 mRNGMutationProb, mRNGMutation;
+    
 
 };
 
