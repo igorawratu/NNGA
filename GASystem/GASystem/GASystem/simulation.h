@@ -6,7 +6,7 @@
 class Simulation
 {
 public:
-    Simulation(uint _numCycles, uint _cyclesPerDecision){
+    Simulation(uint _numCycles, uint _cyclesPerDecision, double epsilon){
         mNumCycles = _numCycles;
         mCyclesPerDecision = _cyclesPerDecision;
         mCycleCounter = 0;

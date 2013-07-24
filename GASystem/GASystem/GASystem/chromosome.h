@@ -16,7 +16,7 @@ public:
     Chromosome(){}
     virtual ~Chromosome(){}
 
-    virtual void mutate(string _mutationType)=0;
+    virtual void mutate(string _mutationType, map<string, double>& _parameters)=0;
 
     virtual vector<map<uint, vector<double>>> getWeightData()=0;
     virtual vector<map<uint, NeuronInfo>> getFullStructureData()=0;

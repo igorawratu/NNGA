@@ -16,19 +16,19 @@ public:
     GaussianMutation(){}
     virtual ~GaussianMutation(){}
 
-    virtual void execute(vector<double>& _weights){
+    virtual void execute(vector<double>& _weights, map<string, double>& _parameters){
         double mutationProbability, deviation, maxConstraint, minConstraint;
 
-        if(!getParameter(mParameters, mutationProbability, "MutationProbability"))
+        if(!getParameter(_parameters, mutationProbability, "MutationProbability"))
             return;
 
-        if(!getParameter(mParameters, deviation, "Deviation"))
+        if(!getParameter(_parameters, deviation, "Deviation"))
             return;
 
-        if(!getParameter(mParameters, maxConstraint, "MaxConstraint"))
+        if(!getParameter(_parameters, maxConstraint, "MaxConstraint"))
             return;
 
-        if(!getParameter(mParameters, minConstraint, "MinConstraint"))
+        if(!getParameter(_parameters, minConstraint, "MinConstraint"))
             return;
 
         boost::mt19937 mRNGMutationProb(rand()), mRNGMutation(rand());
@@ -49,19 +49,19 @@ public:
         }
     }
     
-    virtual void execute(vector<float>& _weights){
+    virtual void execute(vector<float>& _weights, map<string, double>& _parameters){
         double mutationProbability, deviation, maxConstraint, minConstraint;
 
-        if(!getParameter(mParameters, mutationProbability, "MutationProbability"))
+        if(!getParameter(_parameters, mutationProbability, "MutationProbability"))
             return;
 
-        if(!getParameter(mParameters, deviation, "Deviation"))
+        if(!getParameter(_parameters, deviation, "Deviation"))
             return;
 
-        if(!getParameter(mParameters, maxConstraint, "MaxConstraint"))
+        if(!getParameter(_parameters, maxConstraint, "MaxConstraint"))
             return;
 
-        if(!getParameter(mParameters, minConstraint, "MinConstraint"))
+        if(!getParameter(_parameters, minConstraint, "MinConstraint"))
             return;
 
         boost::uniform_real<float> mutationProbDist(0, 1);

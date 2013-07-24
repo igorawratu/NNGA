@@ -18,7 +18,7 @@ public:
     MultipointCrossover();
     virtual ~MultipointCrossover();
 
-    virtual vector<Chromosome*> execute(vector<Chromosome*> _population, uint numOffspring){
+    virtual vector<Chromosome*> execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters){
 
         Selection* selectionAlgorithm = AlgorithmCreator::instance().createSelectionAlgorithm("Rank", map<string, double>());
         if(!selectionAlgorithm)

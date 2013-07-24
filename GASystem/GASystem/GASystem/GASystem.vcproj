@@ -202,6 +202,10 @@
 				RelativePath=".\solution.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\standardga.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -277,6 +281,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\rankselection.h"
+				>
+			</File>
+			<File
 				RelativePath=".\selection.h"
 				>
 			</File>
@@ -290,6 +298,10 @@
 			</File>
 			<File
 				RelativePath=".\solution.h"
+				>
+			</File>
+			<File
+				RelativePath=".\standardga.h"
 				>
 			</File>
 		</Filter>

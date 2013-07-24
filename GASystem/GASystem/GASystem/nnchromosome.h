@@ -3,6 +3,10 @@
 
 #include "chromosome.h"
 #include "neuralnetwork.h"
+#include "mutation.h"
+#include "algorithmcreator.h"
+
+#include <map>
 #include <vector>
 
 using namespace std;
@@ -12,19 +16,21 @@ class NNChromosome : public Chromosome
 {
 public:
     NNChromosome();
+    NNChromosome(string _file);
     NNChromosome(const NNChromosome& other);
     virtual ~NNChromosome();
     NNChromosome& operator = (const NNChromosome& other);
 
-    virtual void mutate(string _mutationType);
+    virtual void mutate(string _mutationType, map<string, double>& _parameters);
     virtual vector<map<uint, vector<double>>> getWeightData();
     virtual vector<map<uint, NeuronInfo>> getFullStructureData();
     virtual void setWeights(vector<map<uint, vector<double>>>);
     virtual void setStructure(vector<map<uint, NeuronInfo>>);
     virtual Chromosome* clone();
+    vector<NeuralNetwork>& getNeuralNets(){return mNets;}
 
 private:
-    vector<NeuralNetwork> nets;
+    vector<NeuralNetwork> mNets;
 
 };
 
