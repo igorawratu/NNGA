@@ -1,40 +1,24 @@
 #include "standardga.h"
 
 StandardGA::StandardGA(StandardGAParameters _parameters){
-
+    mParameters = _parameters;
 }
 
 
 StandardGA::StandardGA(const StandardGA& other){
-
+    mParameters = other.mParameters;
 }
 
 
 StandardGA& StandardGA::operator = (const StandardGA& other){
+    mParameters = other.mParameters;
 
+    return *this;
 }
 
 
 StandardGA::~StandardGA(){
-
 }
-
-struct StandardGAParameters
-{
-    uint populationSize;
-    uint maxGenerations;
-
-    string nnFormatFilename;
-    double stagnationMovementThreshold;
-    double fitnessEpsilonThreshold;
-
-    string mutationAlgorithm;
-    map<string, double> mutationParameters;
-    string crossoverAlgorithm;
-    map<string, double> crossoverParameters;
-    string selectionAlgorithm;
-
-};
 
 Solution StandardGA::train(SimulationContainer* _simulationContainer){
     vector<Chromosome*> population;
@@ -51,7 +35,7 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
     }
 
     for(uint k = 0; k < mParameters.maxGenerations; k++){
-        //sort population here
+        quicksort(population, 0, population.size() - 1);
 
         //create offspring
         vector<Chromosome*> offspring = crossoverAlgorithm->execute(population, population.size(), mParameters.crossoverParameters);
@@ -69,25 +53,62 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
             if(currSolution.fitness() < mParameters.fitnessEpsilonThreshold){
                 for(uint i = 0; i < population.size(); i++)
                     delete population[i];
-                for(uint i = 0; i < population.size(); i++)
-                    delete population[i];
+                for(uint i = 0; i < offspring.size(); i++)
+                    delete offspring[i];
                 return currSolution;
             }
 
             offspring[i]->fitness() = currSolution.fitness();
         }
 
-        //parent child contention for now
+        //merge parents and children into 1 population as they contend with each other
         population.insert(population.end(), offspring.begin(), offspring.end());
-        //sort this
+
+        quicksort(population, 0, population.size() - 1);
+
         vector<Chromosome*> unselected;
         population = selectionAlgorithm->execute(population, mParameters.populationSize, unselected);
+        
         //delete chromosomes which have not been selected
         for(uint i = 0; i < unselected.size(); i++)
             delete unselected[i];
         unselected.clear();
 
-        //check for stagnation, if none go next generation
+        //check for stagnation here
 
     }
+    quicksort(population, 0, population.size() - 1);
+
+    Solution finalSolution(dynamic_cast<NNChromosome*>(population[0])->getNeuralNets());
+
+    for(uint i = 0; i < population.size(); i++)
+        delete population[i];
+
+    return finalSolution;
+}
+
+void StandardGA::quicksort(vector<Chromosome*>& elements, int left, int right)
+{
+	int i = left;
+	int j = right;
+
+	Chromosome* pivot = elements[(left+ right) / 2];
+	do
+	{
+		while (elements[i]->fitness() < pivot->fitness())
+			i++;
+		while (elements[j]->fitness() > pivot->fitness())
+			j--;
+
+		if (i <= j)
+		{
+			Chromosome* temp = elements[i]; elements[i] = elements[j]; elements[j] = temp;
+			i++; j--;
+		}
+	} while (i <= j);
+
+	if (left < j)
+		quicksort(elements, left, j);
+	if (i < right)
+		quicksort(elements, i, right);
 }

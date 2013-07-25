@@ -40,6 +40,9 @@ public:
     virtual Solution train(SimulationContainer* _simulationContainer);
 
 private:
+    void quicksort(vector<Chromosome*>& elements, int left, int right)
+
+private:
     StandardGAParameters mParameters;
 
 private:
