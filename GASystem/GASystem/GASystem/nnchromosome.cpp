@@ -30,10 +30,10 @@ void NNChromosome::mutate(string _mutationType, map<string, double>& _parameters
 
     for(uint k = 0; k < mNets.size(); k++){
         map<uint, vector<double>> currNetWeights = mNets[k].getWeights();
-        for(map<uint, vector<double>>::iterator iter = currNetWeights.begin(); iter != currNetWeights.end; iter++)
+        for(map<uint, vector<double>>::iterator iter = currNetWeights.begin(); iter != currNetWeights.end(); iter++)
             mutationAlgorithm->execute(iter->second, _parameters);
 
-        mNets[k]->setWeights(currNetWeights);
+        mNets[k].setWeights(currNetWeights);
     }
 }
 
@@ -58,11 +58,13 @@ vector<map<uint, NeuronInfo>> NNChromosome::getFullStructureData(){
 void NNChromosome::setWeights(vector<map<uint, vector<double>>>& _weights){
     for(uint k = 0; k < _weights.size(); k++){
         mNets[k].setWeights(_weights[k]);
+    }
 }   
 
 void NNChromosome::setStructure(vector<map<uint, NeuronInfo>>& _structure){
     for(uint k = 0; k < _structure.size(); k++){
-        mNets[k].setWeights(_structure[k]);
+        mNets[k].setStructure(_structure[k]);
+    }
 }
 
 Chromosome* NNChromosome::clone(){

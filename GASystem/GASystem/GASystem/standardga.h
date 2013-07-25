@@ -9,6 +9,7 @@
 #include "simulationcontainer.h"
 
 #include <string>
+#include <math.h>
 
 using namespace std;
 
@@ -18,7 +19,7 @@ struct StandardGAParameters
     uint maxGenerations;
 
     string nnFormatFilename;
-    double stagnationMovementThreshold;
+    double stagnationThreshold;
     double fitnessEpsilonThreshold;
 
     string mutationAlgorithm;
@@ -40,7 +41,7 @@ public:
     virtual Solution train(SimulationContainer* _simulationContainer);
 
 private:
-    void quicksort(vector<Chromosome*>& elements, int left, int right)
+    void quicksort(vector<Chromosome*>& elements, int left, int right);
 
 private:
     StandardGAParameters mParameters;

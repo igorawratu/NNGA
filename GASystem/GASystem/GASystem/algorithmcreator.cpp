@@ -1,16 +1,16 @@
 #include "algorithmcreator.h"
 
-Selection* AlgorithmCreator::createSelectionAlgorithm(string _algorithmName, map<string, double> _parameters){
-    return mSelectionFactory.create(_algorithmName, _parameters);
+Selection* AlgorithmCreator::createSelectionAlgorithm(string _algorithmName){
+    return mSelectionFactory.create(_algorithmName);
 }
 
     
-Mutation* AlgorithmCreator::createMutationAlgorithm(string _algorithmName, map<string, double> _parameters){
-    return mMutationFactory.create(_algorithmName, _parameters);
+Mutation* AlgorithmCreator::createMutationAlgorithm(string _algorithmName){
+    return mMutationFactory.create(_algorithmName);
 }
 
-Crossover* AlgorithmCreator::createCrossoverAlgorithm(string _algorithmName, map<string, double> _parameters){
-    return mCrossoverFactory.create(_algorithmName, _parameters);
+Crossover* AlgorithmCreator::createCrossoverAlgorithm(string _algorithmName){
+    return mCrossoverFactory.create(_algorithmName);
 }
 
 
@@ -23,9 +23,9 @@ void AlgorithmCreator::startup(){
 }
 
 void AlgorithmCreator::shutdown(){
-    algorithmCreator.mMutationFactory.clear();
-    algorithmCreator.mSelectionFactory.clear();
-    algorithmCreator.mCrossoverFactory.clear();
+    AlgorithmCreator::algorithmCreator.mMutationFactory.clear();
+    AlgorithmCreator::algorithmCreator.mSelectionFactory.clear();
+    AlgorithmCreator::algorithmCreator.mCrossoverFactory.clear();
 
     AlgorithmCreator::initialized = false;
 }

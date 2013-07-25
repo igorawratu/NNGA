@@ -5,7 +5,7 @@
 
 using namespace std;
 
-template<class Super, class IdType, class Creator, class ParameterType>
+template<class Super, class IdType, class Creator>
 class Factory
 {
 public:
@@ -17,9 +17,9 @@ public:
         return mRegisteredCreators.erase(_id) == 1;
     }
 
-    Super* create(const IdType& _id, ParameterType _parameters){
+    Super* create(const IdType& _id){
         map<IdType, Creator>::const_iterator iter = mRegisteredCreators.find(_id);
-        return (iter != mRegisteredCreators.end()) ? (iter->second)(_parameters) : 0;
+        return (iter != mRegisteredCreators.end()) ? (iter->second)() : 0;
     }
 
     void clear(){

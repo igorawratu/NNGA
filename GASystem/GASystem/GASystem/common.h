@@ -23,4 +23,11 @@ bool inline getParameter(map<string, double>& param, double& val, string key){
     return true;
 }
 
+struct vector3
+{
+    double x;
+    double y;
+    double z;
+}
+
 #endif

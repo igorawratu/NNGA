@@ -24,8 +24,8 @@ public:
     virtual void mutate(string _mutationType, map<string, double>& _parameters);
     virtual vector<map<uint, vector<double>>> getWeightData();
     virtual vector<map<uint, NeuronInfo>> getFullStructureData();
-    virtual void setWeights(vector<map<uint, vector<double>>>);
-    virtual void setStructure(vector<map<uint, NeuronInfo>>);
+    virtual void setWeights(vector<map<uint, vector<double>>>& _weights);
+    virtual void setStructure(vector<map<uint, NeuronInfo>>& structure);
     virtual Chromosome* clone();
     vector<NeuralNetwork>& getNeuralNets(){return mNets;}
 

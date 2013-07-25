@@ -233,6 +233,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\fitness.h"
+				>
+			</File>
+			<File
 				RelativePath=".\gaengine.h"
 				>
 			</File>

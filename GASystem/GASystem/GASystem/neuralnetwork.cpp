@@ -24,6 +24,34 @@ NeuralNetwork::NeuralNetwork(map<uint, NeuronInfo> _neuronInfo){
 
 }
 
+void NeuralNetwork::setStructure(map<uint, NeuronInfo> _neuronInfo){
+    //clear old structure
+    for(map<uint, Neuron*>::iterator iter = mNeuronCache.begin(); iter != mNeuronCache.end(); iter++){
+        if(iter->second)
+        {
+            delete iter->second;
+            iter->second = 0;
+        }
+    }
+    mNeuronCache.clear();
+    mOutput.clear();
+
+    //set new structure
+    mCounter = -1;
+
+    for(map<uint, NeuronInfo>::iterator iter = _neuronInfo.begin(); iter != _neuronInfo.end(); iter++){
+        if(iter->second.neuronType == LEAF)
+            mNeuronCache[iter->first] = new LeafNeuron(&mNeuronCache, vector<double>());
+        else{
+            Neuron* currNeuron = new NonLeafNeuron(&mNeuronCache, iter->second.weights, iter->second.activationFunction);
+            currNeuron->setInput(iter->second.predecessors, false);
+            mNeuronCache[iter->first] = currNeuron;
+            if(iter->second.neuronType == OUTPUT)
+                mOutput[iter->first] = currNeuron;
+        }
+    }
+}
+
 void NeuralNetwork::constructNNStructure(xmldoc* _file, bool _checkLoops){
     pugi::xml_node travNode = _file->child("NeuralNetwork");
     map<uint, set<uint>> predecessorMap;
@@ -70,7 +98,7 @@ void NeuralNetwork::constructNNStructure(xmldoc* _file, bool _checkLoops){
                     boost::uniform_real<double> weightDist(atoi(weightRoot.attribute("min").value()), atoi(weightRoot.attribute("max").value()));
                     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genWeight(rng, weightDist);                  
 
-                    for(int k = 0; k < weightCount; k++)
+                    for(uint k = 0; k < weightCount; k++)
                         weights.push_back(genWeight());
                 }
                 else{
@@ -78,7 +106,7 @@ void NeuralNetwork::constructNNStructure(xmldoc* _file, bool _checkLoops){
                     boost::uniform_real<double> weightDist(atoi(weightRoot.attribute("min").value()), atoi(weightRoot.attribute("max").value()));
                     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genWeight(rng, weightDist);                  
 
-                    for(int k = 0; k < weightCount; k++)
+                    for(uint k = 0; k < weightCount; k++)
                         weights.push_back(genWeight());
                 }
             }
@@ -203,7 +231,7 @@ void NeuralNetwork::getXMLStructure(xmldoc& _doc){
             //set weight data
             pugi::xml_node weightRoot = currentNeuron.append_child("Weights");
             vector<double> weights = iter->second->getWeights();
-            for(int k = 0; k < weights.size(); k++)
+            for(uint k = 0; k < weights.size(); k++)
                 weightRoot.append_child("Weight").append_attribute("value") = weights[k];
 
             //set predecessor data

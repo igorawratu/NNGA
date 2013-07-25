@@ -20,8 +20,8 @@ public:
 
     virtual vector<map<uint, vector<double>>> getWeightData()=0;
     virtual vector<map<uint, NeuronInfo>> getFullStructureData()=0;
-    virtual void setWeights(vector<map<uint, vector<double>>>)=0;
-    virtual void setStructure(vector<map<uint, NeuronInfo>>)=0;
+    virtual void setWeights(vector<map<uint, vector<double>>>& _weights)=0;
+    virtual void setStructure(vector<map<uint, NeuronInfo>>& _struct)=0;
     virtual Chromosome* clone()=0;
 
     double& fitness(){return mFitness;}    

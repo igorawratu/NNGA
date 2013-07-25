@@ -35,6 +35,8 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
     }
 
     for(uint k = 0; k < mParameters.maxGenerations; k++){
+        uint stagnationCounter = 0;
+
         quicksort(population, 0, population.size() - 1);
 
         //create offspring
@@ -74,7 +76,31 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
             delete unselected[i];
         unselected.clear();
 
-        //check for stagnation here
+        //calculates standard deviation, if it has been below the threshold for 10(arb, can make this var) generations, then stagnation
+        double meanFit = 0, variance = 0, stdv;
+        for(uint i = 0; i < population.size(); i++)
+            meanFit += population[i]->fitness();
+        
+        for(uint i = 0; i < population.size(); i++){
+            double dif = population[i]->fitness() - meanFit;
+            variance += dif * dif;
+        }
+        variance /= (population.size() - 1);
+        if(sqrt(variance) < mParameters.stagnationThreshold)
+            stagnationCounter++;
+        else stagnationCounter = 0;
+
+        if(stagnationCounter > 10)        
+        {
+            quicksort(population, 0, population.size() - 1);
+
+            Solution finalSolution(dynamic_cast<NNChromosome*>(population[0])->getNeuralNets());
+
+            for(uint i = 0; i < population.size(); i++)
+                delete population[i];
+
+            return finalSolution;
+        }
 
     }
     quicksort(population, 0, population.size() - 1);

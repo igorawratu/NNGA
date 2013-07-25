@@ -16,9 +16,9 @@ using namespace std;
 class AlgorithmCreator
 {
 friend class GAEngine;
-typedef Selection* (*SelectionCallback)(map<string, double>);
-typedef Mutation* (*MutationCallback)(map<string, double>);
-typedef Crossover* (*CrossoverCallback)(map<string, double>);
+typedef Selection* (*SelectionCallback)();
+typedef Mutation* (*MutationCallback)();
+typedef Crossover* (*CrossoverCallback)();
 
 public:
     static AlgorithmCreator& instance(){
@@ -28,9 +28,9 @@ public:
         return algorithmCreator;
     }
 
-    Selection* createSelectionAlgorithm(string _algorithmName, map<string, double> _parameters);
-    Mutation* createMutationAlgorithm(string _algorithmName, map<string, double> _parameters);
-    Crossover* createCrossoverAlgorithm(string _algorithmName, map<string, double> _parameters);
+    Selection* createSelectionAlgorithm(string _algorithmName);
+    Mutation* createMutationAlgorithm(string _algorithmName);
+    Crossover* createCrossoverAlgorithm(string _algorithmName);
 
 private:
     static void startup();
@@ -51,9 +51,9 @@ private:
     static AlgorithmCreator algorithmCreator;
     static bool initialized;
 
-    Factory<Selection, string, SelectionCallback, map<string, double>> mSelectionFactory;
-    Factory<Crossover, string, CrossoverCallback, map<string, double>> mCrossoverFactory;
-    Factory<Mutation, string, MutationCallback, map<string, double>> mMutationFactory;
+    Factory<Selection, string, SelectionCallback> mSelectionFactory;
+    Factory<Crossover, string, CrossoverCallback> mCrossoverFactory;
+    Factory<Mutation, string, MutationCallback> mMutationFactory;
 
 };
 

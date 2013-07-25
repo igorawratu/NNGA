@@ -2,11 +2,17 @@
 #define SIMULATION_H
 
 #include "common.h"
+#include "fitness.h"
+
+#include <map>
+#include <vector>
+
+using namespace std;
 
 class Simulation
 {
 public:
-    Simulation(uint _numCycles, uint _cyclesPerDecision, double epsilon){
+    Simulation(uint _numCycles, uint _cyclesPerDecision){
         mNumCycles = _numCycles;
         mCyclesPerDecision = _cyclesPerDecision;
         mCycleCounter = 0;
@@ -19,7 +25,7 @@ public:
         for(uint k = 0; k < mNumCycles; k++)
             iterate();
     }
-    virtual double fitness()=0;
+    virtual double fitness(vector<Fitness*> _fit)=0;
     
 
 protected:

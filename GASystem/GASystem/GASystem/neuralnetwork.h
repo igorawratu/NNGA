@@ -27,6 +27,7 @@ public:
 
     vector<double> evaluate(map<uint, double> _inputs);
     void setWeights(map<uint, vector<double>> _weights);
+    void setStructure(map<uint, NeuronInfo> _neuronInfo);
     void getXMLStructure(xmldoc& _doc);
     map<uint, NeuronInfo> getMapStructure();
     map<uint, vector<double>> getWeights();
