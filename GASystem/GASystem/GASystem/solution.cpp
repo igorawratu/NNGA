@@ -1,22 +1,16 @@
 #include "solution.h"
 
 Solution::Solution(string _filename){
-    ifstream file;
-    file.open(_filename.c_str());
-    string line;
-
-    while(getline(file, line)){
-        xmldoc doc;
-        pugi::xml_parse_result result = doc.load_file(line.c_str());
-        if(!result){
-            cerr << "Error: unable to parse the file " << line << endl;
-            continue;
-        }
-
-        mNeuralNets.push_back(NeuralNetwork(&doc, false));
+    xmldoc doc;
+    pugi::xml_parse_result result = doc.load_file(_filename.c_str());
+    if(!result)
+        cerr << "Error: unable to parse the file " << _filename << endl;
+    else{
+        pugi::xml_node root = doc.first_child();
+        for(pugi::xml_node currNetwork = root.first_child(); currNetwork; currNetwork = currNetwork.next_sibling())
+            mNeuralNets.push_back(NeuralNetwork(&currNetwork, true));
     }
 
-    file.close();
 }
 
 Solution::Solution(vector<NeuralNetwork> _nets){
@@ -47,25 +41,14 @@ vector<double> Solution::evaluateNeuralNetwork(uint _index, map<uint, double> _i
 }
 
 void Solution::printToFile(string _filename){
-    ofstream outputFile;
-    outputFile.open(_filename.c_str());
+    xmldoc doc;
+    pugi::xml_node root = doc.append_child("NeuralNetworks");
 
     for(uint k = 0; k < mNeuralNets.size(); k++){
-        char buf[10];
-        sprintf(buf, "%d", k);
-
-        xmldoc doc;
-        mNeuralNets[k].getXMLStructure(doc);
-
-        string currDocName = _filename;
-        currDocName.append(buf);
-
-        doc.save_file(currDocName.c_str());
-        outputFile << currDocName;
-
-        if(k != mNeuralNets.size() - 1)
-            outputFile << endl;
+        pugi::xml_node nnNode;
+        mNeuralNets[k].getXMLStructure(root);
     }
 
-    outputFile.close();
+    doc.save_file(_filename.c_str());
+    
 }

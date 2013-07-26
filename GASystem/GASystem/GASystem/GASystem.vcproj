@@ -183,6 +183,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\main.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\neuralnetwork.cpp"
 				>
 			</File>

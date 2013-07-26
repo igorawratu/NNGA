@@ -1,5 +1,8 @@
 #include "algorithmcreator.h"
 
+AlgorithmCreator AlgorithmCreator::algorithmCreator;
+bool AlgorithmCreator::initialized;
+
 Selection* AlgorithmCreator::createSelectionAlgorithm(string _algorithmName){
     return mSelectionFactory.create(_algorithmName);
 }

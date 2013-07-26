@@ -22,8 +22,18 @@ StandardGA::~StandardGA(){
 
 Solution StandardGA::train(SimulationContainer* _simulationContainer){
     vector<Chromosome*> population;
+    
+    xmldoc doc;
+    pugi::xml_parse_result result = doc.load_file(mParameters.nnFormatFilename.c_str());
+    if(!result){
+        cerr << "Error: unable to parse the file " << mParameters.nnFormatFilename << endl;
+        return Solution(vector<NeuralNetwork>());
+    }
+
+    pugi::xml_node root = doc.first_child();
+
     for(uint k = 0; k < mParameters.populationSize; k++)
-        population.push_back(new NNChromosome(mParameters.nnFormatFilename));
+        population.push_back(new NNChromosome(&root));
 
     Crossover* crossoverAlgorithm = AlgorithmCreator::instance().createCrossoverAlgorithm(mParameters.crossoverAlgorithm);
     Selection* selectionAlgorithm = AlgorithmCreator::instance().createSelectionAlgorithm(mParameters.selectionAlgorithm);
@@ -77,7 +87,7 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
         unselected.clear();
 
         //calculates standard deviation, if it has been below the threshold for 10(arb, can make this var) generations, then stagnation
-        double meanFit = 0, variance = 0, stdv;
+        double meanFit = 0, variance = 0;
         for(uint i = 0; i < population.size(); i++)
             meanFit += population[i]->fitness();
         
@@ -88,6 +98,7 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
         variance /= (population.size() - 1);
         if(sqrt(variance) < mParameters.stagnationThreshold)
             stagnationCounter++;
+
         else stagnationCounter = 0;
 
         if(stagnationCounter > 10)        

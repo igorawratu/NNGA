@@ -5,18 +5,18 @@
 #include "neuralnetwork.h"
 #include "mutation.h"
 #include "algorithmcreator.h"
+#include "common.h"
 
 #include <map>
 #include <vector>
 
 using namespace std;
 
-
 class NNChromosome : public Chromosome
 {
 public:
     NNChromosome();
-    NNChromosome(string _file);
+    NNChromosome(pugi::xml_node* _root);
     NNChromosome(const NNChromosome& other);
     virtual ~NNChromosome();
     NNChromosome& operator = (const NNChromosome& other);

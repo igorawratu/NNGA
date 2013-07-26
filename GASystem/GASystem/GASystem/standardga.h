@@ -7,9 +7,11 @@
 #include "nnchromosome.h"
 #include "solution.h"
 #include "simulationcontainer.h"
+#include "pugixml.hpp"
+#include "common.h"
 
 #include <string>
-#include <math.h>
+#include <fstream>
 
 using namespace std;
 

@@ -1,9 +1,9 @@
 #include "neuralnetwork.h"
 
-NeuralNetwork::NeuralNetwork(xmldoc* _file, bool _checkLoops){
+NeuralNetwork::NeuralNetwork(pugi::xml_node* _node, bool _checkLoops){
     mCounter = -1;
 
-    constructNNStructure(_file, _checkLoops);
+    constructNNStructure(_node, _checkLoops);
 }
 
 //change this to neuroinfo
@@ -52,12 +52,11 @@ void NeuralNetwork::setStructure(map<uint, NeuronInfo> _neuronInfo){
     }
 }
 
-void NeuralNetwork::constructNNStructure(xmldoc* _file, bool _checkLoops){
-    pugi::xml_node travNode = _file->child("NeuralNetwork");
+void NeuralNetwork::constructNNStructure(pugi::xml_node* _nnRootNode, bool _checkLoops){
     map<uint, set<uint>> predecessorMap;
     boost::mt19937 rng(rand());
 
-    for(pugi::xml_node node = travNode.first_child(); node; node = node.next_sibling()){
+    for(pugi::xml_node node = _nnRootNode->first_child(); node; node = node.next_sibling()){
         uint neuronID = atoi(node.attribute("ID").value());
         Neuron* neuron;
 
@@ -194,16 +193,11 @@ vector<double> NeuralNetwork::evaluate(map<uint, double> _inputs){
     return output;
 }
 
-void NeuralNetwork::getXMLStructure(xmldoc& _doc){
-    if(!_doc.empty()){
-        cout << "Error: please pass through an empty xml doc" << endl;
-        return;
-    }
-
-    pugi::xml_node root = _doc.append_child("NeuralNetwork");
+void NeuralNetwork::getXMLStructure(pugi::xml_node& _root){
+    pugi::xml_node nnRoot = _root.append_child("NeuralNetwork");
     
     for(map<uint, Neuron*>::iterator iter = mNeuronCache.begin(); iter != mNeuronCache.end(); iter++){
-        pugi::xml_node currentNeuron = root.append_child("Neuron");
+        pugi::xml_node currentNeuron = nnRoot.append_child("Neuron");
         
         //set neuron ID
         currentNeuron.append_attribute("ID") = iter->first;

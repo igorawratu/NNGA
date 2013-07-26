@@ -10,8 +10,9 @@ NNChromosome::NNChromosome(const NNChromosome& other){
     mNets = other.mNets;
 }
 
-NNChromosome::NNChromosome(string _file){
-
+NNChromosome::NNChromosome(pugi::xml_node* _root){
+    for(pugi::xml_node currNetwork = _root->first_child(); currNetwork; currNetwork = currNetwork.next_sibling())
+        mNets.push_back(NeuralNetwork(&currNetwork, true));
 }
 
 

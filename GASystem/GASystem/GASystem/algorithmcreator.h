@@ -46,6 +46,7 @@ private:
     AlgorithmCreator(){}
     AlgorithmCreator(const AlgorithmCreator& other){}
     const AlgorithmCreator& operator = (const AlgorithmCreator& other){return *this;}
+    ~AlgorithmCreator(){}
 
 private:
     static AlgorithmCreator algorithmCreator;
