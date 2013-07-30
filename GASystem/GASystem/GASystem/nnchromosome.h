@@ -16,7 +16,7 @@ class NNChromosome : public Chromosome
 {
 public:
     NNChromosome();
-    NNChromosome(pugi::xml_node* _root);
+    bool initialize(pugi::xml_node* _root);
     NNChromosome(const NNChromosome& other);
     virtual ~NNChromosome();
     NNChromosome& operator = (const NNChromosome& other);

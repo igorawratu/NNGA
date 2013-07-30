@@ -19,8 +19,8 @@ public:
     ~NonLeafNeuron();
     
     virtual double evaluate(long _counter);
-    virtual void setInput(set<uint> _inputs, bool _checkForLoops);
-    virtual void setInput(double _inputs);
+    virtual bool setInput(set<uint> _inputs, bool _checkForLoops);
+    virtual bool setInput(double _inputs);
     virtual bool checkLoop(Neuron* _loopNeuron);
     virtual NeuronType getNeuronType(){return NONLEAF;}
     virtual set<uint> getPredecessors(){return mPredecessors;}

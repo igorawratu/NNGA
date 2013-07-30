@@ -40,14 +40,18 @@ double NonLeafNeuron::evaluate(long _counter){
 
         double netInputSignal = 0;
 
-        uint k;
+        uint k = 0;
 
-        for(set<uint>::iterator iter = mPredecessors.begin(); iter != mPredecessors.end(); iter++)
+        for(set<uint>::iterator iter = mPredecessors.begin(); iter != mPredecessors.end(); iter++){
             netInputSignal += (*mNeuronCache)[*iter]->evaluate(_counter) * mWeights[k];
+            k++;
+        }
 
         netInputSignal += -1 * mWeights[k];
 
-        return calculateActivationEnergy(netInputSignal);    
+        mLastOutput = calculateActivationEnergy(netInputSignal);
+
+        return mLastOutput;    
     }
 }
 
@@ -63,7 +67,7 @@ bool NonLeafNeuron::checkLoop(Neuron* _loopNeuron){
     return false;
 }
 
-void NonLeafNeuron::setInput(set<uint> _inputs, bool _checkLoops){
+bool NonLeafNeuron::setInput(set<uint> _inputs, bool _checkLoops){
     assert(_inputs.size() + 1 == mWeights.size());
     for(set<uint>::iterator iter = _inputs.begin(); iter != _inputs.end(); iter++){
         map<uint, Neuron*>::const_iterator neuronIter = mNeuronCache->find(*iter);
@@ -72,20 +76,22 @@ void NonLeafNeuron::setInput(set<uint> _inputs, bool _checkLoops){
         {
             mPredecessors.clear();
             cerr << "Error: Cannot find the neuron ID " << *iter << " to link to non-leaf neuron" << endl;
-            return;
+            return false;
         }
 
         if(_checkLoops && (*mNeuronCache)[*iter]->checkLoop(this))
         {
             mPredecessors.clear();
             cerr << "Error: a loop was found when attempting to link the neuron with ID " << *iter <<  " to a non-leaf neuron" << endl;
-            return;
+            return false;
         }
     }
 
     mPredecessors = _inputs;
+    return true;
 }
 
-void NonLeafNeuron::setInput(double _input){
+bool NonLeafNeuron::setInput(double _input){
     cerr << "Error: cannot set input value for non-leaf node" << endl;
+    return true;
 }

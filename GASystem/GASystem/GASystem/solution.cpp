@@ -7,8 +7,13 @@ Solution::Solution(string _filename){
         cerr << "Error: unable to parse the file " << _filename << endl;
     else{
         pugi::xml_node root = doc.first_child();
-        for(pugi::xml_node currNetwork = root.first_child(); currNetwork; currNetwork = currNetwork.next_sibling())
-            mNeuralNets.push_back(NeuralNetwork(&currNetwork, true));
+        for(pugi::xml_node currNetwork = root.first_child(); currNetwork; currNetwork = currNetwork.next_sibling()){
+            NeuralNetwork currNN;
+            if(!currNN.initialize(&currNetwork, true)){
+                cerr << "Error: unable to initialize solution properly" << endl;
+            }
+            else mNeuralNets.push_back(currNN);
+        }
     }
 
 }

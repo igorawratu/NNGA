@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<NeuralNetworks>
+	<NeuralNetwork>
+		<Neuron ID="1" Type="Input" />
+		<Neuron ID="2" Type="Input" />
+		<Neuron ID="3" Type="Input" />
+		<Neuron ID="4" Type="Input" />
+		<Neuron ID="5" Type="Hidden" ActivationFunction="Sigmoid">
+			<Weights Distribution="Uniform" Min = "-1" Max = "1"/>
+			<Predecessors>
+				<Predecessor ID="1" />
+				<Predecessor ID="2" />
+				<Predecessor ID="3" />
+				<Predecessor ID="4" />
+			</Predecessors>
+		</Neuron>
+		<Neuron ID="6" Type="Hidden" ActivationFunction="Sigmoid">
+			<Weights Distribution="Uniform" Min = "-1" Max = "1"/>
+			<Predecessors>
+				<Predecessor ID="1" />
+				<Predecessor ID="2" />
+				<Predecessor ID="3" />
+				<Predecessor ID="4" />
+			</Predecessors>
+		</Neuron>
+		<Neuron ID="7" Type="Hidden" ActivationFunction="Sigmoid">
+			<Weights Distribution="Uniform" Min = "-1" Max = "1"/>
+			<Predecessors>
+				<Predecessor ID="1" />
+				<Predecessor ID="2" />
+				<Predecessor ID="3" />
+				<Predecessor ID="4" />
+			</Predecessors>
+		</Neuron>
+		<Neuron ID="8" Type="Hidden" ActivationFunction="Sigmoid">
+			<Weights Distribution="Uniform" Min = "-1" Max = "1"/>
+			<Predecessors>
+				<Predecessor ID="1" />
+				<Predecessor ID="2" />
+				<Predecessor ID="3" />
+				<Predecessor ID="4" />
+				<Predecessor ID="13" />
+			</Predecessors>
+		</Neuron>
+		<Neuron ID="13" Type="Hidden" ActivationFunction="Sigmoid">
+			<Weights Distribution="Uniform" Min = "-1" Max = "1"/>
+			<Predecessors>
+				<Predecessor ID="1" />
+				<Predecessor ID="2" />
+				<Predecessor ID="3" />
+				<Predecessor ID="4" />
+				<Predecessor ID="8" />
+			</Predecessors>
+		</Neuron>
+		<Neuron ID="9" Type="Output" ActivationFunction="Sigmoid">
+			<Weights Distribution="Uniform" Min = "-1" Max = "1"/>
+			<Predecessors>
+				<Predecessor ID="5" />
+				<Predecessor ID="6" />
+				<Predecessor ID="7" />
+				<Predecessor ID="8" />
+			</Predecessors>
+		</Neuron>
+		<Neuron ID="10" Type="Output" ActivationFunction="Sigmoid">
+			<Weights Distribution="Uniform" Min = "-1" Max = "1"/>
+			<Predecessors>
+				<Predecessor ID="5" />
+				<Predecessor ID="6" />
+				<Predecessor ID="7" />
+				<Predecessor ID="8" />
+			</Predecessors>
+		</Neuron>
+		<Neuron ID="11" Type="Output" ActivationFunction="Sigmoid">
+			<Weights Distribution="Uniform" Min = "-1" Max = "1"/>
+			<Predecessors>
+				<Predecessor ID="5" />
+				<Predecessor ID="6" />
+				<Predecessor ID="7" />
+				<Predecessor ID="8" />
+			</Predecessors>
+		</Neuron>
+		<Neuron ID="12" Type="Output" ActivationFunction="Sigmoid">
+			<Weights Distribution="Uniform" Min = "-1" Max = "1"/>
+			<Predecessors>
+				<Predecessor ID="5" />
+				<Predecessor ID="6" />
+				<Predecessor ID="7" />
+				<Predecessor ID="8" />
+			</Predecessors>
+		</Neuron>
+	</NeuralNetwork>
+</NeuralNetworks>

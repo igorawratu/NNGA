@@ -36,12 +36,14 @@ double LeafNeuron::evaluate(long _counter){
     return mInputValue;
 }
 
-void LeafNeuron::setInput(set<uint> _inputs, bool _checkForLoops){
+bool LeafNeuron::setInput(set<uint> _inputs, bool _checkForLoops){
     cerr << "Error: Cannot set a predecessor nodes for an input node" << endl;
+    return true;
 }
 
-void LeafNeuron::setInput(double _input){
+bool LeafNeuron::setInput(double _input){
     mInputValue = _input;
+    return true;
 }
 
 bool LeafNeuron::checkLoop(Neuron* _loopNeuron){

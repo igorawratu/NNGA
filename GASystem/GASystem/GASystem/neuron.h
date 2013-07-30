@@ -44,8 +44,8 @@ public:
     virtual double evaluate(long _counter)=0;
 
     //sets the inputs allowed for the neuron
-    virtual void setInput(set<uint> _inputs, bool _checkForLoops)=0;
-    virtual void setInput(double _inputs)=0;
+    virtual bool setInput(set<uint> _inputs, bool _checkForLoops)=0;
+    virtual bool setInput(double _inputs)=0;
 
     virtual bool checkLoop(Neuron* _loopNeuron)=0;
 
@@ -74,7 +74,7 @@ protected:
         
         switch(mActivationFunction){
             case SIGMOID:
-                output = 1/(1 + pow(e, _netSignal));
+                output = 1/(1 + pow(e, -_netSignal));
                 break;
             default:
                 cout << "Error: unable to determine the activation function type" << endl;

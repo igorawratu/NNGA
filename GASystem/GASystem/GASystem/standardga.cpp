@@ -32,8 +32,14 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
 
     pugi::xml_node root = doc.first_child();
 
-    for(uint k = 0; k < mParameters.populationSize; k++)
-        population.push_back(new NNChromosome(&root));
+    for(uint k = 0; k < mParameters.populationSize; k++){
+        NNChromosome* currChrom = new NNChromosome();
+        if(!currChrom->initialize(&root)){
+            cerr << "Error: unable to create chromosome in GA" << endl;
+            return Solution(vector<NeuralNetwork>());
+        }
+        else population.push_back(currChrom);
+    }
 
     Crossover* crossoverAlgorithm = AlgorithmCreator::instance().createCrossoverAlgorithm(mParameters.crossoverAlgorithm);
     Selection* selectionAlgorithm = AlgorithmCreator::instance().createSelectionAlgorithm(mParameters.selectionAlgorithm);

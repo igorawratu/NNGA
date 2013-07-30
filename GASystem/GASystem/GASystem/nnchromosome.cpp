@@ -10,9 +10,14 @@ NNChromosome::NNChromosome(const NNChromosome& other){
     mNets = other.mNets;
 }
 
-NNChromosome::NNChromosome(pugi::xml_node* _root){
-    for(pugi::xml_node currNetwork = _root->first_child(); currNetwork; currNetwork = currNetwork.next_sibling())
-        mNets.push_back(NeuralNetwork(&currNetwork, true));
+bool NNChromosome::initialize(pugi::xml_node* _root){
+    for(pugi::xml_node currNetwork = _root->first_child(); currNetwork; currNetwork = currNetwork.next_sibling()){
+        NeuralNetwork currNN;
+        if(!currNN.initialize(&currNetwork, true))
+            return false;
+        mNets.push_back(currNN);
+    }
+    return true;
 }
 
 

@@ -1,0 +1,46 @@
+<?xml version="1.0" ?>
+
+<NeuralNetworks>
+	<NeuralNetwork>
+		<Neuron ID = "1" Type = "Input"/>
+		<Neuron ID = "2" Type = "Input"/>
+		<Neuron ID = "3" Type = "Input"/>
+		<Neuron ID = "4" Type = "Input"/>
+		<Neuron ID = "5" Type = "Output" ActivationFunction = "Sigmoid">
+			<Predecessors>
+				<Predecessor ID = "1"/>
+				<Predecessor ID = "2"/>
+				<Predecessor ID = "3"/>
+				<Predecessor ID = "4"/>
+			</Predecessors>
+			<Weights Distribution = "Uniform" Min = "-1" Max = "1"/>
+		</Neuron>
+		<Neuron ID = "6" Type = "Output" ActivationFunction = "Sigmoid">
+			<Predecessors>
+				<Predecessor ID = "1"/>
+				<Predecessor ID = "2"/>
+				<Predecessor ID = "3"/>
+				<Predecessor ID = "4"/>
+			</Predecessors>
+			<Weights Distribution = "Uniform" Min = "-1" Max = "1"/>
+		</Neuron>
+		<Neuron ID = "7" Type = "Output" ActivationFunction = "Sigmoid">
+			<Predecessors>
+				<Predecessor ID = "1"/>
+				<Predecessor ID = "2"/>
+				<Predecessor ID = "3"/>
+				<Predecessor ID = "4"/>
+			</Predecessors>
+			<Weights Distribution = "Uniform" Min = "-1" Max = "1"/>
+		</Neuron>
+		<Neuron ID = "8" Type = "Output" ActivationFunction = "Sigmoid">
+			<Predecessors>
+				<Predecessor ID = "1"/>
+				<Predecessor ID = "2"/>
+				<Predecessor ID = "3"/>
+				<Predecessor ID = "4"/>
+			</Predecessors>
+			<Weights Distribution = "Uniform" Min = "-1" Max = "1"/>
+		</Neuron>
+	</NeuralNetwork>
+</NeuralNetworks>
