@@ -7,11 +7,11 @@
 		<Neuron ID="4" Type="Input" />
 		<Neuron ID="5" Type="Output" ActivationFunction="Sigmoid">
 			<Weights Distribution="Fixed">
-				<Weight Value="0.252333" />
-				<Weight Value="0.549768" />
-				<Weight Value="0.996946" />
-				<Weight Value="0.955367" />
-				<Weight Value="0.368832" />
+				<Weight Value="-0.130236" />
+				<Weight Value="0.525089" />
+				<Weight Value="0.993765" />
+				<Weight Value="-0.060565" />
+				<Weight Value="0.962845" />
 			</Weights>
 			<Predecessors>
 				<Predecessor ID="1" />
@@ -22,11 +22,11 @@
 		</Neuron>
 		<Neuron ID="6" Type="Output" ActivationFunction="Sigmoid">
 			<Weights Distribution="Fixed">
-				<Weight Value="-0.083769" />
-				<Weight Value="-0.894304" />
-				<Weight Value="0.176506" />
-				<Weight Value="-0.372408" />
-				<Weight Value="0.446821" />
+				<Weight Value="-0.104083" />
+				<Weight Value="-0.533068" />
+				<Weight Value="0.448577" />
+				<Weight Value="-0.190187" />
+				<Weight Value="-0.432385" />
 			</Weights>
 			<Predecessors>
 				<Predecessor ID="1" />
@@ -37,11 +37,11 @@
 		</Neuron>
 		<Neuron ID="7" Type="Output" ActivationFunction="Sigmoid">
 			<Weights Distribution="Fixed">
-				<Weight Value="-0.718842" />
-				<Weight Value="0.376075" />
-				<Weight Value="-0.554527" />
-				<Weight Value="0.563941" />
-				<Weight Value="-0.924964" />
+				<Weight Value="0.402502" />
+				<Weight Value="0.892382" />
+				<Weight Value="0.502786" />
+				<Weight Value="0.179084" />
+				<Weight Value="-0.144164" />
 			</Weights>
 			<Predecessors>
 				<Predecessor ID="1" />
@@ -52,11 +52,11 @@
 		</Neuron>
 		<Neuron ID="8" Type="Output" ActivationFunction="Sigmoid">
 			<Weights Distribution="Fixed">
-				<Weight Value="0.882763" />
-				<Weight Value="-0.672337" />
-				<Weight Value="-0.303371" />
-				<Weight Value="0.988219" />
-				<Weight Value="0.742778" />
+				<Weight Value="-0.97407" />
+				<Weight Value="0.415968" />
+				<Weight Value="-0.694759" />
+				<Weight Value="0.941055" />
+				<Weight Value="-0.220872" />
 			</Weights>
 			<Predecessors>
 				<Predecessor ID="1" />
@@ -73,11 +73,11 @@
 		<Neuron ID="4" Type="Input" />
 		<Neuron ID="5" Type="Hidden" ActivationFunction="Sigmoid">
 			<Weights Distribution="Fixed">
-				<Weight Value="0.326249" />
-				<Weight Value="-0.0946049" />
-				<Weight Value="0.934291" />
-				<Weight Value="-0.599597" />
-				<Weight Value="-0.336481" />
+				<Weight Value="-0.981772" />
+				<Weight Value="-0.422241" />
+				<Weight Value="-0.964407" />
+				<Weight Value="0.53622" />
+				<Weight Value="0.00452129" />
 			</Weights>
 			<Predecessors>
 				<Predecessor ID="1" />
@@ -88,11 +88,11 @@
 		</Neuron>
 		<Neuron ID="6" Type="Hidden" ActivationFunction="Sigmoid">
 			<Weights Distribution="Fixed">
-				<Weight Value="0.0413932" />
-				<Weight Value="0.128411" />
-				<Weight Value="0.849669" />
-				<Weight Value="-0.878994" />
-				<Weight Value="0.924202" />
+				<Weight Value="0.777897" />
+				<Weight Value="0.690019" />
+				<Weight Value="0.151821" />
+				<Weight Value="0.49171" />
+				<Weight Value="-0.00259817" />
 			</Weights>
 			<Predecessors>
 				<Predecessor ID="1" />
@@ -103,11 +103,11 @@
 		</Neuron>
 		<Neuron ID="7" Type="Hidden" ActivationFunction="Sigmoid">
 			<Weights Distribution="Fixed">
-				<Weight Value="0.831552" />
-				<Weight Value="0.932645" />
-				<Weight Value="0.661013" />
-				<Weight Value="0.425385" />
-				<Weight Value="-0.658777" />
+				<Weight Value="-0.232561" />
+				<Weight Value="-0.142083" />
+				<Weight Value="0.776536" />
+				<Weight Value="-0.604742" />
+				<Weight Value="-0.693236" />
 			</Weights>
 			<Predecessors>
 				<Predecessor ID="1" />
@@ -118,11 +118,11 @@
 		</Neuron>
 		<Neuron ID="8" Type="Hidden" ActivationFunction="Sigmoid">
 			<Weights Distribution="Fixed">
-				<Weight Value="0.831566" />
-				<Weight Value="0.302919" />
-				<Weight Value="0.839331" />
-				<Weight Value="0.829525" />
-				<Weight Value="-0.395077" />
+				<Weight Value="0.299086" />
+				<Weight Value="0.666908" />
+				<Weight Value="-0.606833" />
+				<Weight Value="0.629227" />
+				<Weight Value="-0.606176" />
 			</Weights>
 			<Predecessors>
 				<Predecessor ID="1" />
@@ -133,11 +133,11 @@
 		</Neuron>
 		<Neuron ID="9" Type="Output" ActivationFunction="Sigmoid">
 			<Weights Distribution="Fixed">
-				<Weight Value="-0.752103" />
-				<Weight Value="0.30375" />
-				<Weight Value="0.41872" />
-				<Weight Value="0.100129" />
-				<Weight Value="-0.514475" />
+				<Weight Value="0.712225" />
+				<Weight Value="0.975819" />
+				<Weight Value="-0.115019" />
+				<Weight Value="0.679998" />
+				<Weight Value="0.386915" />
 			</Weights>
 			<Predecessors>
 				<Predecessor ID="5" />
@@ -148,11 +148,11 @@
 		</Neuron>
 		<Neuron ID="10" Type="Output" ActivationFunction="Sigmoid">
 			<Weights Distribution="Fixed">
-				<Weight Value="-0.530465" />
-				<Weight Value="-0.531826" />
-				<Weight Value="-0.912159" />
-				<Weight Value="-0.63846" />
-				<Weight Value="0.825863" />
+				<Weight Value="-0.915497" />
+				<Weight Value="0.443007" />
+				<Weight Value="-0.770157" />
+				<Weight Value="-0.878499" />
+				<Weight Value="0.628953" />
 			</Weights>
 			<Predecessors>
 				<Predecessor ID="5" />
@@ -163,11 +163,11 @@
 		</Neuron>
 		<Neuron ID="11" Type="Output" ActivationFunction="Sigmoid">
 			<Weights Distribution="Fixed">
-				<Weight Value="0.571052" />
-				<Weight Value="-0.228" />
-				<Weight Value="0.979455" />
-				<Weight Value="-0.0808283" />
-				<Weight Value="-0.867794" />
+				<Weight Value="0.927855" />
+				<Weight Value="0.209928" />
+				<Weight Value="-0.835236" />
+				<Weight Value="0.184079" />
+				<Weight Value="-0.192165" />
 			</Weights>
 			<Predecessors>
 				<Predecessor ID="5" />
@@ -178,11 +178,11 @@
 		</Neuron>
 		<Neuron ID="12" Type="Output" ActivationFunction="Sigmoid">
 			<Weights Distribution="Fixed">
-				<Weight Value="0.908409" />
-				<Weight Value="-0.0347605" />
-				<Weight Value="-0.104146" />
-				<Weight Value="0.598291" />
-				<Weight Value="0.349331" />
+				<Weight Value="0.80702" />
+				<Weight Value="0.409772" />
+				<Weight Value="0.446135" />
+				<Weight Value="-0.470346" />
+				<Weight Value="-0.408251" />
 			</Weights>
 			<Predecessors>
 				<Predecessor ID="5" />

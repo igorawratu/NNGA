@@ -10,32 +10,35 @@
 
 using namespace std;
 
-class RankSelection
+class RankSelection : public Selection
 {
 public:
     RankSelection(){}
     virtual ~RankSelection(){}
 
-    virtual vector<Chromosome*> execute(vector<Chromosome*> _selectionPool, uint _selectionCount, vector<Chromosome*> _unselected){
+    static Selection* createRankSelection(){
+        return new RankSelection();
+    }
+
+    virtual vector<Chromosome*> execute(vector<Chromosome*> _selectionPool, uint _selectionCount, vector<Chromosome*>& _unselected){
         assert(_selectionPool.size() >= _selectionCount);
         
         vector<Chromosome*> output;
         
-        int max = 0;
-        
-        for(uint k = 1; k <= population.size(); k++)
-            max += k;
+        int max = (_selectionPool.size() * (_selectionPool.size() + 1)) / 2;
     
         while(output.size() < _selectionCount){
-            max -= _selectionPool.size();
-            output.push_back(selectSingleChromosome(_selectionPool, max);
+            output.push_back(selectSingleChromosome(_selectionPool, max));
+            max -= (_selectionPool.size() + 1);
         }
 
-        unselected = _selectionPool;
+        _unselected = _selectionPool;
 
         return output;        
     }
 
+
+private:
     Chromosome* selectSingleChromosome(vector<Chromosome*>& _selectionPool, int _max){
         boost::mt19937 rng(rand());
         boost::uniform_int<> dist(1, _max);

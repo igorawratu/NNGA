@@ -14,7 +14,6 @@ public:
     virtual ~Mutation(){}
 
     virtual void execute(vector<double>& _weights, map<string, double>& _parameters)=0;
-    virtual void execute(vector<float>& _weights, map<string, double>& _parameters)=0;
 };
 
 #endif

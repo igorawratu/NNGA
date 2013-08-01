@@ -4,7 +4,7 @@
 #include "chromosome.h"
 #include "neuralnetwork.h"
 #include "mutation.h"
-#include "algorithmcreator.h"
+#include "mutationfactory.h"
 #include "common.h"
 
 #include <map>

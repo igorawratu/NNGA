@@ -2,12 +2,12 @@
 #define MULTIPOINTCROSSOVER_H
 
 #include "crossover.h"
-#include "algorithmcreator.h"
+#include "selectionfactory.h"
 #include "chromosome.h"
 #include "common.h"
 
 #include <vector>
-#include <map.h>
+#include <map>
 
 #include "boost/random.hpp"
 #include "boost/generator_iterator.hpp"
@@ -15,12 +15,12 @@
 class MultipointCrossover : public Crossover
 {
 public:
-    MultipointCrossover();
-    virtual ~MultipointCrossover();
+    MultipointCrossover(){}
+    virtual ~MultipointCrossover(){}
 
     virtual vector<Chromosome*> execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters){
 
-        Selection* selectionAlgorithm = AlgorithmCreator::instance().createSelectionAlgorithm("Rank", map<string, double>());
+        Selection* selectionAlgorithm = SelectionFactory::instance().create("RankSelection");
         if(!selectionAlgorithm)
             return _population;
         
@@ -31,7 +31,7 @@ public:
         boost::variate_generator<boost::mt19937, boost::uniform_real<double>> gen(rng, dist);
 
         while(offspring.size() < numOffspring){
-            vector<Chromosome*> parents = selectionAlgorithm->execute(_population, 2);
+            vector<Chromosome*> parents = selectionAlgorithm->execute(_population, 2, vector<Chromosome*>());
 
             vector<map<uint, vector<double>>> p1Weights, p2Weights, childWeights;
             p1Weights = parents[0]->getWeightData(); p2Weights = parents[1]->getWeightData();
@@ -42,7 +42,7 @@ public:
                     vector<double> weights;
 
                     for(uint i = 0; i < iter->second.size(); i++)
-                        weights.push_back(gen() < 0.5 ? iter->second[i] : p2Weights[iter->first][i]);
+                        weights.push_back(gen() < 0.5 ? iter->second[i] : p2Weights[k][iter->first][i]);
 
                     currentNetworkWeights[iter->first] = weights;
                 }
@@ -53,7 +53,13 @@ public:
             offspring.push_back(child);
         }
 
+        delete selectionAlgorithm;
+
         return offspring;
+    }
+
+    static Crossover* createMultipointCrossover(){
+        return new MultipointCrossover();
     }
 
 };

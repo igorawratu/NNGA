@@ -32,7 +32,7 @@ NNChromosome& NNChromosome::operator = (const NNChromosome& other){
 }
 
 void NNChromosome::mutate(string _mutationType, map<string, double>& _parameters){
-    Mutation* mutationAlgorithm = AlgorithmCreator::instance().createMutationAlgorithm(_mutationType);
+    Mutation* mutationAlgorithm = MutationFactory::instance().create(_mutationType);
 
     for(uint k = 0; k < mNets.size(); k++){
         map<uint, vector<double>> currNetWeights = mNets[k].getWeights();

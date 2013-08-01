@@ -41,8 +41,8 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
         else population.push_back(currChrom);
     }
 
-    Crossover* crossoverAlgorithm = AlgorithmCreator::instance().createCrossoverAlgorithm(mParameters.crossoverAlgorithm);
-    Selection* selectionAlgorithm = AlgorithmCreator::instance().createSelectionAlgorithm(mParameters.selectionAlgorithm);
+    Crossover* crossoverAlgorithm = CrossoverFactory::instance().create(mParameters.crossoverAlgorithm);
+    Selection* selectionAlgorithm = SelectionFactory::instance().create(mParameters.selectionAlgorithm);
     
     for(uint i = 0; i < population.size(); i++){
         Solution currSolution(dynamic_cast<NNChromosome*>(population[i])->getNeuralNets());
@@ -73,6 +73,10 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
                     delete population[i];
                 for(uint i = 0; i < offspring.size(); i++)
                     delete offspring[i];
+
+                delete crossoverAlgorithm;
+                delete selectionAlgorithm;
+
                 return currSolution;
             }
 
@@ -116,6 +120,9 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
             for(uint i = 0; i < population.size(); i++)
                 delete population[i];
 
+            delete crossoverAlgorithm;
+            delete selectionAlgorithm;
+
             return finalSolution;
         }
 
@@ -126,6 +133,9 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
 
     for(uint i = 0; i < population.size(); i++)
         delete population[i];
+
+    delete crossoverAlgorithm;
+    delete selectionAlgorithm;
 
     return finalSolution;
 }

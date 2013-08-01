@@ -7,7 +7,9 @@
 #include "solution.h"
 #include "geneticalgorithm.h"
 #include "simulationcontainer.h"
-#include "algorithmcreator.h"
+#include "mutationfactory.h"
+#include "crossoverfactory.h"
+#include "selectionfactory.h"
 
 using namespace std;
 

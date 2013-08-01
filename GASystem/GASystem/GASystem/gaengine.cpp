@@ -2,11 +2,15 @@
 
 GAEngine::GAEngine(){
     srand(time(0));
-    AlgorithmCreator::startup();
+    MutationFactory::startup();
+    SelectionFactory::startup();
+    CrossoverFactory::startup();
 }
 
 GAEngine::~GAEngine(){
-    AlgorithmCreator::shutdown();
+    MutationFactory::shutdown();
+    SelectionFactory::shutdown();
+    CrossoverFactory::shutdown();
 }
 
 Solution GAEngine::train(GeneticAlgorithm* _geneticAlgorithm, SimulationContainer* _simulation){

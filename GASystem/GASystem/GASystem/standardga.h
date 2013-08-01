@@ -1,7 +1,8 @@
 #ifndef STANDARDGA_H
 #define STANDARDGA_H
 
-#include "algorithmcreator.h"
+#include "selectionfactory.h"
+#include "crossoverfactory.h"
 #include "crossover.h"
 #include "selection.h"
 #include "nnchromosome.h"

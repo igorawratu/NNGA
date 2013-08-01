@@ -1,6 +1,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <typeinfo>
 
 #include "neuralnetwork.h"
 #include "pugixml.hpp"
@@ -9,8 +10,38 @@
 #include "gaussianmutation.h"
 #include "common.h"
 #include "multipointcrossover.h"
+#include "rankselection.h"
+#include "selectionfactory.h"
+#include "mutationfactory.h"
+#include "crossoverfactory.h"
 
 using namespace std;
+
+void quicksort(vector<Chromosome*>& elements, int left, int right)
+{
+	int i = left;
+	int j = right;
+
+	Chromosome* pivot = elements[(left+ right) / 2];
+	do
+	{
+		while (elements[i]->fitness() < pivot->fitness())
+			i++;
+		while (elements[j]->fitness() > pivot->fitness())
+			j--;
+
+		if (i <= j)
+		{
+			Chromosome* temp = elements[i]; elements[i] = elements[j]; elements[j] = temp;
+			i++; j--;
+		}
+	} while (i <= j);
+
+	if (left < j)
+		quicksort(elements, left, j);
+	if (i < right)
+		quicksort(elements, i, right);
+}
 
 void testLoadStore(){
     xmldoc doc;
@@ -58,7 +89,7 @@ void testSigmoidOutput(){
 
     vector<double> nnOutput = test.evaluate(inputs);
     assert(nnOutput.size() == 4);
-    for(int k = 0; k < nnOutput.size(); k++)
+    for(uint k = 0; k < nnOutput.size(); k++)
         assert(nnOutput[k] == 0.5);
 }
 
@@ -159,7 +190,7 @@ void testHiddenSigmoidOutput(){
 
     vector<double> nnOutput = test.evaluate(inputs);
     assert(nnOutput.size() == 4);
-    for(int k = 0; k < nnOutput.size(); k++)
+    for(uint k = 0; k < nnOutput.size(); k++)
         assert(nnOutput[k] == 0.5);
 }
 
@@ -270,7 +301,64 @@ void testGaussianMutation(){
 }
 
 void testRankSelection(){
+    cout << "RANK SELECTION TEST OUTPUT: " << endl;
+    vector<Chromosome*> selectionPool;
+    for(uint k = 0; k < 100; k++){
+        Chromosome* chr = new NNChromosome();
+        chr->fitness() = k;
+        selectionPool.push_back(chr);
+    }
+    vector<Chromosome*> selected;
+    RankSelection rankselection;
+    selected = rankselection.execute(selectionPool, 50, selectionPool);
+
+    assert(selectionPool.size() == 50);
+    assert(selected.size() == 50);
+
+    quicksort(selectionPool, 0, selectionPool.size() - 1);
+    quicksort(selected, 0, selected.size() - 1);
     
+    cout << "Selected: " << endl;
+    for(uint k = 0; k < selected.size(); k++){
+        cout << selected[k]->fitness() << " ";
+        delete selected[k];
+    }
+    selected.clear();
+    cout << endl;
+
+    cout << "Remaining: " << endl;
+    for(uint k = 0; k < selectionPool.size(); k++){
+        cout << selectionPool[k]->fitness() << " ";
+        delete selectionPool[k];
+    }
+    selectionPool.clear();
+    cout << endl;
+}
+
+void testFactories(){
+    GaussianMutation gMut;
+    RankSelection rSel;
+    MultipointCrossover mpCross;
+
+    Mutation* mut = MutationFactory::instance().create("GaussianMutation");
+    Selection* sel = SelectionFactory::instance().create("RankSelection");
+    Crossover* cross = CrossoverFactory::instance().create("MultipointCrossover");
+
+    assert(typeid(gMut) == typeid(*mut));
+    assert(typeid(rSel) == typeid(*sel));
+    assert(typeid(mpCross) == typeid(*cross));
+
+    delete mut;
+    delete sel;
+    delete cross;
+
+    Mutation* mutNul = MutationFactory::instance().create("somerandommut");
+    Selection* selNul = SelectionFactory::instance().create("somerandomsel");
+    Crossover* crossNul = CrossoverFactory::instance().create("somerandomco");
+
+    assert(mutNul == 0);
+    assert(crossNul == 0);
+    assert(selNul == 0);
 }
 
 void testMultipointCrossover(){
@@ -291,6 +379,10 @@ void testMultipointCrossover(){
     p1.printToFile("neuralxmls\\nnchromosome\\p1.xml");
     p2.printToFile("neuralxmls\\nnchromosome\\p2.xml");
     off.printToFile("neuralxmls\\nnchromosome\\off.xml");
+}
+
+void testGA(){
+    
 }
 
 
@@ -314,9 +406,9 @@ void runGATests(){
     testChromosomeCopyAss();
     testChromosomeGetSet();
     testGaussianMutation();
-
-    //testMultipointCrossover();
-
+    testRankSelection();
+    testFactories();
+    testMultipointCrossover();
 }
 
 int main(){

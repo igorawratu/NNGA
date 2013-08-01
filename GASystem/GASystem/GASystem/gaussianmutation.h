@@ -16,6 +16,10 @@ public:
     GaussianMutation(){}
     virtual ~GaussianMutation(){}
 
+    static Mutation* createGaussianMutation(){
+        return new GaussianMutation();
+    }
+
     virtual void execute(vector<double>& _weights, map<string, double>& _parameters){
         double mutationProbability, deviation, maxConstraint, minConstraint;
 
@@ -50,40 +54,6 @@ public:
         }
     }
     
-    virtual void execute(vector<float>& _weights, map<string, double>& _parameters){
-        double mutationProbability, deviation, maxConstraint, minConstraint;
-
-        if(!getParameter(_parameters, mutationProbability, "MutationProbability"))
-            return;
-
-        if(!getParameter(_parameters, deviation, "Deviation"))
-            return;
-
-        if(!getParameter(_parameters, maxConstraint, "MaxConstraint"))
-            return;
-
-        if(!getParameter(_parameters, minConstraint, "MinConstraint"))
-            return;
-
-        boost::mt19937 mRNGMutationProb(rand()), mRNGMutation(rand());
-
-        boost::uniform_real<float> mutationProbDist(0, 1);
-        boost::normal_distribution<> mMutationDist(0, deviation);
-
-        boost::variate_generator<boost::mt19937, boost::uniform_real<float>> genMutationProb(mRNGMutationProb, mutationProbDist);
-        boost::variate_generator<boost::mt19937&, boost::normal_distribution<> > genMutation(mRNGMutation, mMutationDist);
-
-        for(uint k = 0; k < _weights.size(); k++){
-            if(genMutationProb() < mutationProbability)
-                _weights[k] += genMutation();
-            if(_weights[k] > maxConstraint)
-                _weights[k] = maxConstraint;
-            if(_weights[k] < minConstraint)
-                _weights[k] = minConstraint;
-        }
-    }
-    
-
 };
 
 #endif
