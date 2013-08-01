@@ -1,8 +1,14 @@
 #include <iostream>
 #include <map>
+#include <string>
 
 #include "neuralnetwork.h"
 #include "pugixml.hpp"
+#include "nnchromosome.h"
+#include "solution.h"
+#include "gaussianmutation.h"
+#include "common.h"
+#include "multipointcrossover.h"
 
 using namespace std;
 
@@ -157,7 +163,138 @@ void testHiddenSigmoidOutput(){
         assert(nnOutput[k] == 0.5);
 }
 
-void runTests(){
+void testSolutionLoadWrite(){
+    Solution solution("neuralxmls\\solution\\input.xml");
+    solution.printToFile("neuralxmls\\solution\\output.xml");
+}
+
+void testSolutionEvaluation(){
+    Solution solution("neuralxmls\\solution\\input.xml");
+
+    map<uint, double> inputs;
+    inputs[1] = 0;
+    inputs[2] = 0;
+    inputs[3] = 0;
+    inputs[4] = 0;
+
+    vector<map<uint, double>> inputmap;
+    inputmap.push_back(inputs);
+    inputmap.push_back(inputs);
+
+    vector<vector<double>> eval = solution.evaluateAllNeuralNetworks(inputmap);
+    assert(eval.size() == 2);
+    for(uint k = 0; k < eval.size(); k++){
+        assert(eval[k].size() == 4);
+        for(uint i = 0; i < eval[k].size(); i++)
+            assert(eval[k][i] == 0.5);
+    }
+}
+
+void testChromosomeLoad(){
+    xmldoc doc;
+    pugi::xml_parse_result result = doc.load_file("neuralxmls\\nnchromosome\\input.xml");
+    pugi::xml_node root = doc.child("NeuralNetworks");
+
+    NNChromosome cr;
+    assert(cr.initialize(&root));
+
+    Solution sol(cr.getNeuralNets());
+    sol.printToFile("neuralxmls\\nnchromosome\\output.xml");
+}
+
+void testChromosomeCopyAss(){
+    NNChromosome ass;
+    NNChromosome* copy;
+
+    if(true){
+        xmldoc doc;
+        pugi::xml_parse_result result = doc.load_file("neuralxmls\\nnchromosome\\get.xml");
+        pugi::xml_node root = doc.child("NeuralNetworks");
+
+        NNChromosome cr;
+        assert(cr.initialize(&root));
+
+        ass = cr;
+        copy = new NNChromosome(cr);
+    }
+
+    Solution assSol(ass.getNeuralNets());
+    Solution copySol(copy->getNeuralNets());
+    delete copy;
+    assSol.printToFile("neuralxmls\\nnchromosome\\assignment.xml");
+    copySol.printToFile("neuralxmls\\nnchromosome\\copy.xml");
+}
+
+void testChromosomeGetSet(){
+    xmldoc doc, mod;
+    pugi::xml_parse_result result = doc.load_file("neuralxmls\\nnchromosome\\input.xml");
+    result = mod.load_file("neuralxmls\\nnchromosome\\modified.xml");
+    pugi::xml_node root = doc.child("NeuralNetworks");
+    pugi::xml_node modroot = mod.child("NeuralNetworks");
+
+    NNChromosome cr;
+    cr.initialize(&root);
+
+    NNChromosome structure;
+    structure.setStructure(cr.getFullStructureData());
+
+    NNChromosome weight;
+    weight.initialize(&modroot);
+
+    weight.setWeights(cr.getWeightData());
+
+    Solution strSol(structure.getNeuralNets()), weightSol(weight.getNeuralNets());
+
+    strSol.printToFile("neuralxmls\\nnchromosome\\structure.xml");
+    weightSol.printToFile("neuralxmls\\nnchromosome\\weight.xml");
+}
+
+void testGaussianMutation(){
+    GaussianMutation mut;
+    map<string, double> params;
+    params["MutationProbability"] = 0.1;
+    params["Deviation"] = 0.2;
+    params["MaxConstraint"] = 1;
+    params["MinConstraint"] = -1;
+
+    vector<double> weights;
+    for(uint k = 0; k < 100; k++)
+        weights.push_back(0);
+
+    mut.execute(weights, params);
+
+    cout << "MUTATION TEST OUTPUT: " << endl;
+    for(uint k = 0; k < weights.size(); k++)
+        cout << weights[k] << " ";
+    cout << endl;
+}
+
+void testRankSelection(){
+    
+}
+
+void testMultipointCrossover(){
+    MultipointCrossover mpco;
+    
+    xmldoc doc;
+    pugi::xml_parse_result result = doc.load_file("neuralxmls\\nnchromosome\\input.xml");
+    pugi::xml_node root = doc.child("NeuralNetworks");
+
+    vector<Chromosome*> population;
+    population.push_back(new NNChromosome());
+    population.push_back(new NNChromosome());
+    dynamic_cast<NNChromosome*>(population[0])->initialize(&root);
+    dynamic_cast<NNChromosome*>(population[1])->initialize(&root);
+    
+    vector<Chromosome*> offspring = mpco.execute(population, 1, map<string, double>());
+    Solution p1(dynamic_cast<NNChromosome*>(population[0])->getNeuralNets()), p2(dynamic_cast<NNChromosome*>(population[1])->getNeuralNets()), off(dynamic_cast<NNChromosome*>(offspring[0])->getNeuralNets());
+    p1.printToFile("neuralxmls\\nnchromosome\\p1.xml");
+    p2.printToFile("neuralxmls\\nnchromosome\\p2.xml");
+    off.printToFile("neuralxmls\\nnchromosome\\off.xml");
+}
+
+
+void runNNTests(){
     srand(time(0));
     testLoadStore();
     testLoadStoreFixed();
@@ -169,8 +306,22 @@ void runTests(){
     testHiddenSigmoidOutput();
 }
 
+void runGATests(){
+    srand(time(0));
+    testSolutionLoadWrite();
+    testSolutionEvaluation();
+    testChromosomeLoad();
+    testChromosomeCopyAss();
+    testChromosomeGetSet();
+    testGaussianMutation();
+
+    //testMultipointCrossover();
+
+}
+
 int main(){
-    runTests();
+    //runTests();
+    runGATests();
 
     int x;
     cin >> x;

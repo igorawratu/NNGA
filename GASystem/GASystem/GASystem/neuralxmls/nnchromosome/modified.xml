@@ -1,0 +1,195 @@
+<?xml version="1.0"?>
+<NeuralNetworks>
+	<NeuralNetwork>
+		<Neuron ID="1" Type="Input" />
+		<Neuron ID="2" Type="Input" />
+		<Neuron ID="3" Type="Input" />
+		<Neuron ID="4" Type="Input" />
+		<Neuron ID="5" Type="Output" ActivationFunction="Sigmoid">
+			<Weights Distribution="Fixed">
+				<Weight Value="-0.12" />
+				<Weight Value="0.321" />
+				<Weight Value="-0.5454" />
+				<Weight Value="-0.12" />
+				<Weight Value="0.44" />
+			</Weights>
+			<Predecessors>
+				<Predecessor ID="1" />
+				<Predecessor ID="2" />
+				<Predecessor ID="3" />
+				<Predecessor ID="4" />
+			</Predecessors>
+		</Neuron>
+		<Neuron ID="6" Type="Output" ActivationFunction="Sigmoid">
+			<Weights Distribution="Fixed">
+				<Weight Value="-0.322" />
+				<Weight Value="-0.255986" />
+				<Weight Value="0.11" />
+				<Weight Value="-0.33" />
+				<Weight Value="-0.2212" />
+			</Weights>
+			<Predecessors>
+				<Predecessor ID="1" />
+				<Predecessor ID="2" />
+				<Predecessor ID="3" />
+				<Predecessor ID="4" />
+			</Predecessors>
+		</Neuron>
+		<Neuron ID="7" Type="Output" ActivationFunction="Sigmoid">
+			<Weights Distribution="Fixed">
+				<Weight Value="-0.321" />
+				<Weight Value="-0.234" />
+				<Weight Value="0.54" />
+				<Weight Value="-0.456" />
+				<Weight Value="-0.4312" />
+			</Weights>
+			<Predecessors>
+				<Predecessor ID="1" />
+				<Predecessor ID="2" />
+				<Predecessor ID="3" />
+				<Predecessor ID="4" />
+			</Predecessors>
+		</Neuron>
+		<Neuron ID="8" Type="Output" ActivationFunction="Sigmoid">
+			<Weights Distribution="Fixed">
+				<Weight Value="0.123" />
+				<Weight Value="0.321" />
+				<Weight Value="-0.34" />
+				<Weight Value="-0.23" />
+				<Weight Value="-0.3123" />
+			</Weights>
+			<Predecessors>
+				<Predecessor ID="1" />
+				<Predecessor ID="2" />
+				<Predecessor ID="3" />
+				<Predecessor ID="4" />
+			</Predecessors>
+		</Neuron>
+	</NeuralNetwork>
+	<NeuralNetwork>
+		<Neuron ID="1" Type="Input" />
+		<Neuron ID="2" Type="Input" />
+		<Neuron ID="3" Type="Input" />
+		<Neuron ID="4" Type="Input" />
+		<Neuron ID="5" Type="Hidden" ActivationFunction="Sigmoid">
+			<Weights Distribution="Fixed">
+				<Weight Value="-0.432432" />
+				<Weight Value="-0.4343" />
+				<Weight Value="-0.2321" />
+				<Weight Value="-0.123" />
+				<Weight Value="0.432" />
+			</Weights>
+			<Predecessors>
+				<Predecessor ID="1" />
+				<Predecessor ID="2" />
+				<Predecessor ID="3" />
+				<Predecessor ID="4" />
+			</Predecessors>
+		</Neuron>
+		<Neuron ID="6" Type="Hidden" ActivationFunction="Sigmoid">
+			<Weights Distribution="Fixed">
+				<Weight Value="-0.123" />
+				<Weight Value="-0.321" />
+				<Weight Value="0.432" />
+				<Weight Value="-0.543" />
+				<Weight Value="-0.24" />
+			</Weights>
+			<Predecessors>
+				<Predecessor ID="1" />
+				<Predecessor ID="2" />
+				<Predecessor ID="3" />
+				<Predecessor ID="4" />
+			</Predecessors>
+		</Neuron>
+		<Neuron ID="7" Type="Hidden" ActivationFunction="Sigmoid">
+			<Weights Distribution="Fixed">
+				<Weight Value="0.432" />
+				<Weight Value="-0.234" />
+				<Weight Value="0.123" />
+				<Weight Value="0.154" />
+				<Weight Value="-0.432" />
+			</Weights>
+			<Predecessors>
+				<Predecessor ID="1" />
+				<Predecessor ID="2" />
+				<Predecessor ID="3" />
+				<Predecessor ID="4" />
+			</Predecessors>
+		</Neuron>
+		<Neuron ID="8" Type="Hidden" ActivationFunction="Sigmoid">
+			<Weights Distribution="Fixed">
+				<Weight Value="0.1424" />
+				<Weight Value="0.232" />
+				<Weight Value="-0.33" />
+				<Weight Value="0.21" />
+				<Weight Value="0.234" />
+			</Weights>
+			<Predecessors>
+				<Predecessor ID="1" />
+				<Predecessor ID="2" />
+				<Predecessor ID="3" />
+				<Predecessor ID="4" />
+			</Predecessors>
+		</Neuron>
+		<Neuron ID="9" Type="Output" ActivationFunction="Sigmoid">
+			<Weights Distribution="Fixed">
+				<Weight Value="0.765" />
+				<Weight Value="0.654" />
+				<Weight Value="0.45" />
+				<Weight Value="-0.345" />
+				<Weight Value="0.6245" />
+			</Weights>
+			<Predecessors>
+				<Predecessor ID="5" />
+				<Predecessor ID="6" />
+				<Predecessor ID="7" />
+				<Predecessor ID="8" />
+			</Predecessors>
+		</Neuron>
+		<Neuron ID="10" Type="Output" ActivationFunction="Sigmoid">
+			<Weights Distribution="Fixed">
+				<Weight Value="0.2452" />
+				<Weight Value="0.534" />
+				<Weight Value="-0.2345" />
+				<Weight Value="0.432" />
+				<Weight Value="-0.543" />
+			</Weights>
+			<Predecessors>
+				<Predecessor ID="5" />
+				<Predecessor ID="6" />
+				<Predecessor ID="7" />
+				<Predecessor ID="8" />
+			</Predecessors>
+		</Neuron>
+		<Neuron ID="11" Type="Output" ActivationFunction="Sigmoid">
+			<Weights Distribution="Fixed">
+				<Weight Value="0.5432" />
+				<Weight Value="-0.2345" />
+				<Weight Value="-0.245" />
+				<Weight Value="-0.5432" />
+				<Weight Value="-0.134" />
+			</Weights>
+			<Predecessors>
+				<Predecessor ID="5" />
+				<Predecessor ID="6" />
+				<Predecessor ID="7" />
+				<Predecessor ID="8" />
+			</Predecessors>
+		</Neuron>
+		<Neuron ID="12" Type="Output" ActivationFunction="Sigmoid">
+			<Weights Distribution="Fixed">
+				<Weight Value="-0.4321" />
+				<Weight Value="0.134" />
+				<Weight Value="0.1234" />
+				<Weight Value="-0.4321" />
+				<Weight Value="-0.4312" />
+			</Weights>
+			<Predecessors>
+				<Predecessor ID="5" />
+				<Predecessor ID="6" />
+				<Predecessor ID="7" />
+				<Predecessor ID="8" />
+			</Predecessors>
+		</Neuron>
+	</NeuralNetwork>
+</NeuralNetworks>

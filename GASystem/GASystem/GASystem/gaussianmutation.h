@@ -25,6 +25,7 @@ public:
         if(!getParameter(_parameters, deviation, "Deviation"))
             return;
 
+        //change the constraints to work on the NN side instead
         if(!getParameter(_parameters, maxConstraint, "MaxConstraint"))
             return;
 
@@ -40,12 +41,12 @@ public:
         boost::variate_generator<boost::mt19937&, boost::normal_distribution<> > genMutation(mRNGMutation, mMutationDist);
 
         for(uint k = 0; k < _weights.size(); k++){
-            if(genMutationProb() < mutationChance)
+            if(genMutationProb() < mutationProbability)
                 _weights[k] += genMutation();
             if(_weights[k] > maxConstraint)
                 _weights[k] = maxConstraint;
             if(_weights[k] < minConstraint)
-                _weights[k[ = minConstraint;
+                _weights[k] = minConstraint;
         }
     }
     
@@ -64,6 +65,8 @@ public:
         if(!getParameter(_parameters, minConstraint, "MinConstraint"))
             return;
 
+        boost::mt19937 mRNGMutationProb(rand()), mRNGMutation(rand());
+
         boost::uniform_real<float> mutationProbDist(0, 1);
         boost::normal_distribution<> mMutationDist(0, deviation);
 
@@ -71,12 +74,12 @@ public:
         boost::variate_generator<boost::mt19937&, boost::normal_distribution<> > genMutation(mRNGMutation, mMutationDist);
 
         for(uint k = 0; k < _weights.size(); k++){
-            if(genMutationProb() < mutationChance)
+            if(genMutationProb() < mutationProbability)
                 _weights[k] += genMutation();
             if(_weights[k] > maxConstraint)
                 _weights[k] = maxConstraint;
             if(_weights[k] < minConstraint)
-                _weights[k[ = minConstraint;
+                _weights[k] = minConstraint;
         }
     }
     

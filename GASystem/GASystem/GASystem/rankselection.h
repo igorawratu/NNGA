@@ -17,6 +17,8 @@ public:
     virtual ~RankSelection(){}
 
     virtual vector<Chromosome*> execute(vector<Chromosome*> _selectionPool, uint _selectionCount, vector<Chromosome*> _unselected){
+        assert(_selectionPool.size() >= _selectionCount);
+        
         vector<Chromosome*> output;
         
         int max = 0;

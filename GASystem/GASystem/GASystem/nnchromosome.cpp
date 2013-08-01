@@ -68,9 +68,9 @@ void NNChromosome::setWeights(vector<map<uint, vector<double>>>& _weights){
 }   
 
 void NNChromosome::setStructure(vector<map<uint, NeuronInfo>>& _structure){
-    for(uint k = 0; k < _structure.size(); k++){
-        mNets[k].setStructure(_structure[k]);
-    }
+    mNets.clear();
+    for(uint k = 0; k < _structure.size(); k++)
+        mNets.push_back(NeuralNetwork(_structure[k]));
 }
 
 Chromosome* NNChromosome::clone(){
