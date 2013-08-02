@@ -14,6 +14,9 @@
 #include "selectionfactory.h"
 #include "mutationfactory.h"
 #include "crossoverfactory.h"
+#include "standardga.h"
+#include "dummyfitness.h"
+#include "dummysimulation.h"
 
 using namespace std;
 
@@ -382,7 +385,35 @@ void testMultipointCrossover(){
 }
 
 void testGA(){
-    
+    StandardGAParameters params;
+
+    params.populationSize = 50;
+    params.maxGenerations = 100;
+    params.nnFormatFilename = "neuralxmls\\nnchromosome\\input.xml";
+    params.stagnationThreshold = 1;
+    params.fitnessEpsilonThreshold = 0;
+    params.mutationAlgorithm = "GaussianMutation";
+    params.mutationParameters["MutationProbability"] = 0.1;
+    params.mutationParameters["Deviation"] = 0.2;
+    params.mutationParameters["MaxConstraint"] = 1;
+    params.mutationParameters["MinConstraint"] = -1;
+    params.crossoverAlgorithm = "MultipointCrossover";
+    params.selectionAlgorithm = "RankSelection";
+
+    GeneticAlgorithm* ga = new StandardGA(params);
+    Simulation* sim = new DummySimulaton();
+    vector<Fitness*> fit;
+    fit.push_back(new DummyFitness());
+
+    //create sim container ere
+
+    GAEngine gaengine;
+    gaengine.train(ga, 
+
+    delete sim;
+    delete fit[0];
+    fit.clear();
+    delete ga;
 }
 
 

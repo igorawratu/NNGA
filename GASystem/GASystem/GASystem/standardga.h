@@ -1,6 +1,8 @@
 #ifndef STANDARDGA_H
 #define STANDARDGA_H
 
+#include "geneticalgorithm.h"
+
 #include "selectionfactory.h"
 #include "crossoverfactory.h"
 #include "crossover.h"
@@ -33,7 +35,7 @@ struct StandardGAParameters
 
 };
 
-class StandardGA
+class StandardGA : public GeneticAlgorithm
 {
 public:
     StandardGA(StandardGAParameters _parameters);
