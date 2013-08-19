@@ -1,7 +1,9 @@
 #ifndef DUMMYFITNESS_H
 #define DUMMYFITNESS_H
 
-class DummyFitness
+#include "fitness.h"
+
+class DummyFitness : public Fitness
 {
 public:
     DummyFitness(){}

@@ -13,9 +13,13 @@ public:
         mFitnessFunctions = _fit;
         mSim = _sim;
     }
-    virtual ~SimulationContainer(){}
+    ~SimulationContainer(){}
 
-    virtual void resetSimulation()=0;
+    void resetSimulation(){
+        Simulation* temp = mSim->getNewCopy();
+        delete mSim;
+        mSim = temp;
+    }
 
     void runFullSimulation(Solution* solution){
         mSim->runFullSimulation();

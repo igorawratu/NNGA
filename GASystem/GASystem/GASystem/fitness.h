@@ -1,4 +1,4 @@
-d#ifndef FITNESS
+#ifndef FITNESS
 #define FITNESS
 
 #include <vector>

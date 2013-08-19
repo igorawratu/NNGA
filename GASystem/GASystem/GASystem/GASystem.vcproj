@@ -241,6 +241,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\dummyfitness.h"
+				>
+			</File>
+			<File
+				RelativePath=".\dummysimulation.h"
+				>
+			</File>
+			<File
 				RelativePath=".\factory.h"
 				>
 			</File>

@@ -11,8 +11,8 @@ using namespace std;
 class DummySimulation : public Simulation
 {
 public:
-    DummySimulation(uint _numCycles, uint _cyclesPerDecision, double epsilon) : Simulation(_numCycles, cyclesPerDecision){}
-    virtual ~Simulation(){}
+    DummySimulation(uint _numCycles, uint _cyclesPerDecision) : Simulation(_numCycles, _cyclesPerDecision){}
+    virtual ~DummySimulation(){}
 
     virtual void iterate(){}
     virtual void render(){cerr << "Error: cannot render a dummy simulation" << endl;}
@@ -26,6 +26,10 @@ public:
             finalFitness += _fit[k]->evaluateFitness(pos, dblAcc, intAcc);
 
         return finalFitness;
+    }
+
+    virtual Simulation* getNewCopy(){
+        return new DummySimulation(mNumCycles, mCyclesPerDecision);
     }
 
 };

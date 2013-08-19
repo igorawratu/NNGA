@@ -17,6 +17,8 @@
 #include "standardga.h"
 #include "dummyfitness.h"
 #include "dummysimulation.h"
+#include "simulationcontainer.h"
+#include "gaengine.h"
 
 using namespace std;
 
@@ -401,19 +403,21 @@ void testGA(){
     params.selectionAlgorithm = "RankSelection";
 
     GeneticAlgorithm* ga = new StandardGA(params);
-    Simulation* sim = new DummySimulaton();
+    Simulation* sim = new DummySimulation(100, 5);
     vector<Fitness*> fit;
     fit.push_back(new DummyFitness());
 
     //create sim container ere
+    SimulationContainer sc(sim, fit);
 
     GAEngine gaengine;
-    gaengine.train(ga, 
+    Solution sol = gaengine.train(ga, &sc);
 
     delete sim;
     delete fit[0];
     fit.clear();
     delete ga;
+    sol.printToFile("neuralxmls\\integration\\solution.xml");
 }
 
 
@@ -444,7 +448,8 @@ void runGATests(){
 
 int main(){
     //runTests();
-    runGATests();
+    //runGATests();
+    testGA();
 
     int x;
     cin >> x;

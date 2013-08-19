@@ -26,6 +26,7 @@ public:
             iterate();
     }
     virtual double fitness(vector<Fitness*> _fit)=0;
+    virtual Simulation* getNewCopy()=0;
     
 
 protected:

@@ -51,6 +51,7 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
     }
 
     for(uint k = 0; k < mParameters.maxGenerations; k++){
+        cout << k << endl;
         uint stagnationCounter = 0;
 
         quicksort(population, 0, population.size() - 1);
@@ -68,7 +69,7 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
             _simulationContainer->runFullSimulation(&currSolution);
 
             //checks if the fitness of the solution is below the epsilon threshold, if it is, stop training
-            if(currSolution.fitness() < mParameters.fitnessEpsilonThreshold){
+            if(currSolution.fitness() <= mParameters.fitnessEpsilonThreshold){
                 for(uint i = 0; i < population.size(); i++)
                     delete population[i];
                 for(uint i = 0; i < offspring.size(); i++)
