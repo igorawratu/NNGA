@@ -1,0 +1,87 @@
+#ifndef WINDOWMANAGER_H
+#define WINDOWMANAGER_H
+
+#include <iostream>
+#include "inputmanager.h"
+#include <OgreWindowEventUtilities.h>
+#include <OgreRenderWindow.h>
+#include <OgreRoot.h>
+#include "common.h"
+
+using namespace std;
+
+class WindowManager : public Ogre::WindowEventListener
+{
+public:
+    WindowManager(Ogre::Root* _root){
+        mRoot = _root;
+
+        //load config
+        if(!(mRoot->restoreConfig() || mRoot->showConfigDialog())){
+            cerr << "Error: unable to set Engine config" << endl;
+            return;
+        }
+
+        mWindow = mRoot->initialise(true, "Simulation Render");
+        
+        //get handler name and send to input manager
+        size_t windowHnd = 0;
+        ostringstream sstream;
+        mWindow->getCustomAttribute("WINDOW", &windowHnd);
+        sstream << windowHnd;
+        mInputManager = new InputManager(sstream.str());
+        
+        //update input manager with window size
+        windowResized(mWindow);
+
+        //add this as a window listener
+        Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
+    }
+
+    ~WindowManager(){
+        Ogre::WindowEventUtilities::removeWindowEventListener(mWindow, this);
+        windowClosed(mWindow);
+    }
+
+    void addViewport(Ogre::Viewport*& _viewport, Ogre::Camera*& _camera){
+        _viewport = mWindow->addViewport(_camera);
+        _viewport->setBackgroundColour(Ogre::ColourValue(0, 0, 0));
+        _camera->setAspectRatio(Ogre::Real(_viewport->getActualWidth()) / Ogre::Real(_viewport->getActualHeight()));
+    }
+
+    virtual void windowResized(Ogre::RenderWindow* _rw){
+        uint w, h, d;
+        int l, t;
+
+        _rw->getMetrics(w, h, d, l, t);
+        mInputManager->updateWindowDim(w, h);
+    }
+
+    virtual void windowClosed(Ogre::RenderWindow* _rw){
+        if(_rw == mWindow){
+            if(mInputManager){
+                delete mInputManager;
+                mInputManager = 0;
+            }
+        }
+    }
+
+    bool isWindowClosed(){
+        return mWindow->isClosed();
+    }
+
+    InputManager* getInputManager(){
+        return mInputManager;
+    }
+
+private:
+    Ogre::RenderWindow* mWindow;
+    Ogre::Root* mRoot;
+    InputManager* mInputManager;
+    string mWindowName;
+
+private:
+    WindowManager(){}
+};
+
+#endif

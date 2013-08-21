@@ -19,6 +19,7 @@
 #include "dummysimulation.h"
 #include "simulationcontainer.h"
 #include "gaengine.h"
+#include "graphicsengine.h"
 
 using namespace std;
 
@@ -447,12 +448,10 @@ void runGATests(){
 }
 
 int main(){
-    //runTests();
-    //runGATests();
-    testGA();
+    DummySimulation sim(100, 10);
+    GraphicsEngine engine(&sim);
+    engine.renderSimulation();
 
-    int x;
-    cin >> x;
 
     return 0;
 }

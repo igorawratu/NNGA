@@ -25,6 +25,8 @@ bool inline getParameter(map<string, double>& param, double& val, string key){
 
 struct vector3
 {
+    vector3() : x(0), y(0), z(0){}
+    vector3(double _x, double _y, double _z) : x(_x), y(_y), z(_z){}
     double x;
     double y;
     double z;

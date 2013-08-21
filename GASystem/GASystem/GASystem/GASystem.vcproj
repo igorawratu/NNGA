@@ -21,7 +21,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			CharacterSet="1"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -41,6 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(CPPREPO)\boost_1_51_0\boost_1_51_0&quot;;&quot;$(OGRE_HOME)\Samples\Common\include&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;&quot;$(BULLET_ROOT)\src&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -60,7 +61,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="OgreMain_d.lib OIS_d.lib OgreTerrain_d.lib BulletCollision_Debug.lib BulletDynamics_Debug.lib LinearMath_Debug.lib GIMPACTUtils_Debug.lib ConvexDecomposition_Debug.lib"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="&quot;$(CPPREPO)\boost_1_51_0\boost_1_51_0\lib&quot;;&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;;&quot;$(BULLET_ROOT)\build\cmakebuild\lib\$(ConfigurationName)&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -85,6 +88,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="copy &quot;$(OutDir)\$(TargetFileName)&quot; &quot;$(OGRE_HOME)\Bin\$(ConfigurationName)&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -92,7 +96,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			CharacterSet="1"
+			CharacterSet="2"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -114,6 +118,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\boost&quot;;&quot;$(OGRE_HOME)\Samples\Common\include&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;&quot;$(BULLET_ROOT)\src&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -132,7 +137,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="OgreMain.lib OIS.lib OgreTerrain.lib BulletCollision.lib BulletDynamics.lib LinearMath.lib GIMPACTUtils.lib ConvexDecomposition.lib"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\boost\lib&quot;;&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;;&quot;$(BULLET_ROOT)\build\cmakebuild\lib\$(ConfigurationName)&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -159,6 +166,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="copy &quot;$(OutDir)\$(TargetFileName)&quot; &quot;$(OGRE_HOME)\Bin\$(ConfigurationName)&quot;"
 			/>
 		</Configuration>
 	</Configurations>
@@ -176,6 +184,10 @@
 			</File>
 			<File
 				RelativePath=".\gaengine.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\graphicsengine.cpp"
 				>
 			</File>
 			<File
@@ -204,6 +216,10 @@
 			</File>
 			<File
 				RelativePath=".\pugixml.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\resourcemanager.cpp"
 				>
 			</File>
 			<File
@@ -269,6 +285,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\graphicsengine.h"
+				>
+			</File>
+			<File
+				RelativePath=".\inputmanager.h"
+				>
+			</File>
+			<File
 				RelativePath=".\leafneuron.h"
 				>
 			</File>
@@ -313,6 +337,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\resourcemanager.h"
+				>
+			</File>
+			<File
 				RelativePath=".\selection.h"
 				>
 			</File>
@@ -334,6 +362,10 @@
 			</File>
 			<File
 				RelativePath=".\standardga.h"
+				>
+			</File>
+			<File
+				RelativePath=".\windowmanager.h"
 				>
 			</File>
 		</Filter>

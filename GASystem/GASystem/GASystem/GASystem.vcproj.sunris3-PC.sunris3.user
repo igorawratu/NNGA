@@ -9,8 +9,8 @@
 			Name="Debug|Win32"
 			>
 			<DebugSettings
-				Command="$(TargetPath)"
-				WorkingDirectory=""
+				Command="$(OGRE_HOME)\bin\$(ConfigurationName)\$(ProjectName).exe"
+				WorkingDirectory="$(OGRE_HOME)\bin\$(ConfigurationName)"
 				CommandArguments=""
 				Attach="false"
 				DebuggerType="3"
@@ -22,7 +22,7 @@
 				SQLDebugging=""
 				Environment=""
 				EnvironmentMerge="true"
-				DebuggerFlavor=""
+				DebuggerFlavor="0"
 				MPIRunCommand=""
 				MPIRunArguments=""
 				MPIRunWorkingDirectory=""
@@ -37,8 +37,8 @@
 			Name="Release|Win32"
 			>
 			<DebugSettings
-				Command="$(TargetPath)"
-				WorkingDirectory=""
+				Command="$(OGRE_HOME)\bin\$(ConfigurationName)\$(ProjectName).exe"
+				WorkingDirectory="$(OGRE_HOME)\bin\$(ConfigurationName)"
 				CommandArguments=""
 				Attach="false"
 				DebuggerType="3"
@@ -50,7 +50,7 @@
 				SQLDebugging=""
 				Environment=""
 				EnvironmentMerge="true"
-				DebuggerFlavor=""
+				DebuggerFlavor="0"
 				MPIRunCommand=""
 				MPIRunArguments=""
 				MPIRunWorkingDirectory=""

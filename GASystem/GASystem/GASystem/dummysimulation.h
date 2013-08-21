@@ -32,6 +32,10 @@ public:
         return new DummySimulation(mNumCycles, mCyclesPerDecision);
     }
 
+    virtual bool initialise(ResourceManager* _rm){
+        return true;
+    }
+
 };
 
 #endif
