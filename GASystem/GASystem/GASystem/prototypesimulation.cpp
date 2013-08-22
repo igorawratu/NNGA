@@ -1,14 +1,14 @@
 #include "prototypesimulation.h"
 
-PrototypeSimulation::PrototypeSimulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond){
+PrototypeSimulation::PrototypeSimulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution){
 }
 
 PrototypeSimulation::~PrototypeSimulation(){}
 
-void PrototypeSimulation::iterate(Solution* _solution){
+void PrototypeSimulation::iterate(){
     //input logic here
 
-    mWorld->stepSimulation(1/mCyclesPerSecond.f, 1, 1/mCyclesPerSecond.f);
+    mWorld->stepSimulation(1.f/mCyclesPerSecond, 1, 1.f/mCyclesPerSecond);
 }
 
 double PrototypeSimulation::fitness(vector<Fitness*> _fit){
@@ -25,7 +25,7 @@ double PrototypeSimulation::fitness(vector<Fitness*> _fit){
 }
 
 Simulation* PrototypeSimulation::getNewCopy(){
-    return new PrototypeSimulation(mNumCycles, mCyclesPerDecision);
+    return new PrototypeSimulation(mNumCycles, mCyclesPerDecision, mCyclesPerDecision, mSolution);
 }
 
 bool PrototypeSimulation::initialise(ResourceManager* _rm){

@@ -404,7 +404,7 @@ void testGA(){
     params.selectionAlgorithm = "RankSelection";
 
     GeneticAlgorithm* ga = new StandardGA(params);
-    Simulation* sim = new DummySimulation(100, 5);
+    Simulation* sim = new DummySimulation(100, 5, 5);
     vector<Fitness*> fit;
     fit.push_back(new DummyFitness());
 
@@ -448,7 +448,7 @@ void runGATests(){
 }
 
 int main(){
-    DummySimulation sim(100, 10);
+    DummySimulation sim(100, 10, 5);
     GraphicsEngine engine(&sim);
     engine.renderSimulation();
 

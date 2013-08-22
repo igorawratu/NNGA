@@ -51,7 +51,7 @@ void GraphicsEngine::renderSimulation(){
 
     mWindowManager->addViewport(viewport, camera);
 
-    mSceneManager->setAmbientLight(Ogre::ColourValue(0.5, 0.5, 0.5));
+    mSceneManager->setAmbientLight(Ogre::ColourValue(1, 1, 1));
 
     //setup scene manager
     for(map<string, pair<btRigidBody*, string>>::const_iterator iter = mSimulation->getSimulationState().begin(); iter != mSimulation->getSimulationState().end(); iter++){
@@ -61,6 +61,7 @@ void GraphicsEngine::renderSimulation(){
 
         Ogre::Entity* entity = mSceneManager->createEntity(entityName, resourceName);
         Ogre::SceneNode* node = mSceneManager->getRootSceneNode()->createChildSceneNode(entityName);
+        node->attachObject(entity);
         
         btQuaternion rot = entityBody->getWorldTransform().getRotation();
         btVector3 pos = entityBody->getWorldTransform().getOrigin();

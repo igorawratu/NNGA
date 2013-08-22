@@ -17,7 +17,7 @@ using namespace std;
 class Simulation
 {
 public:
-    Simulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond){
+    Simulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution){
         mNumCycles = _numCycles;
         mCyclesPerDecision = _cyclesPerDecision;
         mCycleCounter = 0;
@@ -58,30 +58,34 @@ public:
             mDispatcher = 0;
         }
         
-        if(mColConfig)
+        if(mCollisionConfig)
         {
-            delete mColConfig;
-            mColConfig = 0;
+            delete mCollisionConfig;
+            mCollisionConfig = 0;
         }
         
-        if(mBroadPhase)
+        if(mBroadphase)
         {
-            delete mBroadPhase;
-            mBroadPhase = 0;
+            delete mBroadphase;
+            mBroadphase = 0;
         }
 
     }
 
-    virtual void iterate(Solution* _solution)=0;
+    void setSolution(Solution* _solution){
+        mSolution = _solution;
+    }
+
+    virtual void iterate()=0;
     virtual bool initialise(ResourceManager* _rm)=0;
 
     bool isInitialised(){
         return mInitialised;
     }
 
-    void runFullSimulation(Solution* _solution){
+    void runFullSimulation(){
         for(uint k = 0; k < mNumCycles; k++)
-            iterate(_solution);
+            iterate();
     }
 
     virtual double fitness(vector<Fitness*> _fit)=0;
@@ -105,6 +109,7 @@ protected:
     btCollisionDispatcher* mDispatcher;
     btSequentialImpulseConstraintSolver* mSolver;
     btDiscreteDynamicsWorld* mWorld;
+    Solution* mSolution;
 };
 
 #endif

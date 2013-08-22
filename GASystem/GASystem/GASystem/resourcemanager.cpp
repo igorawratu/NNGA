@@ -39,6 +39,7 @@ bool ResourceManager::getMeshInformation(string _meshName, size_t& _vertexCount,
     Ogre::Vector3 position(_position.x, _position.y, _position.z);
     Ogre::Vector3 scale(_scale.x, _scale.y, _scale.z);
 
+    Ogre::MeshManager::getSingleton().load(_meshName, Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
     Ogre::Mesh* mesh = dynamic_cast<Ogre::Mesh*>(Ogre::MeshManager::getSingleton().getByName(_meshName).getPointer());
     if(mesh == 0){
         cerr << "Error: unable to retrieve mesh with name " << _meshName << endl;
@@ -123,7 +124,7 @@ bool ResourceManager::getMeshInformation(string _meshName, size_t& _vertexCount,
 btConvexShape* ResourceManager::getBulletCollisionShape(string _meshName, const vector3& _position, const Ogre::Quaternion& _orientation, const vector3& _scale){
     unsigned long* indices;
     vector3* vertices;
-    size_t vertexCount, indexCount;
+    size_t vertexCount = 0, indexCount = 0;
 
     if(!getMeshInformation(_meshName, vertexCount, vertices, indexCount, indices, _position, _orientation, _scale))
         return NULL;

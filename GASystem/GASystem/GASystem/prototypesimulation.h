@@ -7,9 +7,9 @@
 class PrototypeSimulation : public Simulation
 {
 public:
-    PrototypeSimulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond);
+    PrototypeSimulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution);
     virtual ~PrototypeSimulation();
-    virtual void iterate(Solution* _solution);
+    virtual void iterate();
     virtual double fitness(vector<Fitness*> _fit);
     virtual Simulation* getNewCopy();
     virtual bool initialise(ResourceManager* _rm);

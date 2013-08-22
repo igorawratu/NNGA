@@ -30,10 +30,6 @@ public:
         mSim->iterate();
     }
 
-    void renderCurrentSimulationState(){
-        mSim->render();
-    }
-
 protected:
     Simulation* mSim;
     vector<Fitness*> mFitnessFunctions;

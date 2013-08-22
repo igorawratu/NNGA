@@ -15,6 +15,7 @@
 #include <OgreMeshManager.h>
 #include <OgreMesh.h>
 #include <OgreSubMesh.h>
+#include <OgreResourceGroupManager.h>
 
 using namespace std;
 
