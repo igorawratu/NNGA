@@ -11,11 +11,13 @@ using namespace std;
 class DummySimulation : public Simulation
 {
 public:
-    DummySimulation(uint _numCycles, uint _cyclesPerDecision) : Simulation(_numCycles, _cyclesPerDecision){}
+    DummySimulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond){}
     virtual ~DummySimulation(){}
 
-    virtual void iterate(){}
-    virtual void render(){cerr << "Error: cannot render a dummy simulation" << endl;}
+    virtual void iterate(){
+        mWorld->stepSimulation(1/24.f, 24, 1/24.f);
+    }
+
     virtual double fitness(vector<Fitness*> _fit){
         double finalFitness = 0;
         map<uint, double> dblAcc;
@@ -33,6 +35,22 @@ public:
     }
 
     virtual bool initialise(ResourceManager* _rm){
+        if(mInitialised)
+            return true;
+
+        btConvexShape* ogreheadColShape = _rm->getBulletCollisionShape("ogrehead.mesh");
+        btMotionState* motionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 0, -10)));
+        btVector3 inertia(0, 0, 0);
+        ogreheadColShape->calculateLocalInertia(0, inertia);
+
+        btRigidBody::btRigidBodyConstructionInfo constructionInfo(0, motionState, ogreheadColShape, inertia);
+        btRigidBody ogreheadRigidBody = new btRigidBody(constructionInfo);
+        
+        mWorld->addRigidBody(ogreheadRigidBody);
+        mWorldEntities["head"] = make_pair(ogreheadRigidBody, "ogrehead.mesh");
+        
+        mInitialised = true;
+        
         return true;
     }
 

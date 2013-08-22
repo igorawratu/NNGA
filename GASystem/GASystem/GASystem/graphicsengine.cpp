@@ -80,6 +80,9 @@ bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
     if(mWindowManager->getInputManager()->getLastKey() == OIS::KC_ESCAPE)
         return false;
 
+    //put this on a timer
+    mSimulation->iterate();
+
     //sync
     for(map<string, pair<btRigidBody*, string>>::const_iterator iter = mSimulation->getSimulationState().begin(); iter != mSimulation->getSimulationState().end(); iter++){
         string entityName = iter->first;

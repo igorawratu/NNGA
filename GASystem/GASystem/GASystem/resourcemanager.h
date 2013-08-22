@@ -25,7 +25,7 @@ public:
     ~ResourceManager();
 
     bool getMeshInformation(string _meshName, size_t& _vertexCount, vector3*& _vertices, size_t _indexCount, unsigned long*& _indices, 
-        const vector3& _position = vector3(0, 0, 0), const Ogre::Quaternion& _orientation = Ogre::Quaternion::IDENTITY, const vector3& _scale = vector3(0, 0, 0));
+        const vector3& _position = vector3(0, 0, 0), const Ogre::Quaternion& _orientation = Ogre::Quaternion::IDENTITY, const vector3& _scale = vector3(1, 1, 1));
 
     btConvexShape* getBulletCollisionShape(string _meshName, const vector3& _position = vector3(0, 0, 0), 
         const Ogre::Quaternion& _orientation = Ogre::Quaternion::IDENTITY, const vector3& _scale = vector3(0, 0, 0));

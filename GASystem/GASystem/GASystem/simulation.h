@@ -4,6 +4,7 @@
 #include "common.h"
 #include "fitness.h"
 #include "resourcemanager.h"
+#include "solution.h"
 
 #include <map>
 #include <vector>
@@ -16,25 +17,71 @@ using namespace std;
 class Simulation
 {
 public:
-    Simulation(uint _numCycles, uint _cyclesPerDecision){
+    Simulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond){
         mNumCycles = _numCycles;
         mCyclesPerDecision = _cyclesPerDecision;
         mCycleCounter = 0;
+        mCyclesPerSecond = _cyclesPerSecond;
         mInitialised = false;
-    }
-    virtual ~Simulation(){}
 
-    virtual void iterate()=0;
-    virtual void render()=0;
+        mBroadphase = new btDbvtBroadphase();
+        mCollisionConfig = new btDefaultCollisionConfiguration();
+        mDispatcher = new btCollisionDispatcher(mCollisionConfig);
+        mSolver = new btSequentialImpulseConstraintSolver();
+        mWorld = new btDiscreteDynamicsWorld(mDispatcher, mBroadphase, mSolver, mCollisionConfig);
+
+    }
+    virtual ~Simulation(){
+        for(map<string, pair<btRigidBody*, string>>::const_iterator iter = mWorldEntities.begin(); iter != mWorldEntities.end(); iter++){
+            delete iter->second.first->getCollisionShape();
+            
+            mWorld->removeRigidBody(iter->second.first);
+            delete iter->second.first->getMotionState();
+            delete iter->second.first;
+        }
+
+        if(mWorld)
+        {
+            delete mWorld;
+            mWorld = 0;
+        }
+        
+        if(mSolver)
+        {
+            delete mSolver;
+            mSolver = 0;
+        }
+        
+        if(mDispatcher)
+        {
+            delete mDispatcher;
+            mDispatcher = 0;
+        }
+        
+        if(mColConfig)
+        {
+            delete mColConfig;
+            mColConfig = 0;
+        }
+        
+        if(mBroadPhase)
+        {
+            delete mBroadPhase;
+            mBroadPhase = 0;
+        }
+
+    }
+
+    virtual void iterate(Solution* _solution)=0;
     virtual bool initialise(ResourceManager* _rm)=0;
 
     bool isInitialised(){
         return mInitialised;
     }
 
-    void runFullSimulation(){
+    void runFullSimulation(Solution* _solution){
         for(uint k = 0; k < mNumCycles; k++)
-            iterate();
+            iterate(_solution);
     }
 
     virtual double fitness(vector<Fitness*> _fit)=0;
@@ -50,7 +97,14 @@ protected:
     uint mNumCycles;
     uint mCyclesPerDecision;
     uint mCycleCounter;
+    uint mCyclesPerSecond;
     map<string, pair<btRigidBody*, string>> mWorldEntities;
+
+    btBroadphaseInterface* mBroadphase;
+    btDefaultCollisionConfiguration* mCollisionConfig;
+    btCollisionDispatcher* mDispatcher;
+    btSequentialImpulseConstraintSolver* mSolver;
+    btDiscreteDynamicsWorld* mWorld;
 };
 
 #endif
