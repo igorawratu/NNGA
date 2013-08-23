@@ -37,9 +37,8 @@ public:
     virtual bool initialise(ResourceManager* _rm){
         if(mInitialised)
             return true;
-
         btConvexShape* ogreheadColShape = _rm->getBulletCollisionShape("ogrehead.mesh");
-        btMotionState* motionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 0, 100)));
+        btMotionState* motionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 0, 0)));
         btVector3 inertia(0, 0, 0);
         ogreheadColShape->calculateLocalInertia(0, inertia);
 

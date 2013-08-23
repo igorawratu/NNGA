@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include <iostream>
+#include <cmath>
 
 using namespace std;
 
@@ -31,5 +32,9 @@ struct vector3
     double y;
     double z;
 };
+
+float inline calcEucDistance(vector3 from, vector3 to){
+    return sqrtf((to.x - from.x)*(to.x - from.x) + (to.y - from.y)*(to.y - from.y) + (to.z - from.z)*(to.z - from.z));
+}
 
 #endif

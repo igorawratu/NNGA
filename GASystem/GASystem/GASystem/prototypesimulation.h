@@ -15,7 +15,9 @@ public:
     virtual bool initialise(ResourceManager* _rm);
 
 private:
-    void createRectangularObject(string _meshname, string _entityName, vector3 _scale, vector3 _position, float _mass, ResourceManager* _rm);
+    bool createObject(string _meshname, string _entityName, vector3 _scale, vector3 _position, float _mass, ResourceManager* _rm);
+    void getRayCollisionDistances(map<uint, double>& _collisionDistances, const btVector3& _agentPosition);
+    void applyUpdateRules(string _agentName);
 };
 
 #endif

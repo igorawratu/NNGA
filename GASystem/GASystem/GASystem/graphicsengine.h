@@ -30,6 +30,9 @@ public:
     virtual bool frameRenderingQueued(const Ogre::FrameEvent& event);
 
 private:
+    void updateCamera(const Ogre::FrameEvent& event);
+
+private:
     Ogre::Root* mRoot;
     Ogre::String mPlugins;
     Simulation* mSimulation;

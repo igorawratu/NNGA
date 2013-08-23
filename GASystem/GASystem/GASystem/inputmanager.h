@@ -91,6 +91,12 @@ public:
         mKeyboard->capture();
     }
 
+    void getMouseRelative(float& _x, float& _y, float& _z){
+        _x = mMouseXRel;
+        _y = mMouseYRel;
+        _z = mMouseZRel;
+    }
+
 private:
     InputManager(){}
 

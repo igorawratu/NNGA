@@ -45,13 +45,18 @@ void GraphicsEngine::renderSimulation(){
     Ogre::Viewport* viewport;
 
     camera = mSceneManager->createCamera("Camera");
-    camera->setPosition(Ogre::Vector3(0, 0, 0));
-    camera->lookAt(Ogre::Vector3(0, 0, 1));
     camera->setNearClipDistance(1);
+
+    Ogre::SceneNode* camNode = mSceneManager->getRootSceneNode()->createChildSceneNode("CameraNode");
+    camNode->setPosition(Ogre::Vector3(100, 100, 100));
+    camNode->lookAt(Ogre::Vector3(0, 0, 0), Ogre::Node::TS_WORLD);
+    camNode->attachObject(camera);
 
     mWindowManager->addViewport(viewport, camera);
 
-    mSceneManager->setAmbientLight(Ogre::ColourValue(1, 1, 1));
+    mSceneManager->setAmbientLight(Ogre::ColourValue(0.2, 0.2, 0.2));
+    Ogre::Light* light = mSceneManager->createLight("MainLight");
+    light->setPosition(100, 100, 100);
 
     //setup scene manager
     for(map<string, pair<btRigidBody*, string>>::const_iterator iter = mSimulation->getSimulationState().begin(); iter != mSimulation->getSimulationState().end(); iter++){
@@ -78,8 +83,12 @@ bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
         return false;
     
     mWindowManager->getInputManager()->capture();
+    
     if(mWindowManager->getInputManager()->getLastKey() == OIS::KC_ESCAPE)
         return false;
+
+
+    updateCamera(event);
 
     //put this on a timer
     mSimulation->iterate();
@@ -100,4 +109,33 @@ bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
             
 
     return true;
+}
+
+void GraphicsEngine::updateCamera(const Ogre::FrameEvent& event){
+    Ogre::SceneNode* camNode = mSceneManager->getSceneNode("CameraNode");
+    
+    Ogre::Vector3 translate(0, 0, 0);
+    
+    float move = 125;
+    float rotate = 0.13;
+
+    switch(mWindowManager->getInputManager()->getLastKey()){
+        case OIS::KC_A:
+            translate.x = -move;
+            break;
+        case OIS::KC_S:
+            translate.z = move;
+            break;
+        case OIS::KC_D:
+            translate.x = move;
+            break;
+        case OIS::KC_W:
+            translate.z = -move;
+            break;
+        default:
+            break;
+    }
+
+    camNode->translate(translate * event.timeSinceLastFrame, Ogre::Node::TS_LOCAL);
+
 }
