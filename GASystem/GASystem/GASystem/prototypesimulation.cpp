@@ -1,13 +1,17 @@
 #include "prototypesimulation.h"
 
 PrototypeSimulation::PrototypeSimulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution){
+    mWorld->setGravity(btVector3(0, -1.f, 0));
+    mWorld->setInternalTickCallback(PrototypeSimulation::tickCallBack, this, true);
 }
 
 PrototypeSimulation::~PrototypeSimulation(){}
 
 void PrototypeSimulation::iterate(){
-    applyUpdateRules("agentOne");
-    applyUpdateRules("agentTwo");
+    /*if(mCycleCounter % mCyclesPerDecision == 0){
+        applyUpdateRules("agentOne");
+        applyUpdateRules("agentTwo");
+    }*/
 
     mWorld->stepSimulation(1/(float)mCyclesPerSecond, 1, 1/(float)mCyclesPerSecond);
 }
@@ -21,18 +25,77 @@ Simulation* PrototypeSimulation::getNewCopy(){
     return new PrototypeSimulation(mNumCycles, mCyclesPerDecision, mCyclesPerDecision, mSolution);
 }
 
+void PrototypeSimulation::conformVelocities(){
+    vector3 maxVel(2, 2, 2), minVel(-2, -2, -2), agentOneVel,agentTwoVel;
+
+    btRigidBody* agentOne = mWorldEntities["agentOne"].get<0>();
+    btRigidBody* agentTwo = mWorldEntities["agentTwo"].get<0>();
+
+    btVector3 velocity = agentOne->getLinearVelocity();
+    bool update = false;
+
+    //agent one conform
+    if(agentOne->getLinearVelocity().getX() > maxVel.x)
+        agentOneVel.x = maxVel.x;
+    else if(agentOne->getLinearVelocity().getX() < minVel.x)
+        agentOneVel.x = minVel.x;
+    else agentOneVel.x = agentOne->getLinearVelocity().getX();
+
+    if(agentOne->getLinearVelocity().getY() > maxVel.y)
+        agentOneVel.y = maxVel.y;
+    else if(agentOne->getLinearVelocity().getY() < minVel.y)
+        agentOneVel.y = minVel.y;
+    else agentOneVel.y = agentOne->getLinearVelocity().getY();
+
+    if(agentOne->getLinearVelocity().getZ() > maxVel.z)
+        agentOneVel.z = maxVel.z;
+    else if(agentOne->getLinearVelocity().getZ() < minVel.z)
+        agentOneVel.z = minVel.z;
+    else agentOneVel.z = agentOne->getLinearVelocity().getZ();
+
+    //agent two conform
+    if(agentTwo->getLinearVelocity().getX() > maxVel.x)
+        agentTwoVel.x = maxVel.x;
+    else if(agentTwo->getLinearVelocity().getX() < minVel.x)
+        agentTwoVel.x = minVel.x;
+    else agentTwoVel.x = agentOne->getLinearVelocity().getX();
+
+    if(agentTwo->getLinearVelocity().getY() > maxVel.y)
+        agentTwoVel.y = maxVel.y;
+    else if(agentTwo->getLinearVelocity().getY() < minVel.y)
+        agentTwoVel.y = minVel.y;
+    else agentTwoVel.y = agentTwo->getLinearVelocity().getY();
+
+    if(agentTwo->getLinearVelocity().getZ() > maxVel.z)
+        agentTwoVel.z = maxVel.z;
+    else if(agentTwo->getLinearVelocity().getZ() < minVel.z)
+        agentTwoVel.z = minVel.z;
+    else agentTwoVel.z = agentTwo->getLinearVelocity().getZ();
+
+    agentOne->setLinearVelocity(btVector3(agentOneVel.x, agentOneVel.y, agentOneVel.z));
+    agentTwo->setLinearVelocity(btVector3(agentTwoVel.x, agentTwoVel.y, agentTwoVel.z));
+}
+
 bool PrototypeSimulation::initialise(ResourceManager* _rm){
     if(mInitialised)
         return true;
 
     //agents
-    if(!createObject("cube.mesh", "agentOne", vector3(1, 1, 1), vector3(0, 10, -10), 1, _rm))
+    if(!createObject("cube.mesh", "agentOne", vector3(1, 1, 1), vector3(-50, 50, -10), 1, _rm))
         return false;
 
-    if(!createObject("cube.mesh", "agentTwo", vector3(1, 1, 1), vector3(0, -10, -10), 1, _rm))
+    cout << "created agent one" << endl;
+
+    if(!createObject("cube.mesh", "agentTwo", vector3(1, 1, 1), vector3(10, 50, -10), 1, _rm))
         return false;
+
+    cout << "created agent two" << endl;
     
-    //create maze here
+    //maze
+    if(!createObject("maze.mesh", "maze", vector3(10, 10, 10), vector3(0, 0, 0), 0, _rm))
+        return false;
+
+    cout << "created agent maze" << endl;
 
     mInitialised = true;
     
@@ -40,7 +103,8 @@ bool PrototypeSimulation::initialise(ResourceManager* _rm){
 }
 
 bool PrototypeSimulation::createObject(string _meshname, string _entityName, vector3 _scale, vector3 _position, float _mass, ResourceManager* _rm){
-    btConvexShape* shape = _rm->getBulletCollisionShape(_meshname, vector3(0, 0, 0), Ogre::Quaternion::IDENTITY, _scale);
+    btConvexShape* shape = _rm->getBulletCollisionShape(_meshname, vector3(0, 0, 0), _scale);
+    
     if(!shape)
         return false;
 
@@ -52,20 +116,23 @@ bool PrototypeSimulation::createObject(string _meshname, string _entityName, vec
     btRigidBody::btRigidBodyConstructionInfo constructionInfo(_mass, ms, shape, inertia);
 
     btRigidBody* rbody = new btRigidBody(constructionInfo);
+    rbody->setSleepingThresholds(0.f, rbody->getAngularSleepingThreshold());
     mWorld->addRigidBody(rbody);
-    mWorldEntities[_entityName] = make_pair(rbody, _meshname);
+    mWorldEntities[_entityName] = ObjectInfo(rbody, _meshname, _scale);
+
+    return true;
 }
 
 void PrototypeSimulation::applyUpdateRules(string _agentName){
     btTransform trans;
-    mWorldEntities[_agentName].first->getMotionState()->getWorldTransform(trans);
+    mWorldEntities[_agentName].get<0>()->getMotionState()->getWorldTransform(trans);
 
     map<uint, double> input;
     getRayCollisionDistances(input, trans.getOrigin());
 
     vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
 
-    mWorldEntities[_agentName].first->applyCentralForce(btVector3(output[0], 0, output[1]));
+    mWorldEntities[_agentName].get<0>()->applyCentralForce(btVector3(output[0], 0, output[1]));
 }
 
 void PrototypeSimulation::getRayCollisionDistances(map<uint, double>& _collisionDistances, const btVector3& _agentPosition){

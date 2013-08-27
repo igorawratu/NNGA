@@ -31,7 +31,7 @@ ResourceManager::~ResourceManager(){
 
 }
 
-bool ResourceManager::getMeshInformation(string _meshName, size_t& _vertexCount, vector3*& _vertices, size_t _indexCount, unsigned long*& _indices, const vector3& _position,
+bool ResourceManager::getMeshInformation(string _meshName, size_t& _vertexCount, vector3*& _vertices, size_t& _indexCount, unsigned long*& _indices, const vector3& _position,
                                          const Ogre::Quaternion& _orientation, const vector3& _scale){
     _vertexCount = _indexCount = 0;
     bool addedShared = false;
@@ -121,7 +121,7 @@ bool ResourceManager::getMeshInformation(string _meshName, size_t& _vertexCount,
     return true;
 }
 
-btConvexShape* ResourceManager::getBulletCollisionShape(string _meshName, const vector3& _position, const Ogre::Quaternion& _orientation, const vector3& _scale){
+btConvexShape* ResourceManager::getBulletCollisionShape(string _meshName, const vector3& _position, const vector3& _scale, const Ogre::Quaternion& _orientation){
     unsigned long* indices;
     vector3* vertices;
     size_t vertexCount = 0, indexCount = 0;
@@ -130,6 +130,8 @@ btConvexShape* ResourceManager::getBulletCollisionShape(string _meshName, const 
         return NULL;
 
     btTriangleMesh* triMesh = new btTriangleMesh();
+
+    cout << "DATA FOR " << _meshName << endl;
 
     for(size_t i = 0; i < indexCount; i+=3){
         btVector3 v0(vertices[indices[i]].x, vertices[indices[i]].y, vertices[indices[i]].z);

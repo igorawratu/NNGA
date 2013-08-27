@@ -1,7 +1,7 @@
 #ifndef GRAPHICSENGINE_H
 #define GRAPHICSENGINE_H
 
-#include "simulation.h"
+#include "simulationcontainer.h"
 #include "windowmanager.h"
 #include "inputmanager.h"
 #include "resourcemanager.h"
@@ -19,26 +19,24 @@
 class GraphicsEngine : public Ogre::FrameListener
 {
 public:
-    GraphicsEngine(Simulation* _simulation);
+    GraphicsEngine(SimulationContainer* _simulation);
     ~GraphicsEngine();
 
     void renderSimulation();
-    void setSimulation(Simulation* _simulation){
+    void setSimulation(SimulationContainer* _simulation){
         mSimulation = _simulation;
     }
 
     virtual bool frameRenderingQueued(const Ogre::FrameEvent& event);
 
 private:
-    void updateCamera(const Ogre::FrameEvent& event);
-
-private:
     Ogre::Root* mRoot;
     Ogre::String mPlugins;
-    Simulation* mSimulation;
+    SimulationContainer* mSimulation;
     WindowManager* mWindowManager;
     Ogre::SceneManager* mSceneManager;
     ResourceManager* mResourceManager;
+    double mUpdateInterval, mTimer;
 
 private:
     GraphicsEngine(){}

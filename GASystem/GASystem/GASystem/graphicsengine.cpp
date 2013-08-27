@@ -1,6 +1,6 @@
 #include "graphicsengine.h"
 
-GraphicsEngine::GraphicsEngine(Simulation* _simulation) : mSimulation(_simulation){
+GraphicsEngine::GraphicsEngine(SimulationContainer* _simulation) : mSimulation(_simulation){
 
     //debug and release plugins use different binaries thus different plugin config files need to be loaded
 #ifdef _DEBUG
@@ -39,6 +39,9 @@ void GraphicsEngine::renderSimulation(){
         }
     }
 
+    mUpdateInterval = 1.f/mSimulation->getCyclesPerSecond();
+    mTimer = mUpdateInterval;
+
     mSceneManager = mRoot->createSceneManager("DefaultSceneManager");
     
     Ogre::Camera* camera;
@@ -48,21 +51,24 @@ void GraphicsEngine::renderSimulation(){
     camera->setNearClipDistance(1);
 
     Ogre::SceneNode* camNode = mSceneManager->getRootSceneNode()->createChildSceneNode("CameraNode");
-    camNode->setPosition(Ogre::Vector3(100, 100, 100));
+    camNode->setPosition(Ogre::Vector3(0, 100, 0));
     camNode->lookAt(Ogre::Vector3(0, 0, 0), Ogre::Node::TS_WORLD);
     camNode->attachObject(camera);
+    camNode->setFixedYawAxis(true);
 
     mWindowManager->addViewport(viewport, camera);
+    mWindowManager->setCameraNode(camNode);
 
     mSceneManager->setAmbientLight(Ogre::ColourValue(0.2, 0.2, 0.2));
     Ogre::Light* light = mSceneManager->createLight("MainLight");
-    light->setPosition(100, 100, 100);
+    light->setPosition(50, 50, 50);
 
     //setup scene manager
-    for(map<string, pair<btRigidBody*, string>>::const_iterator iter = mSimulation->getSimulationState().begin(); iter != mSimulation->getSimulationState().end(); iter++){
+    for(map<string, ObjectInfo>::const_iterator iter = mSimulation->getSimulationState().begin(); iter != mSimulation->getSimulationState().end(); iter++){
         string entityName = iter->first;
-        btRigidBody* entityBody = iter->second.first;
-        string resourceName = iter->second.second;
+        btRigidBody* entityBody = iter->second.get<0>();
+        string resourceName = iter->second.get<1>();
+        vector3 scale = iter->second.get<2>();
 
         Ogre::Entity* entity = mSceneManager->createEntity(entityName, resourceName);
         Ogre::SceneNode* node = mSceneManager->getRootSceneNode()->createChildSceneNode(entityName);
@@ -73,8 +79,10 @@ void GraphicsEngine::renderSimulation(){
 
         node->setPosition(Ogre::Vector3(pos.getX(), pos.getY(), pos.getZ()));
         node->setOrientation(Ogre::Quaternion(rot.w(), rot.x(), rot.y(), rot.z()));
+        node->setScale(Ogre::Vector3(scale.x, scale.y, scale.z));
+        
     }
- 
+
     mRoot->startRendering();
 }
 
@@ -84,19 +92,24 @@ bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
     
     mWindowManager->getInputManager()->capture();
     
-    if(mWindowManager->getInputManager()->getLastKey() == OIS::KC_ESCAPE)
+    if(mWindowManager->getInputManager()->isKeyDown(OIS::KC_ESCAPE))
         return false;
 
+    mWindowManager->getInputManager()->updateCamera(event.timeSinceLastFrame);
 
-    updateCamera(event);
+    mTimer -= event.timeSinceLastFrame;
 
-    //put this on a timer
-    mSimulation->iterate();
+    if(mTimer <= 0){
+        while(mTimer <= 0){
+            mSimulation->iterate();
+            mTimer += mUpdateInterval;
+        }
+    }
 
     //sync
-    for(map<string, pair<btRigidBody*, string>>::const_iterator iter = mSimulation->getSimulationState().begin(); iter != mSimulation->getSimulationState().end(); iter++){
+    for(map<string, ObjectInfo>::const_iterator iter = mSimulation->getSimulationState().begin(); iter != mSimulation->getSimulationState().end(); iter++){
         string entityName = iter->first;
-        btRigidBody* entityBody = iter->second.first;
+        btRigidBody* entityBody = iter->second.get<0>();
 
         Ogre::SceneNode* node = mSceneManager->getSceneNode(entityName);
         
@@ -106,36 +119,6 @@ bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
         node->setPosition(Ogre::Vector3(pos.getX(), pos.getY(), pos.getZ()));
         node->setOrientation(Ogre::Quaternion(rot.w(), rot.x(), rot.y(), rot.z()));
     }
-            
 
     return true;
-}
-
-void GraphicsEngine::updateCamera(const Ogre::FrameEvent& event){
-    Ogre::SceneNode* camNode = mSceneManager->getSceneNode("CameraNode");
-    
-    Ogre::Vector3 translate(0, 0, 0);
-    
-    float move = 125;
-    float rotate = 0.13;
-
-    switch(mWindowManager->getInputManager()->getLastKey()){
-        case OIS::KC_A:
-            translate.x = -move;
-            break;
-        case OIS::KC_S:
-            translate.z = move;
-            break;
-        case OIS::KC_D:
-            translate.x = move;
-            break;
-        case OIS::KC_W:
-            translate.z = -move;
-            break;
-        default:
-            break;
-    }
-
-    camNode->translate(translate * event.timeSinceLastFrame, Ogre::Node::TS_LOCAL);
-
 }

@@ -66,6 +66,10 @@ public:
         }
     }
 
+    void setCameraNode(Ogre::SceneNode* _camNode){
+        mInputManager->setCameraNode(_camNode);
+    }
+
     bool isWindowClosed(){
         return mWindow->isClosed();
     }

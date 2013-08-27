@@ -11,6 +11,9 @@
 #include <string>
 
 #include <btBulletDynamicsCommon.h>
+#include <boost/tuple/tuple.hpp>
+
+typedef boost::tuples::tuple<btRigidBody*, string, vector3> ObjectInfo;
 
 using namespace std;
 
@@ -23,21 +26,21 @@ public:
         mCycleCounter = 0;
         mCyclesPerSecond = _cyclesPerSecond;
         mInitialised = false;
-
+        mSolution = _solution;
+    
         mBroadphase = new btDbvtBroadphase();
         mCollisionConfig = new btDefaultCollisionConfiguration();
         mDispatcher = new btCollisionDispatcher(mCollisionConfig);
         mSolver = new btSequentialImpulseConstraintSolver();
         mWorld = new btDiscreteDynamicsWorld(mDispatcher, mBroadphase, mSolver, mCollisionConfig);
-
     }
     virtual ~Simulation(){
-        for(map<string, pair<btRigidBody*, string>>::const_iterator iter = mWorldEntities.begin(); iter != mWorldEntities.end(); iter++){
-            delete iter->second.first->getCollisionShape();
+        for(map<string, ObjectInfo>::const_iterator iter = mWorldEntities.begin(); iter != mWorldEntities.end(); iter++){
+            delete iter->second.get<0>()->getCollisionShape();
             
-            mWorld->removeRigidBody(iter->second.first);
-            delete iter->second.first->getMotionState();
-            delete iter->second.first;
+            mWorld->removeRigidBody(iter->second.get<0>());
+            delete iter->second.get<0>()->getMotionState();
+            delete iter->second.get<0>();
         }
 
         if(mWorld)
@@ -72,6 +75,10 @@ public:
 
     }
 
+    uint getCyclesPerSecond(){
+        return mCyclesPerSecond;
+    }
+
     void setSolution(Solution* _solution){
         mSolution = _solution;
     }
@@ -91,7 +98,7 @@ public:
     virtual double fitness(vector<Fitness*> _fit)=0;
     virtual Simulation* getNewCopy()=0;
 
-    const map<string, pair<btRigidBody*, string>>& getSimulationState(){
+    const map<string, ObjectInfo>& getSimulationState(){
         return mWorldEntities;
     }
 
@@ -102,7 +109,7 @@ protected:
     uint mCyclesPerDecision;
     uint mCycleCounter;
     uint mCyclesPerSecond;
-    map<string, pair<btRigidBody*, string>> mWorldEntities;
+    map<string, ObjectInfo> mWorldEntities;
 
     btBroadphaseInterface* mBroadphase;
     btDefaultCollisionConfiguration* mCollisionConfig;

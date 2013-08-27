@@ -30,6 +30,22 @@ public:
         mSim->iterate();
     }
 
+    bool initialise(ResourceManager* _rm){
+        return mSim->initialise(_rm);
+    }
+
+    bool isInitialised(){
+        return mSim->isInitialised();
+    }
+
+    const map<string, ObjectInfo>& getSimulationState(){
+        return mSim->getSimulationState();
+    }
+
+    uint getCyclesPerSecond(){
+        return mSim->getCyclesPerSecond();
+    }
+
 protected:
     Simulation* mSim;
     vector<Fitness*> mFitnessFunctions;

@@ -37,7 +37,10 @@ public:
     virtual bool initialise(ResourceManager* _rm){
         if(mInitialised)
             return true;
-        btConvexShape* ogreheadColShape = _rm->getBulletCollisionShape("ogrehead.mesh");
+        
+        vector3 scale(10, 10, 10);
+
+        btConvexShape* ogreheadColShape = _rm->getBulletCollisionShape("cube.mesh", vector3(0, 0, 0), scale);
         btMotionState* motionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 0, 0)));
         btVector3 inertia(0, 0, 0);
         ogreheadColShape->calculateLocalInertia(0, inertia);
@@ -46,7 +49,7 @@ public:
         btRigidBody* ogreheadRigidBody = new btRigidBody(constructionInfo);
         
         mWorld->addRigidBody(ogreheadRigidBody);
-        mWorldEntities["head"] = make_pair(ogreheadRigidBody, "ogrehead.mesh");
+        mWorldEntities["head"] = ObjectInfo(ogreheadRigidBody, "cube.mesh", scale);
         
         mInitialised = true;
         

@@ -13,6 +13,11 @@ public:
     virtual double fitness(vector<Fitness*> _fit);
     virtual Simulation* getNewCopy();
     virtual bool initialise(ResourceManager* _rm);
+    void conformVelocities();
+    static void tickCallBack(btDynamicsWorld* world, btScalar timeStep){
+        PrototypeSimulation* sim = (PrototypeSimulation*)world->getWorldUserInfo();
+        sim->conformVelocities();
+    }
 
 private:
     bool createObject(string _meshname, string _entityName, vector3 _scale, vector3 _position, float _mass, ResourceManager* _rm);

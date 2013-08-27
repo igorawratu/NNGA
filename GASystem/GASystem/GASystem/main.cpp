@@ -20,6 +20,7 @@
 #include "simulationcontainer.h"
 #include "gaengine.h"
 #include "graphicsengine.h"
+#include "prototypesimulation.h"
 
 using namespace std;
 
@@ -448,10 +449,12 @@ void runGATests(){
 }
 
 int main(){
-    DummySimulation sim(100, 10, 5);
-    GraphicsEngine engine(&sim);
+    Solution solution("neuralxmls/solution/input.xml");
+    PrototypeSimulation sim(1000, 10, 24, &solution);
+    DummySimulation dumsim(100, 10, 5);
+    SimulationContainer cont(&sim, vector<Fitness*>());
+    GraphicsEngine engine(&cont);
     engine.renderSimulation();
-
 
     return 0;
 }
