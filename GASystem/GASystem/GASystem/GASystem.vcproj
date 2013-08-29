@@ -118,7 +118,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\boost&quot;;&quot;$(OGRE_HOME)\Samples\Common\include&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;&quot;$(BULLET_ROOT)\src&quot;"
+				AdditionalIncludeDirectories="&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(CPPREPO)\boost_1_51_0\boost_1_51_0&quot;;&quot;$(OGRE_HOME)\Samples\Common\include&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;&quot;$(BULLET_ROOT)\src&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -249,6 +249,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\collisionfitness.h"
+				>
+			</File>
+			<File
 				RelativePath=".\common.h"
 				>
 			</File>
@@ -370,6 +374,10 @@
 			</File>
 			<File
 				RelativePath=".\standardga.h"
+				>
+			</File>
+			<File
+				RelativePath=".\waypointfitness.h"
 				>
 			</File>
 			<File

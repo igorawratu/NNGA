@@ -12,6 +12,7 @@
 
 #include <btBulletDynamicsCommon.h>
 #include <boost/tuple/tuple.hpp>
+#include <BulletCollision/CollisionShapes/btCollisionShape.h>
 
 typedef boost::tuples::tuple<btRigidBody*, string, vector3> ObjectInfo;
 
@@ -20,13 +21,14 @@ using namespace std;
 class Simulation
 {
 public:
-    Simulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution){
+    Simulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager){
         mNumCycles = _numCycles;
         mCyclesPerDecision = _cyclesPerDecision;
         mCycleCounter = 0;
         mCyclesPerSecond = _cyclesPerSecond;
         mInitialised = false;
         mSolution = _solution;
+        mResourceManager = _resourceManager;
     
         mBroadphase = new btDbvtBroadphase();
         mCollisionConfig = new btDefaultCollisionConfiguration();
@@ -84,7 +86,7 @@ public:
     }
 
     virtual void iterate()=0;
-    virtual bool initialise(ResourceManager* _rm)=0;
+    virtual bool initialise()=0;
 
     bool isInitialised(){
         return mInitialised;
@@ -117,6 +119,7 @@ protected:
     btSequentialImpulseConstraintSolver* mSolver;
     btDiscreteDynamicsWorld* mWorld;
     Solution* mSolution;
+    ResourceManager* mResourceManager;
 };
 
 #endif

@@ -16,6 +16,10 @@
 
 #include <btBulletDynamicsCommon.h>
 
+#include <iostream>
+
+using namespace std;
+
 class GraphicsEngine : public Ogre::FrameListener
 {
 public:
@@ -28,6 +32,10 @@ public:
     }
 
     virtual bool frameRenderingQueued(const Ogre::FrameEvent& event);
+
+    ResourceManager* getResourceManager(){
+        return mResourceManager;
+    }
 
 private:
     Ogre::Root* mRoot;

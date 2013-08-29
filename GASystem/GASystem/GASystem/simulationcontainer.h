@@ -13,7 +13,12 @@ public:
         mFitnessFunctions = _fit;
         mSim = _sim;
     }
-    ~SimulationContainer(){}
+    ~SimulationContainer(){
+        if(mSim){
+            delete mSim;
+            mSim = 0;
+        }
+    }
 
     void resetSimulation(){
         Simulation* temp = mSim->getNewCopy();
@@ -21,9 +26,14 @@ public:
         mSim = temp;
     }
 
-    void runFullSimulation(Solution* solution){
+    void setSolution(Solution* _solution){
+        mSim->setSolution(_solution);
+    }
+
+    void runFullSimulation(Solution* _solution){
+        mSim->setSolution(_solution);
         mSim->runFullSimulation();
-        solution->fitness() = mSim->fitness(mFitnessFunctions);
+        _solution->fitness() = mSim->fitness(mFitnessFunctions);
     }
 
     void iterate(){
@@ -31,7 +41,7 @@ public:
     }
 
     bool initialise(ResourceManager* _rm){
-        return mSim->initialise(_rm);
+        return mSim->initialise();
     }
 
     bool isInitialised(){

@@ -4,7 +4,7 @@ ResourceManager::ResourceManager(){
 #ifdef _DEBUG
     Ogre::String resourcesCfg = "resources_d.cfg";
 #else
-    Ogre::string resourcesCfg = "resources.cfg";
+    Ogre::String resourcesCfg = "resources.cfg";
 #endif
     
     Ogre::ConfigFile cf;
@@ -121,7 +121,7 @@ bool ResourceManager::getMeshInformation(string _meshName, size_t& _vertexCount,
     return true;
 }
 
-btConvexShape* ResourceManager::getBulletCollisionShape(string _meshName, const vector3& _position, const vector3& _scale, const Ogre::Quaternion& _orientation){
+btCollisionShape* ResourceManager::getBulletCollisionShape(string _meshName, bool _static, bool _concave, const vector3& _position, const vector3& _scale, const Ogre::Quaternion& _orientation){
     unsigned long* indices;
     vector3* vertices;
     size_t vertexCount = 0, indexCount = 0;
@@ -131,7 +131,7 @@ btConvexShape* ResourceManager::getBulletCollisionShape(string _meshName, const 
 
     btTriangleMesh* triMesh = new btTriangleMesh();
 
-    cout << "DATA FOR " << _meshName << endl;
+    
 
     for(size_t i = 0; i < indexCount; i+=3){
         btVector3 v0(vertices[indices[i]].x, vertices[indices[i]].y, vertices[indices[i]].z);
@@ -141,16 +141,30 @@ btConvexShape* ResourceManager::getBulletCollisionShape(string _meshName, const 
         triMesh->addTriangle(v0, v1, v2);
     }
     
-    btConvexShape* unsimpShape = new btConvexTriangleMeshShape(triMesh);
-    btShapeHull* hull = new btShapeHull(unsimpShape);
-    hull->buildHull(unsimpShape->getMargin());
-    btConvexHullShape* out = new btConvexHullShape(&hull->getVertexPointer()->getX(), hull->numVertices());
+    if(!_concave){
+        btConvexShape* unsimpShape = new btConvexTriangleMeshShape(triMesh);
+        btShapeHull* hull = new btShapeHull(unsimpShape);
+        hull->buildHull(unsimpShape->getMargin());
+        btConvexHullShape* out = new btConvexHullShape(&hull->getVertexPointer()->getX(), hull->numVertices());
 
-    delete indices;
-    delete vertices;
-    delete triMesh;
-    delete unsimpShape;
-    delete hull;
+        delete indices;
+        delete vertices;
+        delete triMesh;
+        delete unsimpShape;
+        delete hull;
 
-    return out;
+        return out;
+    }
+    else if(_concave && _static){
+        btBvhTriangleMeshShape* concaveShape = new btBvhTriangleMeshShape(triMesh, true);
+
+        delete indices;
+        delete vertices;
+
+        return concaveShape;
+    }
+    else{
+        //convex decomposition here
+        return 0;
+    }
 }

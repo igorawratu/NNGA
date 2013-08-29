@@ -48,11 +48,12 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
         Solution currSolution(dynamic_cast<NNChromosome*>(population[i])->getNeuralNets());
         _simulationContainer->runFullSimulation(&currSolution);
         population[i]->fitness() = currSolution.fitness();
+        _simulationContainer->resetSimulation();
     }
 
+    uint stagnationCounter = 0;
     for(uint k = 0; k < mParameters.maxGenerations; k++){
-        cout << k << endl;
-        uint stagnationCounter = 0;
+        cout << "Generation: " << k << endl;
 
         quicksort(population, 0, population.size() - 1);
 
@@ -82,6 +83,7 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
             }
 
             offspring[i]->fitness() = currSolution.fitness();
+            _simulationContainer->resetSimulation();
         }
 
         //merge parents and children into 1 population as they contend with each other
@@ -101,15 +103,15 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
         double meanFit = 0, variance = 0;
         for(uint i = 0; i < population.size(); i++)
             meanFit += population[i]->fitness();
-        
+        meanFit /= population.size();
+
         for(uint i = 0; i < population.size(); i++){
             double dif = population[i]->fitness() - meanFit;
             variance += dif * dif;
         }
-        variance /= (population.size() - 1);
+        variance /= population.size();
         if(sqrt(variance) < mParameters.stagnationThreshold)
             stagnationCounter++;
-
         else stagnationCounter = 0;
 
         if(stagnationCounter > 10)        

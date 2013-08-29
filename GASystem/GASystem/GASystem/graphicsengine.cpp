@@ -51,7 +51,7 @@ void GraphicsEngine::renderSimulation(){
     camera->setNearClipDistance(1);
 
     Ogre::SceneNode* camNode = mSceneManager->getRootSceneNode()->createChildSceneNode("CameraNode");
-    camNode->setPosition(Ogre::Vector3(0, 100, 0));
+    camNode->setPosition(Ogre::Vector3(0, 150, 0));
     camNode->lookAt(Ogre::Vector3(0, 0, 0), Ogre::Node::TS_WORLD);
     camNode->attachObject(camera);
     camNode->setFixedYawAxis(true);
@@ -118,6 +118,11 @@ bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
         
         node->setPosition(Ogre::Vector3(pos.getX(), pos.getY(), pos.getZ()));
         node->setOrientation(Ogre::Quaternion(rot.w(), rot.x(), rot.y(), rot.z()));
+    }
+
+    if(mWindowManager->getInputManager()->isMousebuttonDown(OIS::MB_Left)){
+        Ogre::SceneNode* cam = mSceneManager->getSceneNode("CameraNode");
+        cout << cam->getPosition().x << " " << cam->getPosition().y << " " << cam->getPosition().z << endl;
     }
 
     return true;

@@ -12,7 +12,7 @@ public:
     Fitness(){}
     virtual ~Fitness(){}
 
-    virtual double evaluateFitness(vector<vector3> _pos, map<uint, double> _dblAcc, map<uint, long> _intAcc)=0;
+    virtual double evaluateFitness(map<string, vector3> _pos, map<string, double> _dblAcc, map<string, long> _intAcc)=0;
 };
 
 #endif

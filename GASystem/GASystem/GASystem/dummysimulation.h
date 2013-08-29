@@ -11,7 +11,7 @@ using namespace std;
 class DummySimulation : public Simulation
 {
 public:
-    DummySimulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, 0){}
+    DummySimulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, ResourceManager* _resourceManager) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, 0, _resourceManager){}
     virtual ~DummySimulation(){}
 
     virtual void iterate(){
@@ -20,9 +20,9 @@ public:
 
     virtual double fitness(vector<Fitness*> _fit){
         double finalFitness = 0;
-        map<uint, double> dblAcc;
-        map<uint, long> intAcc;
-        vector<vector3> pos;
+        map<string, double> dblAcc;
+        map<string, long> intAcc;
+        map<string, vector3> pos;
 
         for(uint k = 0; k < _fit.size(); k++)
             finalFitness += _fit[k]->evaluateFitness(pos, dblAcc, intAcc);
@@ -31,16 +31,16 @@ public:
     }
 
     virtual Simulation* getNewCopy(){
-        return new DummySimulation(mNumCycles, mCyclesPerDecision, mCyclesPerSecond);
+        return new DummySimulation(mNumCycles, mCyclesPerDecision, mCyclesPerSecond, mResourceManager);
     }
 
-    virtual bool initialise(ResourceManager* _rm){
+    virtual bool initialise(){
         if(mInitialised)
             return true;
         
         vector3 scale(10, 10, 10);
 
-        btConvexShape* ogreheadColShape = _rm->getBulletCollisionShape("cube.mesh", vector3(0, 0, 0), scale);
+        btCollisionShape* ogreheadColShape = mResourceManager->getBulletCollisionShape("cube.mesh", false, false, vector3(0, 0, 0), scale);
         btMotionState* motionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 0, 0)));
         btVector3 inertia(0, 0, 0);
         ogreheadColShape->calculateLocalInertia(0, inertia);

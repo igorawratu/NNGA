@@ -2,7 +2,9 @@
 #include <map>
 #include <string>
 #include <typeinfo>
+#include <vector>
 
+#include "common.h"
 #include "neuralnetwork.h"
 #include "pugixml.hpp"
 #include "nnchromosome.h"
@@ -21,6 +23,10 @@
 #include "gaengine.h"
 #include "graphicsengine.h"
 #include "prototypesimulation.h"
+#include "waypointfitness.h"
+#include "collisionfitness.h"
+
+//#define TRAIN
 
 using namespace std;
 
@@ -405,7 +411,7 @@ void testGA(){
     params.selectionAlgorithm = "RankSelection";
 
     GeneticAlgorithm* ga = new StandardGA(params);
-    Simulation* sim = new DummySimulation(100, 5, 5);
+    Simulation* sim = new DummySimulation(100, 5, 5, NULL);
     vector<Fitness*> fit;
     fit.push_back(new DummyFitness());
 
@@ -449,12 +455,60 @@ void runGATests(){
 }
 
 int main(){
-    Solution solution("neuralxmls/solution/input.xml");
-    PrototypeSimulation sim(1000, 10, 24, &solution);
-    DummySimulation dumsim(100, 10, 5);
-    SimulationContainer cont(&sim, vector<Fitness*>());
-    GraphicsEngine engine(&cont);
+    GraphicsEngine engine(NULL);
+
+    vector<vector3> waypoints;
+    waypoints.push_back(vector3(-44, -4, 50));
+    waypoints.push_back(vector3(-48, -4, -48));
+    waypoints.push_back(vector3(62, -4, -50));
+
+    PrototypeSimulation* sim = new PrototypeSimulation(waypoints, 1000, 5, 30, NULL, engine.getResourceManager());
+    sim->initialise();
+
+    vector<Fitness*> fitList;
+    fitList.push_back(new WaypointFitness(waypoints));
+    fitList.push_back(new CollisionFitness());
+
+    SimulationContainer cont(sim, fitList);
+
+#ifdef TRAIN
+    StandardGAParameters params;
+    params.populationSize = 50;
+    params.maxGenerations = 100;
+    params.nnFormatFilename = "neuralxmls/prototypesim/input.xml";
+    params.stagnationThreshold = 1;
+    params.fitnessEpsilonThreshold = 0;
+    params.mutationAlgorithm = "GaussianMutation";
+    params.mutationParameters["MutationProbability"] = 0.1;
+    params.mutationParameters["Deviation"] = 0.2;
+    params.mutationParameters["MaxConstraint"] = 1;
+    params.mutationParameters["MinConstraint"] = -1;
+    params.crossoverAlgorithm = "MultipointCrossover";
+    params.selectionAlgorithm = "RankSelection";
+
+    GeneticAlgorithm* ga = new StandardGA(params);
+
+    GAEngine gaengine;
+    Solution solution = gaengine.train(ga, &cont);
+
+    delete ga;
+
+    solution.printToFile("neuralxmls/prototypesim/output2.xml");
+
+    cont.resetSimulation();
+#else
+    Solution solution("neuralxmls/prototypesim/output.xml");
+#endif
+
+    cont.setSolution(&solution);
+
+    engine.setSimulation(&cont);
+    
     engine.renderSimulation();
+
+    for(int k = 0; k < fitList.size(); k++)
+        delete fitList[k];
+    fitList.clear();
 
     return 0;
 }
