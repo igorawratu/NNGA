@@ -7,7 +7,7 @@ class BridgeSimulation : public Simulation
 {
 public:
     BridgeSimulation();
-    BridgeSimulation(const BridgeSimulation& other);
+    
     virtual ~BridgeSimulation();
 
     virtual void iterate();

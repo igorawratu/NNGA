@@ -64,11 +64,11 @@ void GraphicsEngine::renderSimulation(){
     light->setPosition(50, 50, 50);
 
     //setup scene manager
-    for(map<string, ObjectInfo>::const_iterator iter = mSimulation->getSimulationState().begin(); iter != mSimulation->getSimulationState().end(); iter++){
+    for(map<string, Agent*>::const_iterator iter = mSimulation->getSimulationState().begin(); iter != mSimulation->getSimulationState().end(); iter++){
         string entityName = iter->first;
-        btRigidBody* entityBody = iter->second.get<0>();
-        string resourceName = iter->second.get<1>();
-        vector3 scale = iter->second.get<2>();
+        btRigidBody* entityBody = iter->second->getRigidBody();
+        string resourceName = iter->second->getModelName();
+        vector3 scale = iter->second->getScale();
 
         Ogre::Entity* entity = mSceneManager->createEntity(entityName, resourceName);
         Ogre::SceneNode* node = mSceneManager->getRootSceneNode()->createChildSceneNode(entityName);
@@ -107,9 +107,9 @@ bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
     }
 
     //sync
-    for(map<string, ObjectInfo>::const_iterator iter = mSimulation->getSimulationState().begin(); iter != mSimulation->getSimulationState().end(); iter++){
+    for(map<string, Agent*>::const_iterator iter = mSimulation->getSimulationState().begin(); iter != mSimulation->getSimulationState().end(); iter++){
         string entityName = iter->first;
-        btRigidBody* entityBody = iter->second.get<0>();
+        btRigidBody* entityBody = iter->second->getRigidBody();
 
         Ogre::SceneNode* node = mSceneManager->getSceneNode(entityName);
         

@@ -249,7 +249,15 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\agent.h"
+				>
+			</File>
+			<File
 				RelativePath=".\bridgesimulation.h"
+				>
+			</File>
+			<File
+				RelativePath=".\caragent.h"
 				>
 			</File>
 			<File
@@ -270,6 +278,10 @@
 			</File>
 			<File
 				RelativePath=".\crossoverfactory.h"
+				>
+			</File>
+			<File
+				RelativePath=".\cubeagent.h"
 				>
 			</File>
 			<File
@@ -382,6 +394,10 @@
 			</File>
 			<File
 				RelativePath=".\standardga.h"
+				>
+			</File>
+			<File
+				RelativePath=".\staticworldagent.h"
 				>
 			</File>
 			<File

@@ -493,7 +493,7 @@ int main(){
 
     delete ga;
 
-    solution.printToFile("neuralxmls/prototypesim/output2.xml");
+    solution.printToFile("neuralxmls/prototypesim/output.xml");
 
     cont.resetSimulation();
 #else

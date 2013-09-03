@@ -5,6 +5,7 @@
 #include "fitness.h"
 #include "resourcemanager.h"
 #include "solution.h"
+#include "agent.h"
 
 #include <map>
 #include <vector>
@@ -36,13 +37,11 @@ public:
         mSolver = new btSequentialImpulseConstraintSolver();
         mWorld = new btDiscreteDynamicsWorld(mDispatcher, mBroadphase, mSolver, mCollisionConfig);
     }
+
     virtual ~Simulation(){
-        for(map<string, ObjectInfo>::const_iterator iter = mWorldEntities.begin(); iter != mWorldEntities.end(); iter++){
-            delete iter->second.get<0>()->getCollisionShape();
-            
-            mWorld->removeRigidBody(iter->second.get<0>());
-            delete iter->second.get<0>()->getMotionState();
-            delete iter->second.get<0>();
+        for(map<string, Agent*>::const_iterator iter = mWorldEntities.begin(); iter != mWorldEntities.end(); iter++){
+            mWorld->removeRigidBody(iter->second->getRigidBody());
+            delete iter->second;
         }
 
         if(mWorld)
@@ -100,7 +99,7 @@ public:
     virtual double fitness(vector<Fitness*> _fit)=0;
     virtual Simulation* getNewCopy()=0;
 
-    const map<string, ObjectInfo>& getSimulationState(){
+    const map<string, Agent*>& getSimulationState(){
         return mWorldEntities;
     }
 
@@ -111,7 +110,7 @@ protected:
     uint mCyclesPerDecision;
     uint mCycleCounter;
     uint mCyclesPerSecond;
-    map<string, ObjectInfo> mWorldEntities;
+    map<string, Agent*> mWorldEntities;
 
     btBroadphaseInterface* mBroadphase;
     btDefaultCollisionConfiguration* mCollisionConfig;

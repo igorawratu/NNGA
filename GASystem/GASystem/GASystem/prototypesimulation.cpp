@@ -41,7 +41,7 @@ double PrototypeSimulation::fitness(vector<Fitness*> _fit){
 }
 
 vector3 PrototypeSimulation::getPositionInfo(string _entityName){
-    btRigidBody* rb = mWorldEntities["agentOne"].get<0>();
+    btRigidBody* rb = mWorldEntities["agentOne"]->getRigidBody();
     btTransform trans;
     rb->getMotionState()->getWorldTransform(trans);
 
@@ -56,53 +56,8 @@ Simulation* PrototypeSimulation::getNewCopy(){
 }
 
 void PrototypeSimulation::conformVelocities(){
-    vector3 maxVel(10, 10, 10), minVel(-10, -10, -10), agentOneVel, agentTwoVel;
-
-    btRigidBody* agentOne = mWorldEntities["agentOne"].get<0>();
-    btRigidBody* agentTwo = mWorldEntities["agentTwo"].get<0>();
-
-    bool update = false;
-
-    //agent one conform
-    if(agentOne->getLinearVelocity().getX() > maxVel.x)
-        agentOneVel.x = maxVel.x;
-    else if(agentOne->getLinearVelocity().getX() < minVel.x)
-        agentOneVel.x = minVel.x;
-    else agentOneVel.x = agentOne->getLinearVelocity().getX();
-
-    if(agentOne->getLinearVelocity().getY() > maxVel.y)
-        agentOneVel.y = maxVel.y;
-    else if(agentOne->getLinearVelocity().getY() < minVel.y)
-        agentOneVel.y = minVel.y;
-    else agentOneVel.y = agentOne->getLinearVelocity().getY();
-
-    if(agentOne->getLinearVelocity().getZ() > maxVel.z)
-        agentOneVel.z = maxVel.z;
-    else if(agentOne->getLinearVelocity().getZ() < minVel.z)
-        agentOneVel.z = minVel.z;
-    else agentOneVel.z = agentOne->getLinearVelocity().getZ();
-
-    //agent two conform
-    if(agentTwo->getLinearVelocity().getX() > maxVel.x)
-        agentTwoVel.x = maxVel.x;
-    else if(agentTwo->getLinearVelocity().getX() < minVel.x)
-        agentTwoVel.x = minVel.x;
-    else agentTwoVel.x = agentOne->getLinearVelocity().getX();
-
-    if(agentTwo->getLinearVelocity().getY() > maxVel.y)
-        agentTwoVel.y = maxVel.y;
-    else if(agentTwo->getLinearVelocity().getY() < minVel.y)
-        agentTwoVel.y = minVel.y;
-    else agentTwoVel.y = agentTwo->getLinearVelocity().getY();
-
-    if(agentTwo->getLinearVelocity().getZ() > maxVel.z)
-        agentTwoVel.z = maxVel.z;
-    else if(agentTwo->getLinearVelocity().getZ() < minVel.z)
-        agentTwoVel.z = minVel.z;
-    else agentTwoVel.z = agentTwo->getLinearVelocity().getZ();
-
-    agentOne->setLinearVelocity(btVector3(agentOneVel.x, agentOneVel.y, agentOneVel.z));
-    agentTwo->setLinearVelocity(btVector3(agentTwoVel.x, agentTwoVel.y, agentTwoVel.z));
+    mWorldEntities["agentOne"]->tick();
+    mWorldEntities["agentTwo"]->tick();
 }
 
 bool PrototypeSimulation::initialise(){
@@ -110,16 +65,19 @@ bool PrototypeSimulation::initialise(){
         return true;
 
     //agents
-    if(!createObject("cube.mesh", "agentOne", vector3(1, 1, 1), vector3(60, -2, 54), 0.01, mResourceManager, false, false))
+    mWorldEntities["agentOne"] = new CubeAgent(vector3(10, 10, 10), vector3(10, -10, 10));
+    if(!mWorldEntities["agentOne"]->initialise("cube.mesh", vector3(1, 1, 1), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(60, -2, 54), 0.01))
         return false;
-
-    if(!createObject("cube.mesh", "agentTwo", vector3(1, 1, 1), vector3(60, -2, 50), 0.01, mResourceManager, false, false))
+    
+    mWorldEntities["agentTwo"] = new CubeAgent(vector3(10, 10, 10), vector3(10, -10, 10));
+    if(!mWorldEntities["agentTwo"]->initialise("cube.mesh", vector3(1, 1, 1), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(60, -2, 50), 0.01))
         return false;
 
     mWaypointTracker["agentOne"] = mWaypointTracker["agentTwo"] = 0;
     
     //maze
-    if(!createObject("maze.mesh", "maze", vector3(10, 10, 10), vector3(0, 0, 0), 0, mResourceManager, true, true))
+    mWorldEntities["maze"] = new StaticWorldAgent(0.5, 0.1);
+    if(!mWorldEntities["maze"]->initialise("maze.mesh", vector3(10, 10, 10), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 0, 0), 0))
         return false;
 
     mInitialised = true;
@@ -127,33 +85,9 @@ bool PrototypeSimulation::initialise(){
     return true;
 }
 
-bool PrototypeSimulation::createObject(string _meshname, string _entityName, vector3 _scale, vector3 _position, float _mass, ResourceManager* _rm, bool _static, bool _concave){
-    btCollisionShape* shape = _rm->getBulletCollisionShape(_meshname, _static, _concave, vector3(0, 0, 0), _scale);
-    
-    if(!shape)
-        return false;
-
-    btMotionState* ms = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(_position.x, _position.y, _position.z)));
-    
-    btVector3 inertia(0, 0, 0);
-
-    if(!_static)
-        shape->calculateLocalInertia(_mass, inertia);
-    
-    btRigidBody::btRigidBodyConstructionInfo constructionInfo(_mass, ms, shape, inertia);
-
-    btRigidBody* rbody = new btRigidBody(constructionInfo);
-    rbody->setRestitution(0.5);
-    rbody->setSleepingThresholds(0.f, 0.0f);
-    mWorld->addRigidBody(rbody);
-    mWorldEntities[_entityName] = ObjectInfo(rbody, _meshname, _scale);
-
-    return true;
-}
-
 void PrototypeSimulation::applyUpdateRules(string _agentName){
     btTransform trans;
-    mWorldEntities[_agentName].get<0>()->getMotionState()->getWorldTransform(trans);
+    mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
 
     map<uint, double> input;
     map<uint, double> repulsionFactor;
@@ -183,13 +117,9 @@ void PrototypeSimulation::applyUpdateRules(string _agentName){
 
     vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
 
-    double xAccel = (output[0] - 0.5) * 10;
-    double zAccel = (output[1] - 0.5) * 10;
-    
-    mWorldEntities[_agentName].get<0>()->applyCentralForce(btVector3(xAccel, 0, zAccel));
+    mWorldEntities[_agentName]->update(output);
 
-    btVector3 vel = mWorldEntities[_agentName].get<0>()->getLinearVelocity();
-
+    //gets collision data
     int numManifolds = mWorld->getDispatcher()->getNumManifolds();
 	for (int i=0;i<numManifolds;i++)
 	{
@@ -197,11 +127,9 @@ void PrototypeSimulation::applyUpdateRules(string _agentName){
 		const btCollisionObject* obA = contactManifold->getBody0();
 		const btCollisionObject* obB = contactManifold->getBody1();
 
-        if(mWorldEntities[_agentName].get<0>() == obA || mWorldEntities[_agentName].get<0>() == obB)
+        if(mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB)
             mCollisions++;
     }
-
-    //mWorldEntities[_agentName].get<0>()->setLinearVelocity(btVector3(vel.getX() + xAccel, 0, vel.getZ() + zAccel));
 }
 
 void PrototypeSimulation::getRayCollisionDistances(map<uint, double>& _collisionDistances, const btVector3& _agentPosition){

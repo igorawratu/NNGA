@@ -48,7 +48,7 @@ public:
         return mSim->isInitialised();
     }
 
-    const map<string, ObjectInfo>& getSimulationState(){
+    const map<string, Agent*>& getSimulationState(){
         return mSim->getSimulationState();
     }
 

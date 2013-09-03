@@ -3,6 +3,8 @@
 
 #include "simulation.h"
 #include "common.h"
+#include "cubeagent.h"
+#include "staticworldagent.h"
 
 #include <vector>
 #include <map>
@@ -25,7 +27,6 @@ public:
     }
 
 private:
-    bool createObject(string _meshname, string _entityName, vector3 _scale, vector3 _position, float _mass, ResourceManager* _rm, bool _static, bool _concave);
     void getRayCollisionDistances(map<uint, double>& _collisionDistances, const btVector3& _agentPosition);
     void applyUpdateRules(string _agentName);
     double calcDistance(vector3 _from, vector3 _to);
