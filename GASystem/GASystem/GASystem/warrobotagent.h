@@ -1,22 +1,49 @@
-#ifndef CARAGENT_H
-#define CARAGENT_H
+#ifndef WARROBOTAGENT_H
+#define WARROBOTAGENT_H
 
 #include "agent.h"
+#include <iostream>
+#include <map>
 
-class CarAgent : public Agent
+using namespace std;
+
+class WarRobotAgent : public Agent
 {
 public:
-    CarAgent(double _maxLinearVel, double _maxAngularVel){
+    WarRobotAgent(double _maxLinearVel, double _maxAngularVel, double _shootCooldown, double _timePerTick, btDynamicsWorld* _world, map<Agent*, btCollisionWorld::ClosestRayResultCallback*>* _shootmap){
         mMaxLinearVel = _maxLinearVel;
         mMaxAngularVel = _maxAngularVel;
+        mShootCooldown = _shootCooldown;
+        mTimePerTick = _timePerTick;
+        mTimeUntilNextShot = 0;
+        mWorld = _world;
+        mShootmap = _shootmap;
     }
 
+    virtual ~WarRobotAgent();
+
     virtual void update(const vector<double>& _nnOutput){
-        assert(_nnOutput.size() >= 2);
+        assert(_nnOutput.size() >= 3);
 
-        mRigidBody->applyTorque(btVector3(0, _nnOutput[0]/10, 0));
+        //shoot
+        if(mTimeUntilNextShot == 0 && _nnOutput[0] > 0.5){
+            btVector3 relShootDir = btVector3(500, 0, 0);
+            btMatrix3x3& rot = mRigidBody->getWorldTransform().getBasis();
+            btVector3 corShootDir = rot * relShootDir;
 
-        btVector3 relativeForce = btVector3(_nnOutput[1], 0, 0);
+            btCollisionWorld::ClosestRayResultCallback* shootRay = new btCollisionWorld::ClosestRayResultCallback(mRigidBody->getWorldTransform().getOrigin(), corShootDir);
+            mWorld->rayTest(mRigidBody->getWorldTransform().getOrigin(), corShootDir, *shootRay);
+
+            (*mShootmap)[this] = shootRay;
+
+            mTimeUntilNextShot = mShootCooldown;
+        }
+
+        //rotation
+        mRigidBody->applyTorque(btVector3(0, _nnOutput[1]/10, 0));
+
+        //acceleration
+        btVector3 relativeForce = btVector3(_nnOutput[2], 0, 0);
         btMatrix3x3& rot = mRigidBody->getWorldTransform().getBasis();
         btVector3 correctedForce = rot * relativeForce;
         mRigidBody->applyCentralForce(correctedForce);
@@ -36,6 +63,9 @@ public:
             vector3 newLinVel = normalize(vector3(currLinVel.getX(), currLinVel.getY(), currLinVel.getZ()), mMaxLinearVel);
             mRigidBody->setLinearVelocity(btVector3(newLinVel.x, newLinVel.y, newLinVel.z));
         }
+
+        if(mTimeUntilNextShot > 0)
+            mTimeUntilNextShot = mTimeUntilNextShot - mTimePerTick < 0 ? 0 : mTimeUntilNextShot - mTimePerTick;
     }
 
 protected:
@@ -44,7 +74,7 @@ protected:
     }
 
     virtual void setRigidbodyProperties(){
-        mRigidBody->setRestitution(0.7);
+        mRigidBody->setRestitution(0.1);
         mRigidBody->setSleepingThresholds(0.f, 0.0f);
     }
 
@@ -72,8 +102,9 @@ private:
     }
 
 private:
-    double mMaxLinearVel;
-    double mMaxAngularVel;
+    double mMaxLinearVel, mMaxAngularVel, mShootCooldown, mTimePerTick, mTimeUntilNextShot;
+    btDynamicsWorld* mWorld;
+    map<Agent*, btCollisionWorld::ClosestRayResultCallback*>* mShootmap;
 };
 
 #endif

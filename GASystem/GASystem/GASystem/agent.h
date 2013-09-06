@@ -36,6 +36,8 @@ public:
         mRigidBody = new btRigidBody(constructionInfo);
 
         setRigidbodyProperties();
+
+        return true;
     }
 
     virtual ~Agent(){

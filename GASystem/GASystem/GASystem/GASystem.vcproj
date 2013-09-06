@@ -325,6 +325,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\mouseagent.h"
+				>
+			</File>
+			<File
 				RelativePath=".\multipointcrossover.h"
 				>
 			</File>
@@ -397,7 +401,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\starfighteragent.h"
+				>
+			</File>
+			<File
 				RelativePath=".\staticworldagent.h"
+				>
+			</File>
+			<File
+				RelativePath=".\warrobotagent.h"
 				>
 			</File>
 			<File

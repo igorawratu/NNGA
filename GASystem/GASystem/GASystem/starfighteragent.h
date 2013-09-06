@@ -1,22 +1,26 @@
-#ifndef CARAGENT_H
-#define CARAGENT_H
+#ifndef STARFIGHTERAGENT_H
+#define STARFIGHTERAGENT_H
 
 #include "agent.h"
 
-class CarAgent : public Agent
+#include <iostream>
+
+using namespace std;
+
+class StarfighterAgent : public Agent
 {
 public:
-    CarAgent(double _maxLinearVel, double _maxAngularVel){
-        mMaxLinearVel = _maxLinearVel;
-        mMaxAngularVel = _maxAngularVel;
+    StarfighterAgent(double _maxLinVel, double _maxAngVel){
+        mMaxLinVel = _maxLinVel;
+        mMaxAngVel = _maxAngVel;
     }
 
     virtual void update(const vector<double>& _nnOutput){
         assert(_nnOutput.size() >= 2);
 
-        mRigidBody->applyTorque(btVector3(0, _nnOutput[0]/10, 0));
+        mRigidBody->applyTorque(btVector3(_nnOutput[0]/10, _nnOutput[1]/10, _nnOutput[2]/10));
 
-        btVector3 relativeForce = btVector3(_nnOutput[1], 0, 0);
+        btVector3 relativeForce = btVector3(_nnOutput[3], 0, 0);
         btMatrix3x3& rot = mRigidBody->getWorldTransform().getBasis();
         btVector3 correctedForce = rot * relativeForce;
         mRigidBody->applyCentralForce(correctedForce);
@@ -44,7 +48,7 @@ protected:
     }
 
     virtual void setRigidbodyProperties(){
-        mRigidBody->setRestitution(0.7);
+        mRigidBody->setRestitution(1);
         mRigidBody->setSleepingThresholds(0.f, 0.0f);
     }
 
@@ -72,8 +76,7 @@ private:
     }
 
 private:
-    double mMaxLinearVel;
-    double mMaxAngularVel;
+    double mMaxLinVel, mMaxAngVel;
 };
 
 #endif

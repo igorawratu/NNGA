@@ -5,6 +5,10 @@
 #include "common.h"
 #include "cubeagent.h"
 #include "staticworldagent.h"
+#include "warrobotagent.h"
+
+#include "caragent.h"
+#include "mouseagent.h"
 
 #include <vector>
 #include <map>
