@@ -41,7 +41,7 @@ double PrototypeSimulation::fitness(vector<Fitness*> _fit){
 }
 
 vector3 PrototypeSimulation::getPositionInfo(string _entityName){
-    btRigidBody* rb = mWorldEntities["agentOne"]->getRigidBody();
+    btRigidBody* rb = mWorldEntities[_entityName]->getRigidBody();
     btTransform trans;
     rb->getMotionState()->getWorldTransform(trans);
 
@@ -66,7 +66,7 @@ bool PrototypeSimulation::initialise(){
 
     //agents
     mWorldEntities["agentOne"] = new CubeAgent(vector3(10, 10, 10), vector3(-10, -10, -10));
-    if(!mWorldEntities["agentOne"]->initialise("cube.mesh", vector3(1, 1, 1), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(60, -2, 54), 0.01))
+    if(!mWorldEntities["agentOne"]->initialise("car.mesh", vector3(1, 1, 1), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(60, -2, 54), 0.01))
         return false;
     mWorld->addRigidBody(mWorldEntities["agentOne"]->getRigidBody());
     

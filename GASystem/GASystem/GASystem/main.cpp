@@ -25,6 +25,7 @@
 #include "prototypesimulation.h"
 #include "waypointfitness.h"
 #include "collisionfitness.h"
+#include "bridgesimulation.h"
 
 //#define TRAIN
 
