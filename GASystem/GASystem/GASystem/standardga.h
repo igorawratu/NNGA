@@ -33,6 +33,8 @@ struct StandardGAParameters
     map<string, double> crossoverParameters;
     string selectionAlgorithm;
 
+    uint elitismCount;
+
 };
 
 class StandardGA : public GeneticAlgorithm

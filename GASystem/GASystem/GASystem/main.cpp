@@ -26,8 +26,9 @@
 #include "waypointfitness.h"
 #include "collisionfitness.h"
 #include "bridgesimulation.h"
+#include "finishlinefitness.h"
 
-//#define TRAIN
+#define TRAIN
 
 using namespace std;
 
@@ -456,28 +457,36 @@ void runGATests(){
 }
 
 int main(){
+    //srand(time(0));
     GraphicsEngine engine(NULL);
 
-    vector<vector3> waypoints;
+    /*vector<vector3> waypoints;
     waypoints.push_back(vector3(-44, -4, 50));
     waypoints.push_back(vector3(-48, -4, -48));
-    waypoints.push_back(vector3(62, -4, -50));
+    waypoints.push_back(vector3(62, -4, -50));*/
+    Line finishLine;
+    finishLine.p1 = vector3(-7, -47, -25);
+    finishLine.p2 = vector3(7, -47, -25);
+    
+    int seed = rand();
+    cout << seed << endl;
 
-    PrototypeSimulation* sim = new PrototypeSimulation(waypoints, 1000, 5, 30, NULL, engine.getResourceManager());
+    BridgeSimulation* sim = new BridgeSimulation(5, 10, finishLine, CAR, 300, 5, 30, NULL, engine.getResourceManager(), seed);
     sim->initialise();
 
     vector<Fitness*> fitList;
-    fitList.push_back(new WaypointFitness(waypoints));
+    //fitList.push_back(new WaypointFitness(waypoints));
     fitList.push_back(new CollisionFitness());
+    fitList.push_back(new FinishLineFitness(false, finishLine));
 
     SimulationContainer cont(sim, fitList);
 
 #ifdef TRAIN
     StandardGAParameters params;
-    params.populationSize = 50;
-    params.maxGenerations = 100;
-    params.nnFormatFilename = "neuralxmls/prototypesim/input.xml";
-    params.stagnationThreshold = 1;
+    params.populationSize = 100;
+    params.maxGenerations = 200;
+    params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input4h.xml";
+    params.stagnationThreshold = 10;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.1;
@@ -486,6 +495,7 @@ int main(){
     params.mutationParameters["MinConstraint"] = -1;
     params.crossoverAlgorithm = "MultipointCrossover";
     params.selectionAlgorithm = "RankSelection";
+    params.elitismCount = 5;
 
     GeneticAlgorithm* ga = new StandardGA(params);
 
@@ -494,11 +504,12 @@ int main(){
 
     delete ga;
 
-    solution.printToFile("neuralxmls/prototypesim/output.xml");
+    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
+    solution.printToFile("neuralxmls/bridgesimulation/car/output.xml");
 
     cont.resetSimulation();
 #else
-    Solution solution("neuralxmls/prototypesim/output.xml");
+    Solution solution("neuralxmls/bridgesimulation/car/output.xml");
 #endif
 
     cont.setSolution(&solution);

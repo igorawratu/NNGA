@@ -1,7 +1,5 @@
-#ifndef BRIDGESIMULATION_H
-#define BRIDGESIMULATION_H
-
-#include <vector>
+#ifndef CARCRASHSIMULATION_H
+#define CARCRASHSIMULATION_H
 
 #include <boost/lexical_cast.hpp>
 #include <boost/random.hpp>
@@ -11,42 +9,39 @@
 #include "simulation.h"
 #include "common.h"
 #include "caragent.h"
-#include "mouseagent.h"
 #include "staticworldagent.h"
 
-enum AgentType{MOUSE, CAR};
+#include <iostream>
+#include <vector>
 
-//#define MT
+using namespace std;
 
-class BridgeSimulation : public Simulation
+class CarCrashSimulation : public Simulation
 {
 public:
-    BridgeSimulation(double _rangerfinderRadius, uint _numAgents, Line _finishLine, AgentType _agentType, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed);
-    virtual ~BridgeSimulation();
+    CarCrashSimulation(uint _agentsPerSide, Line _groupOneFinish, Line _groupTwoFinish, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed);
+    virtual ~CarCrashSimulation();
     virtual void iterate();
     virtual double fitness(vector<Fitness*> _fit);
     virtual Simulation* getNewCopy();
     virtual bool initialise();
     void tick();
     static void tickCallBack(btDynamicsWorld* world, btScalar timeStep){
-        BridgeSimulation* sim = (BridgeSimulation*)world->getWorldUserInfo();
+        CarCrashSimulation* sim = (CarCrashSimulation*)world->getWorldUserInfo();
         sim->tick();
     }
 
 private:
     double getRayCollisionDistance(string _agentName, const btVector3& _ray);
-    void applyUpdateRules(string _agentName);
+    void applyUpdateRules(string _agentName, uint groupNum);
     double calcDistance(vector3 _from, vector3 _to);
     vector3 getPositionInfo(string _entityName);
 
 private:
-    Line mFinishLine;
-    vector<string> mAgents; 
+    Line mGroupOneFinish, mGroupTwoFinish;
+    vector<string> mGroupOneAgents, mGroupTwoAgents; 
     long mCollisions;
-    AgentType mAgentType;
     int mSeed;
-    double mRangefinderRadius;
-    double mRangefinderVals;
 };
 
 #endif

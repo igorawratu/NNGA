@@ -16,7 +16,9 @@ public:
 
         mRigidBody->applyTorque(btVector3(0, _nnOutput[0]/10, 0));
 
-        btVector3 relativeForce = btVector3(_nnOutput[1], 0, 0);
+        double currAcc = _nnOutput[1] - 0.3;
+
+        btVector3 relativeForce = btVector3(currAcc, 0, 0);
         btMatrix3x3& rot = mRigidBody->getWorldTransform().getBasis();
         btVector3 correctedForce = rot * relativeForce;
         mRigidBody->applyCentralForce(correctedForce);

@@ -1,10 +1,13 @@
 #include "bridgesimulation.h"
 
-BridgeSimulation::BridgeSimulation(uint _numAgents, Line _finishLine, AgentType _agentType, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager){
+BridgeSimulation::BridgeSimulation(double _rangefinderRadius, uint _numAgents, Line _finishLine, AgentType _agentType, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager){
     mWorld->setInternalTickCallback(BridgeSimulation::tickCallBack, this, true);
     mCollisions = 0;
     mAgentType = _agentType;
     mFinishLine = _finishLine;
+    mSeed = _seed;
+    mRangefinderRadius = _rangefinderRadius;
+    mRangefinderVals = 0;
 
     for(uint k = 0; k < _numAgents; k++)
         mAgents.push_back("agent" + boost::lexical_cast<string>(k));
@@ -17,7 +20,10 @@ void BridgeSimulation::iterate(){
         return;
 
     if(mCycleCounter % mCyclesPerDecision == 0){
-        for(uint k = 0; k < mAgents.size(); k++)
+#ifdef MT
+        #pragma omp parallel for
+#endif
+        for(int k = 0; k < mAgents.size(); k++)
             applyUpdateRules(mAgents[k]);
     }
 
@@ -30,13 +36,13 @@ double BridgeSimulation::fitness(vector<Fitness*> _fit){
     double finalFitness = 0;
 
     map<string, vector3> pos;
+    map<string, long> intAcc;
+    intAcc["Collisions"] = (mRangefinderVals + mCollisions) / 5; 
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
     for(uint k = 0; k < _fit.size(); k++)
-        finalFitness += _fit[k]->evaluateFitness(pos, map<string, double>(), map<string, long>());
-
-    cout << finalFitness << endl;
+        finalFitness += _fit[k]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
 }
@@ -50,14 +56,17 @@ vector3 BridgeSimulation::getPositionInfo(string _entityName){
 }
 
 Simulation* BridgeSimulation::getNewCopy(){
-    Simulation* newsim = new BridgeSimulation(mAgents.size(), mFinishLine, mAgentType, mNumCycles, mCyclesPerDecision, mCyclesPerSecond, mSolution, mResourceManager);
+    Simulation* newsim = new BridgeSimulation(mRangefinderRadius, mAgents.size(), mFinishLine, mAgentType, mNumCycles, mCyclesPerDecision, mCyclesPerSecond, mSolution, mResourceManager, mSeed);
     newsim->initialise();
 
     return newsim;
 }
 
 void BridgeSimulation::tick(){
-    for(uint k = 0; k < mAgents.size(); k++)
+#ifdef MT
+    #pragma omp parallel for
+#endif
+    for(int k = 0; k < mAgents.size(); k++)
         mWorldEntities[mAgents[k]]->tick();
 }
 
@@ -66,23 +75,25 @@ bool BridgeSimulation::initialise(){
         return true;
 
     //set the vals
-    vector3 minDim, maxDim;
+    vector3 minDim(-22, -47, 20), maxDim(22, -46.9, 35);
 
-    boost::mt19937 xrng(rand());
+    boost::mt19937 rng(mSeed);
+    boost::mt19937 rngz(mSeed + mSeed / 2);
+
     boost::uniform_real<double> distx(minDim.x, maxDim.x);
-    boost::mt19937 yrng(rand());
     boost::uniform_real<double> disty(minDim.y, maxDim.y);
-    boost::mt19937 zrng(rand());
     boost::uniform_real<double> distz(minDim.z, maxDim.z);
 
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genx(xrng, distx);
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> geny(yrng, disty);
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genz(zrng, distz);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genx(rng, distx);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> geny(rng, disty);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genz(rngz, distz);
 
     if(mAgentType == CAR){
+        btQuaternion rot(0, 0, 0, 1);
+        rot.setEuler(PI/2, 0, 0);
         for(uint k = 0; k < mAgents.size(); k++){
-            mWorldEntities[mAgents[k]] = new CarAgent(10, 1);
-            if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(genx(), geny(), genz()), 0.01))
+            mWorldEntities[mAgents[k]] = new CarAgent(10, 0.5);
+            if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(genx(), geny(), genz()), 0.01))
                 return false;
             mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());
         }
@@ -143,21 +154,22 @@ void BridgeSimulation::applyUpdateRules(string _agentName){
 
     //agent position
     input[9] = trans.getOrigin().getX() / 50;
-    input[10] = trans.getOrigin().getY() / 50;
-    input[11] = trans.getOrigin().getZ() / 50;
+    input[10] = trans.getOrigin().getZ() / 50;
     
     //goal line
-    input[12] = mFinishLine.p1.x / 50;
-    input[13] = mFinishLine.p1.y / 50;
-    input[14] = mFinishLine.p1.z / 50;
-    input[12] = mFinishLine.p2.x / 50;
-    input[13] = mFinishLine.p2.y / 50;
+    input[11] = mFinishLine.p1.x / 50;
+    input[12] = mFinishLine.p1.z / 50;
+    input[13] = mFinishLine.p2.x / 50;
     input[14] = mFinishLine.p2.z / 50;
 
     vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
 
     mWorldEntities[_agentName]->update(output);
 
+    for(uint k = 1; k <= 8; k++)
+        if(input[k] * 50 < 5)
+            mRangefinderVals += 1 - (input[k] * 50)/5;
+    
     //gets collision data
     int numManifolds = mWorld->getDispatcher()->getNumManifolds();
 	for (int i=0;i<numManifolds;i++)

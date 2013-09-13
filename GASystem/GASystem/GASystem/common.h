@@ -7,6 +7,8 @@
 #include <iostream>
 #include <cmath>
 
+const double PI = 3.141592653589793238462;
+
 using namespace std;
 
 typedef unsigned int uint;
@@ -31,10 +33,24 @@ struct vector3
     double x;
     double y;
     double z;
+
+    double calcDistance(vector3 _to){
+        double finalx = _to.x - x, finaly = _to.y - y, finalz = _to.z - z;
+
+        return sqrt(finalx*finalx + finaly*finaly + finalz*finalz);
+    }
+
+
 };
 
 float inline calcEucDistance(vector3 from, vector3 to){
     return sqrtf((to.x - from.x)*(to.x - from.x) + (to.y - from.y)*(to.y - from.y) + (to.z - from.z)*(to.z - from.z));
 }
+
+struct Line
+{
+    vector3 p1;
+    vector3 p2;
+};
 
 #endif
