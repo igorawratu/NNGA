@@ -88,9 +88,10 @@ bool BridgeSimulation::initialise(){
     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> geny(rng, disty);
     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genz(rngz, distz);
 
+    btQuaternion rot(0, 0, 0, 1);
+    rot.setEuler(PI/2, 0, 0);
+
     if(mAgentType == CAR){
-        btQuaternion rot(0, 0, 0, 1);
-        rot.setEuler(PI/2, 0, 0);
         for(uint k = 0; k < mAgents.size(); k++){
             mWorldEntities[mAgents[k]] = new CarAgent(10, 0.5);
             if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(genx(), geny(), genz()), 0.01))
@@ -100,8 +101,8 @@ bool BridgeSimulation::initialise(){
     }
     else if(mAgentType == MOUSE){
         for(uint k = 0; k < mAgents.size(); k++){
-            mWorldEntities[mAgents[k]] = new MouseAgent(5, 10, 0.5);
-            if(!mWorldEntities[mAgents[k]]->initialise("mouse.mesh", vector3(1, 1, 1), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(genx(), geny(), genz()), 0.01))
+            mWorldEntities[mAgents[k]] = new MouseAgent(3, 10, 0.5);
+            if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(genx(), geny(), genz()), 0.01))
                 return false;
             mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());
         }
@@ -166,20 +167,22 @@ void BridgeSimulation::applyUpdateRules(string _agentName){
 
     mWorldEntities[_agentName]->update(output);
 
-    for(uint k = 1; k <= 8; k++)
-        if(input[k] * 50 < 5)
-            mRangefinderVals += 1 - (input[k] * 50)/5;
-    
-    //gets collision data
-    int numManifolds = mWorld->getDispatcher()->getNumManifolds();
-	for (int i=0;i<numManifolds;i++)
-	{
-		btPersistentManifold* contactManifold =  mWorld->getDispatcher()->getManifoldByIndexInternal(i);
-		const btCollisionObject* obA = contactManifold->getBody0();
-		const btCollisionObject* obB = contactManifold->getBody1();
+    if(calcCrossVal(mFinishLine.p1, mFinishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0){
+        for(uint k = 1; k <= 8; k++)
+            if(input[k] * 50 < 5)
+                mRangefinderVals += 1 - (input[k] * 50)/5;
+        
+        //gets collision data
+        int numManifolds = mWorld->getDispatcher()->getNumManifolds();
+	    for (int i=0;i<numManifolds;i++)
+	    {
+		    btPersistentManifold* contactManifold =  mWorld->getDispatcher()->getManifoldByIndexInternal(i);
+		    const btCollisionObject* obA = contactManifold->getBody0();
+		    const btCollisionObject* obB = contactManifold->getBody1();
 
-        if(mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB)
-            mCollisions++;
+            if(mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB)
+                mCollisions++;
+        }
     }
 }
 

@@ -30,7 +30,7 @@ public:
         }
         else if(_nnOutput[0] >= 0.3 && _nnOutput[0] < 0.7){
             //do nothing
-            mRotationType = RIGHT;
+            mRotationType = NOROTATION;
             mCurrRotAngle = 0;
         }
         else{
@@ -43,14 +43,14 @@ public:
             mRigidBody->setLinearVelocity(btVector3(0, 0, 0));
         else{
             btVector3 relativeVel;
-            if(_nnOutput[0] >= 0.3 && _nnOutput[0] < 0.7)
+            if(_nnOutput[0] >= 0.3 && _nnOutput[0] < 0.6)
                 relativeVel = btVector3(mWalkSpeed, 0, 0);
             else
                 relativeVel = btVector3(mRunSpeed, 0, 0);
 
             btMatrix3x3& rot = mRigidBody->getWorldTransform().getBasis();
             btVector3 correctedVel = rot * relativeVel;
-            mRigidBody->setLinearVelocity(-correctedVel);
+            mRigidBody->setLinearVelocity(correctedVel);
         }
 
 
@@ -69,8 +69,6 @@ public:
             mCurrRotAngle += rot;
             mRotationType = mCurrRotAngle == mRotationAngle ? NOROTATION : LEFT;
         }
-
-        cout << rot << endl;
 
         mRigidBody->getWorldTransform().setRotation(mRigidBody->getWorldTransform().getRotation() * btQuaternion(btVector3(0, 1, 0), rot));
         if(mRotationType == NOROTATION)

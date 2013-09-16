@@ -10,6 +10,7 @@
 #include "common.h"
 
 #include "multipointcrossover.h"
+#include "spx.h"
 
 using namespace std;
 

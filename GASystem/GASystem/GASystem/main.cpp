@@ -28,7 +28,7 @@
 #include "bridgesimulation.h"
 #include "finishlinefitness.h"
 
-#define TRAIN
+//#define TRAIN
 
 using namespace std;
 
@@ -483,8 +483,8 @@ int main(){
 
 #ifdef TRAIN
     StandardGAParameters params;
-    params.populationSize = 100;
-    params.maxGenerations = 200;
+    params.populationSize = 50;
+    params.maxGenerations = 100;
     params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input4h.xml";
     params.stagnationThreshold = 10;
     params.fitnessEpsilonThreshold = 0;

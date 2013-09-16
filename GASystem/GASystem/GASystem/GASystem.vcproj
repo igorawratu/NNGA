@@ -418,6 +418,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\spx.h"
+				>
+			</File>
+			<File
 				RelativePath=".\standardga.h"
 				>
 			</File>

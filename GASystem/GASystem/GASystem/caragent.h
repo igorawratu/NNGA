@@ -9,19 +9,26 @@ public:
     CarAgent(double _maxLinearVel, double _maxAngularVel){
         mMaxLinearVel = _maxLinearVel;
         mMaxAngularVel = _maxAngularVel;
+        mCurrVel = 0;
     }
 
     virtual void update(const vector<double>& _nnOutput){
         assert(_nnOutput.size() >= 2);
 
-        mRigidBody->applyTorque(btVector3(0, _nnOutput[0]/10, 0));
+        mRigidBody->applyTorque(btVector3(0, (_nnOutput[0] - 0.5)/2, 0));
 
         double currAcc = _nnOutput[1] - 0.3;
+        mCurrVel += currAcc * 3;
+        if(mCurrVel > mMaxLinearVel)
+            mCurrVel = mMaxLinearVel;
 
-        btVector3 relativeForce = btVector3(currAcc, 0, 0);
+        btVector3 relativeVel = btVector3(mCurrVel, 0, 0);
+
         btMatrix3x3& rot = mRigidBody->getWorldTransform().getBasis();
-        btVector3 correctedForce = rot * relativeForce;
-        mRigidBody->applyCentralForce(correctedForce);
+        btVector3 correctedVel = rot * relativeVel;
+        correctedVel.setY(0);
+
+        mRigidBody->setLinearVelocity(correctedVel);
     }
 
     virtual void tick(){
@@ -34,10 +41,7 @@ public:
 
         btVector3 currLinVel = mRigidBody->getLinearVelocity();
 
-        if(calcDistance(vector3(0, 0, 0), vector3(currLinVel.getX(), currLinVel.getY(), currLinVel.getZ())) > mMaxLinearVel){
-            vector3 newLinVel = normalize(vector3(currLinVel.getX(), currLinVel.getY(), currLinVel.getZ()), mMaxLinearVel);
-            mRigidBody->setLinearVelocity(btVector3(newLinVel.x, newLinVel.y, newLinVel.z));
-        }
+        mCurrVel = calcDistance(vector3(0, 0, 0), vector3(currLinVel.getX(), currLinVel.getY(), currLinVel.getZ()));
     }
 
 protected:
@@ -76,6 +80,7 @@ private:
 private:
     double mMaxLinearVel;
     double mMaxAngularVel;
+    double mCurrVel;
 };
 
 #endif
