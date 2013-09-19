@@ -11,7 +11,9 @@ public:
         mFriction = _friction;
     }
     
-    virtual ~StaticWorldAgent(){}
+    virtual ~StaticWorldAgent(){
+        delete dynamic_cast<btBvhTriangleMeshShape*>(mRigidBody->getCollisionShape())->getMeshInterface();
+    }
 
     virtual void update(const vector<double>& _nnOutput){
         //do not need to update static world objects

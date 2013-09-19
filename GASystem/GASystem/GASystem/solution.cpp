@@ -49,10 +49,8 @@ void Solution::printToFile(string _filename){
     xmldoc doc;
     pugi::xml_node root = doc.append_child("NeuralNetworks");
 
-    for(uint k = 0; k < mNeuralNets.size(); k++){
-        pugi::xml_node nnNode;
+    for(uint k = 0; k < mNeuralNets.size(); k++)
         mNeuralNets[k].getXMLStructure(root);
-    }
 
     doc.save_file(_filename.c_str());
     

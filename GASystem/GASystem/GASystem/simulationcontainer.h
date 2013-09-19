@@ -35,6 +35,7 @@ public:
         mSim->runFullSimulation();
         _solution->fitness() = mSim->fitness(mFitnessFunctions);
     }
+    
 
     void iterate(){
         mSim->iterate();

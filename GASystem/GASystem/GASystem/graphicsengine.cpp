@@ -95,6 +95,9 @@ bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
     if(mWindowManager->getInputManager()->isKeyDown(OIS::KC_ESCAPE))
         return false;
 
+    if(mWindowManager->getInputManager()->isKeyDown(OIS::KC_R))
+        mSimulation->resetSimulation();
+
     mWindowManager->getInputManager()->updateCamera(event.timeSinceLastFrame);
 
     mTimer -= event.timeSinceLastFrame;

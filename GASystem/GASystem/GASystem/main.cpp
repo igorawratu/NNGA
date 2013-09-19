@@ -28,7 +28,7 @@
 #include "bridgesimulation.h"
 #include "finishlinefitness.h"
 
-//#define TRAIN
+#define TRAIN
 
 using namespace std;
 
@@ -458,6 +458,7 @@ void runGATests(){
 
 int main(){
     //srand(time(0));
+    int seed = rand();
     GraphicsEngine engine(NULL);
 
     /*vector<vector3> waypoints;
@@ -465,10 +466,9 @@ int main(){
     waypoints.push_back(vector3(-48, -4, -48));
     waypoints.push_back(vector3(62, -4, -50));*/
     Line finishLine;
-    finishLine.p1 = vector3(-7, -47, -25);
-    finishLine.p2 = vector3(7, -47, -25);
+    finishLine.p1 = vector3(-10, 0, -25);
+    finishLine.p2 = vector3(10, 0, -25);
     
-    int seed = rand();
     cout << seed << endl;
 
     BridgeSimulation* sim = new BridgeSimulation(5, 10, finishLine, CAR, 300, 5, 30, NULL, engine.getResourceManager(), seed);
@@ -485,7 +485,7 @@ int main(){
     StandardGAParameters params;
     params.populationSize = 50;
     params.maxGenerations = 100;
-    params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input4h.xml";
+    params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input5h.xml";
     params.stagnationThreshold = 10;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
@@ -513,7 +513,7 @@ int main(){
 #endif
 
     cont.setSolution(&solution);
-
+    
     engine.setSimulation(&cont);
     
     engine.renderSimulation();

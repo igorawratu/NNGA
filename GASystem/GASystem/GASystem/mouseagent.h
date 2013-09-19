@@ -39,11 +39,11 @@ public:
         }
 
         //velocity
-        if(_nnOutput[1] < 0.3)
+        if(_nnOutput[1] < 0.2)
             mRigidBody->setLinearVelocity(btVector3(0, 0, 0));
         else{
             btVector3 relativeVel;
-            if(_nnOutput[0] >= 0.3 && _nnOutput[0] < 0.6)
+            if(_nnOutput[0] >= 0.2 && _nnOutput[0] < 0.6)
                 relativeVel = btVector3(mWalkSpeed, 0, 0);
             else
                 relativeVel = btVector3(mRunSpeed, 0, 0);
@@ -60,12 +60,12 @@ public:
         btQuaternion quat;
         double rot = 0;
         if(mRotationType == RIGHT){
-            rot = mCurrRotAngle - 0.1 < -mRotationAngle ? - mRotationAngle - mCurrRotAngle : -0.1;
+            rot = mCurrRotAngle - 0.2 < -mRotationAngle ? - mRotationAngle - mCurrRotAngle : -0.2;
             mCurrRotAngle += rot;
             mRotationType = mCurrRotAngle == -mRotationAngle ? NOROTATION : RIGHT;
         }
         else if(mRotationType == LEFT){
-            rot = mCurrRotAngle + 0.1 > mRotationAngle ? mRotationAngle - mCurrRotAngle : 0.1;
+            rot = mCurrRotAngle + 0.2 > mRotationAngle ? mRotationAngle - mCurrRotAngle : 0.2;
             mCurrRotAngle += rot;
             mRotationType = mCurrRotAngle == mRotationAngle ? NOROTATION : LEFT;
         }

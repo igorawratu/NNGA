@@ -37,7 +37,7 @@ double BridgeSimulation::fitness(vector<Fitness*> _fit){
 
     map<string, vector3> pos;
     map<string, long> intAcc;
-    intAcc["Collisions"] = (mRangefinderVals + mCollisions) / 5; 
+    intAcc["Collisions"] = mRangefinderVals/5 + mCollisions/5; 
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
@@ -75,7 +75,8 @@ bool BridgeSimulation::initialise(){
         return true;
 
     //set the vals
-    vector3 minDim(-22, -47, 20), maxDim(22, -46.9, 35);
+    vector3 minDim(-20, -7.1, 25), maxDim(25, -7, 40);
+    //vector3 minDim(-20, -47, 20), maxDim(20, -46.9, 35);
 
     boost::mt19937 rng(mSeed);
     boost::mt19937 rngz(mSeed + mSeed / 2);
@@ -94,7 +95,8 @@ bool BridgeSimulation::initialise(){
     if(mAgentType == CAR){
         for(uint k = 0; k < mAgents.size(); k++){
             mWorldEntities[mAgents[k]] = new CarAgent(10, 0.5);
-            if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(genx(), geny(), genz()), 0.01))
+            vector3 pos(genx(), geny(), genz());
+            if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, pos, 0.01))
                 return false;
             mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());
         }
@@ -112,10 +114,20 @@ bool BridgeSimulation::initialise(){
         return false;
     }
     
-    mWorldEntities["bridge"] = new StaticWorldAgent(0.5, 0.1);
+    mWorldEntities["bridgewall"] = new StaticWorldAgent(0.5, 0.1);
+    if(!mWorldEntities["bridgewall"]->initialise("newbridgewall.mesh", vector3(50, 50, 50), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 0, 0), 0))
+        return false;
+    mWorld->addRigidBody(mWorldEntities["bridgewall"]->getRigidBody());
+
+    mWorldEntities["bridgefloor"] = new StaticWorldAgent(0.5, 0.1);
+    if(!mWorldEntities["bridgefloor"]->initialise("newbridgefloor.mesh", vector3(50, 50, 50), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 0, 0), 0))
+        return false;
+    mWorld->addRigidBody(mWorldEntities["bridgefloor"]->getRigidBody());
+
+    /*mWorldEntities["bridge"] = new StaticWorldAgent(0.5, 0.1);
     if(!mWorldEntities["bridge"]->initialise("bridge.mesh", vector3(50, 50, 50), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 0, 0), 0))
         return false;
-    mWorld->addRigidBody(mWorldEntities["bridge"]->getRigidBody());
+    mWorld->addRigidBody(mWorldEntities["bridge"]->getRigidBody());*/
 
     mInitialised = true;
     
@@ -132,7 +144,7 @@ void BridgeSimulation::applyUpdateRules(string _agentName){
         input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 0)) / 50;
         input[2] = getRayCollisionDistance(_agentName, btVector3(-100, 0, 0)) / 50;
         input[3] = getRayCollisionDistance(_agentName, btVector3(0, 0, 100)) / 50;
-        input[4] = getRayCollisionDistance(_agentName, btVector3(0, 0, 100)) / 50;
+        input[4] = getRayCollisionDistance(_agentName, btVector3(0, 0, -100)) / 50;
         input[5] = getRayCollisionDistance(_agentName, btVector3(100, 0, -100)) / 50;
         input[6] = getRayCollisionDistance(_agentName, btVector3(-100, 0, 100)) / 50;
         input[7] = getRayCollisionDistance(_agentName, btVector3(-100, 0, -100)) / 50;
@@ -170,18 +182,24 @@ void BridgeSimulation::applyUpdateRules(string _agentName){
     if(calcCrossVal(mFinishLine.p1, mFinishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0){
         for(uint k = 1; k <= 8; k++)
             if(input[k] * 50 < 5)
-                mRangefinderVals += 1 - (input[k] * 50)/5;
+                mRangefinderVals += 1 - input[k] * 5;
         
         //gets collision data
         int numManifolds = mWorld->getDispatcher()->getNumManifolds();
 	    for (int i=0;i<numManifolds;i++)
 	    {
 		    btPersistentManifold* contactManifold =  mWorld->getDispatcher()->getManifoldByIndexInternal(i);
+            if(contactManifold->getNumContacts() < 1)
+                continue;
+
 		    const btCollisionObject* obA = contactManifold->getBody0();
 		    const btCollisionObject* obB = contactManifold->getBody1();
-
-            if(mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB)
-                mCollisions++;
+            
+            if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB)){
+                //do not count floor based collisions
+                if(!(mWorldEntities["bridgefloor"]->getRigidBody() == obA || mWorldEntities["bridgefloor"]->getRigidBody() == obB))
+                    mCollisions+=2;
+            }
         }
     }
 }

@@ -148,7 +148,8 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
     quicksort(population, 0, population.size() - 1);
 
     Solution finalSolution(dynamic_cast<NNChromosome*>(population[0])->getNeuralNets());
-    finalSolution.fitness() = population[0]->fitness();
+    _simulationContainer->runFullSimulation(&finalSolution);
+    _simulationContainer->resetSimulation();
 
     for(uint i = 0; i < population.size(); i++)
         delete population[i];

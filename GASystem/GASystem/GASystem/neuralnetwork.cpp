@@ -234,7 +234,7 @@ vector<double> NeuralNetwork::evaluate(map<uint, double> _inputs){
         mNeuronCache[iter->first]->setInput(iter->second);
     }
 
-    mCounter++;
+    ++mCounter;
     for(map<uint, Neuron*>::iterator iter = mOutput.begin(); iter != mOutput.end(); iter++)
         output.push_back(iter->second->evaluate(mCounter));
 
@@ -276,7 +276,7 @@ void NeuralNetwork::getXMLStructure(pugi::xml_node& _root){
             weightAtt.set_value("Fixed");
             vector<double> weights = iter->second->getWeights();
             for(uint k = 0; k < weights.size(); k++)
-                weightRoot.append_child("Weight").append_attribute("Value") = weights[k];
+                weightRoot.append_child("Weight").append_attribute("Value") = boost::lexical_cast<std::string>(weights[k]).c_str();
 
             //set predecessor data
             pugi::xml_node predecessorRoot = currentNeuron.append_child("Predecessors");
