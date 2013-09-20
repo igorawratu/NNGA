@@ -41,6 +41,7 @@ private:
     void applyUpdateRules(string _agentName);
     double calcDistance(vector3 _from, vector3 _to);
     vector3 getPositionInfo(string _entityName);
+    void calcCollisions(string _agentName);
 
 private:
     Line mFinishLine;

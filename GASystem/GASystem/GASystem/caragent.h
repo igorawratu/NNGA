@@ -52,6 +52,8 @@ protected:
     virtual void setRigidbodyProperties(){
         mRigidBody->setRestitution(0.7);
         mRigidBody->setSleepingThresholds(0.f, 0.0f);
+        mRigidBody->setAngularFactor(btVector3(0, 1, 0));
+        mRigidBody->setLinearFactor(btVector3(1, 0, 1));
     }
 
     virtual btVector3 calculateInertia(double _mass, btCollisionShape* _shape){

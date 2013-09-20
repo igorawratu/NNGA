@@ -484,16 +484,16 @@ int main(){
 #ifdef TRAIN
     StandardGAParameters params;
     params.populationSize = 50;
-    params.maxGenerations = 100;
+    params.maxGenerations = 200;
     params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input5h.xml";
     params.stagnationThreshold = 10;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.1;
-    params.mutationParameters["Deviation"] = 0.2;
+    params.mutationParameters["MutationProbability"] = 0.02;
+    params.mutationParameters["Deviation"] = 0.1;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "MultipointCrossover";
+    params.crossoverAlgorithm = "SPX";
     params.selectionAlgorithm = "RankSelection";
     params.elitismCount = 5;
 
