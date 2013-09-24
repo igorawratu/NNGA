@@ -10,13 +10,12 @@ using namespace std;
 class WarRobotAgent : public Agent
 {
 public:
-    WarRobotAgent(double _maxLinearVel, double _maxAngularVel, double _shootCooldown, double _timePerTick, btDynamicsWorld* _world, map<Agent*, btCollisionWorld::ClosestRayResultCallback*>* _shootmap){
+    WarRobotAgent(double _maxLinearVel, double _maxAngularVel, double _shootCooldown, double _timePerTick, map<Agent*, btCollisionWorld::ClosestRayResultCallback*>* _shootmap){
         mMaxLinearVel = _maxLinearVel;
         mMaxAngularVel = _maxAngularVel;
         mShootCooldown = _shootCooldown;
         mTimePerTick = _timePerTick;
         mTimeUntilNextShot = 0;
-        mWorld = _world;
         mShootmap = _shootmap;
     }
 
@@ -103,7 +102,6 @@ private:
 
 private:
     double mMaxLinearVel, mMaxAngularVel, mShootCooldown, mTimePerTick, mTimeUntilNextShot;
-    btDynamicsWorld* mWorld;
     map<Agent*, btCollisionWorld::ClosestRayResultCallback*>* mShootmap;
 };
 

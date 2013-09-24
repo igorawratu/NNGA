@@ -37,8 +37,11 @@ double BridgeSimulation::fitness(vector<Fitness*> _fit){
 
     map<string, vector3> pos;
     map<string, long> intAcc;
-    intAcc["Collisions"] = mRangefinderVals/10 + mCollisions; 
-    //cout << mRangefinderVals << " " << mCollisions << endl;
+    intAcc["Collisions"] = (mRangefinderVals/10 + mCollisions); 
+    intAcc["FLFitnessWeight"] = 5;
+    intAcc["Positive"] = 0;
+    pos["LineP1"] = mFinishLine.p1;
+    pos["LineP2"] = mFinishLine.p2;
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
@@ -106,7 +109,7 @@ bool BridgeSimulation::initialise(){
     }
     else if(mAgentType == MOUSE){
         for(uint k = 0; k < mAgents.size(); k++){
-            mWorldEntities[mAgents[k]] = new MouseAgent(3, 10, 0.5);
+            mWorldEntities[mAgents[k]] = new MouseAgent(10, 0.5);
             if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(genx(), geny(), genz()), 0.01))
                 return false;
             mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());

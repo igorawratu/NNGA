@@ -12,67 +12,45 @@ enum RotationType{NOROTATION, RIGHT, LEFT};
 class MouseAgent : public Agent
 {
 public:
-    MouseAgent(double _walkSpeed, double _runSpeed, double _rotationAngle){
-        mWalkSpeed = _walkSpeed;
-        mRunSpeed = _runSpeed;
-        mRotationAngle = _rotationAngle;
-        mRotationType = NOROTATION;
+    MouseAgent(double _maxLinearVel, double _maxAngularVel){
+        mMaxLinearVel = _maxLinearVel;
+        mMaxAngularVel = _maxAngularVel;
+        mCurrVel = 0;
     }
 
     virtual void update(const vector<double>& _nnOutput){
-        assert(_nnOutput.size() >= 2);
-        //assumes output between 0 and 1
+        assert(_nnOutput.size() >= 3);
+        
+        mRigidBody->applyTorque(btVector3(0, (_nnOutput[0] - 0.5)/2, 0));
 
-        //rotation
-        if(_nnOutput[0] < 0.3){
-            mRotationType = LEFT;
-            mCurrRotAngle = 0;
-        }
-        else if(_nnOutput[0] >= 0.3 && _nnOutput[0] < 0.7){
-            //do nothing
-            mRotationType = NOROTATION;
-            mCurrRotAngle = 0;
-        }
-        else{
-            mRotationType = RIGHT;
-            mCurrRotAngle = 0;
-        }
+        double currAcc = _nnOutput[1];
+        mCurrVel += currAcc * 2;
+        if(mCurrVel > mMaxLinearVel)
+            mCurrVel = mMaxLinearVel;
 
-        //velocity
-        if(_nnOutput[1] < 0.2)
-            mRigidBody->setLinearVelocity(btVector3(0, 0, 0));
-        else{
-            btVector3 relativeVel;
-            if(_nnOutput[0] >= 0.2 && _nnOutput[0] < 0.6)
-                relativeVel = btVector3(mWalkSpeed, 0, 0);
-            else
-                relativeVel = btVector3(mRunSpeed, 0, 0);
+        if(_nnOutput[2] > 0.5)
+            mCurrVel = 0;
 
-            btMatrix3x3& rot = mRigidBody->getWorldTransform().getBasis();
-            btVector3 correctedVel = rot * relativeVel;
-            mRigidBody->setLinearVelocity(correctedVel);
-        }
+        btVector3 relativeVel = btVector3(mCurrVel, 0, 0);
 
+        btMatrix3x3& rot = mRigidBody->getWorldTransform().getBasis();
+        btVector3 correctedVel = rot * relativeVel;
+        correctedVel.setY(0);
 
+        mRigidBody->setLinearVelocity(correctedVel);
     }
 
     virtual void tick(){
-        btQuaternion quat;
-        double rot = 0;
-        if(mRotationType == RIGHT){
-            rot = mCurrRotAngle - 0.2 < -mRotationAngle ? - mRotationAngle - mCurrRotAngle : -0.2;
-            mCurrRotAngle += rot;
-            mRotationType = mCurrRotAngle == -mRotationAngle ? NOROTATION : RIGHT;
-        }
-        else if(mRotationType == LEFT){
-            rot = mCurrRotAngle + 0.2 > mRotationAngle ? mRotationAngle - mCurrRotAngle : 0.2;
-            mCurrRotAngle += rot;
-            mRotationType = mCurrRotAngle == mRotationAngle ? NOROTATION : LEFT;
+        btVector3 currAngVel = mRigidBody->getAngularVelocity();
+
+        if(calcDistance(vector3(0, 0, 0), vector3(currAngVel.getX(), currAngVel.getY(), currAngVel.getZ())) > mMaxAngularVel){
+            vector3 newAngVel = normalize(vector3(currAngVel.getX(), currAngVel.getY(), currAngVel.getZ()), mMaxAngularVel);
+            mRigidBody->setAngularVelocity(btVector3(newAngVel.x, newAngVel.y, newAngVel.z));
         }
 
-        mRigidBody->getWorldTransform().setRotation(mRigidBody->getWorldTransform().getRotation() * btQuaternion(btVector3(0, 1, 0), rot));
-        if(mRotationType == NOROTATION)
-            mCurrRotAngle = 0;
+        btVector3 currLinVel = mRigidBody->getLinearVelocity();
+
+        mCurrVel = calcDistance(vector3(0, 0, 0), vector3(currLinVel.getX(), currLinVel.getY(), currLinVel.getZ()));
     }
 
 protected:
@@ -83,6 +61,8 @@ protected:
     virtual void setRigidbodyProperties(){
         mRigidBody->setRestitution(0.1);
         mRigidBody->setSleepingThresholds(0.f, 0.0f);
+        mRigidBody->setAngularFactor(btVector3(0, 1, 0));
+        mRigidBody->setLinearFactor(btVector3(1, 0, 1));
     }
 
     virtual btVector3 calculateInertia(double _mass, btCollisionShape* _shape){
@@ -93,11 +73,25 @@ protected:
     }
 
 private:
-    double mWalkSpeed;
-    double mRunSpeed;
-    double mRotationAngle;
-    double mCurrRotAngle;
-    RotationType mRotationType;
+    vector3 normalize(vector3 _vec, double _normVal){
+        double mag = calcDistance(vector3(0, 0, 0), _vec);
+        _vec.x = _vec.x / mag * _normVal;
+        _vec.y = _vec.y / mag * _normVal;
+        _vec.z = _vec.z / mag * _normVal;
+
+        return _vec;
+    }
+
+    double calcDistance(vector3 _from, vector3 _to){
+        double x = _to.x - _from.x, y = _to.y - _from.y, z = _to.z - _from.z;
+
+        return sqrt(x*x + y*y + z*z);
+    }
+
+private:
+    double mMaxLinearVel;
+    double mMaxAngularVel;
+    double mCurrVel;
 };
 
 #endif

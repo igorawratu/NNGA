@@ -71,7 +71,7 @@ protected:
     btRigidBody* mRigidBody;
     string mModelName;
     vector3 mScale;
-    
+    btDynamicsWorld* mWorld;
 };
 
 #endif

@@ -475,9 +475,9 @@ int main(){
     sim->initialise();
 
     vector<Fitness*> fitList;
-    //fitList.push_back(new WaypointFitness(waypoints));
+    //fitList.push_back(new WaypointFitness());
     fitList.push_back(new CollisionFitness());
-    fitList.push_back(new FinishLineFitness(false, finishLine));
+    fitList.push_back(new FinishLineFitness());
 
     SimulationContainer cont(sim, fitList);
 
@@ -487,13 +487,13 @@ int main(){
     params.maxGenerations = 200;
     params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input5h.xml";
     params.stagnationThreshold = 10;
-    params.fitnessEpsilonThreshold = 0;
+    params.fitnessEpsilonThreshold = 5;
     params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.1;
+    params.mutationParameters["MutationProbability"] = 0.1;
+    params.mutationParameters["Deviation"] = 0.2;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "SPX";
+    params.crossoverAlgorithm = "MultipointCrossover";
     params.selectionAlgorithm = "RankSelection";
     params.elitismCount = 5;
 
@@ -505,11 +505,11 @@ int main(){
     delete ga;
 
     cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/bridgesimulation/car/output.xml");
+    solution.printToFile("neuralxmls/bridgesimulation/car/output2.xml");
 
     cont.resetSimulation();
 #else
-    Solution solution("neuralxmls/bridgesimulation/car/output.xml");
+    Solution solution("neuralxmls/bridgesimulation/car/output2.xml");
 #endif
 
     cont.setSolution(&solution);

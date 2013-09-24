@@ -29,6 +29,8 @@ double PrototypeSimulation::fitness(vector<Fitness*> _fit){
         map<string, vector3> pos;
         pos["agentOne"] = getPositionInfo("agentOne");
         pos["agentTwo"] = getPositionInfo("agentTwo");
+        for(uint k = 1; k <= mWaypoints.size(); k++)
+            pos["Waypoint" + boost::lexical_cast<string>(k)] = mWaypoints[k - 1];
 
         mWaypointTracker["Collisions"] = mCollisions / 6;
 

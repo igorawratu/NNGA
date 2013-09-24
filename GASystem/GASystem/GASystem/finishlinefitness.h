@@ -7,22 +7,28 @@
 class FinishLineFitness : public Fitness
 {
 public:
-    FinishLineFitness(bool _isPositive, Line _line){
-        mIsPositive = _isPositive;
-        mLine = _line;
+    FinishLineFitness(){
     }
 
     virtual double evaluateFitness(map<string, vector3> _pos, map<string, double> _dblAcc, map<string, long> _intAcc){
         double fitness = 0;
-        vector3 midpoint((mLine.p1.x + mLine.p2.x)/2, (mLine.p1.y + mLine.p2.y)/2, (mLine.p1.z + mLine.p2.z)/2);
+        Line line;
+        long weight = _intAcc["FLFitnessWeight"];
+        bool isPositive = _intAcc["Positive"] != 0;
+        line.p1 = _pos["LineP1"];
+        line.p2 = _pos["LineP2"];
+        vector3 midpoint((line.p1.x + line.p2.x)/2, (line.p1.y + line.p2.y)/2, (line.p1.z + line.p2.z)/2);
+
         for(map<string, vector3>::const_iterator iter = _pos.begin(); iter != _pos.end(); iter++){
-            double crossVal = calcCrossVal(mLine.p1, mLine.p2, iter->second);
-            bool passed = mIsPositive ? crossVal > 0 : crossVal < 0;
+            if(iter->first == "LineP1" || iter->first == "LineP2")
+                continue;
+            double crossVal = calcCrossVal(line.p1, line.p2, iter->second);
+            bool passed = isPositive ? crossVal > 0 : crossVal < 0;
             if(!passed)
                 fitness += calcDistance(iter->second, midpoint);
         }
 
-        return fitness;
+        return fitness * weight;
     }
 
 private:
@@ -34,10 +40,6 @@ private:
         double x = _to.x - _from.x, y = _to.y - _from.y, z = _to.z - _from.z;
         return sqrt(x*x + y*y + z*z);
     }
-
-private:
-    bool mIsPositive;
-    Line mLine;
 };
 
 #endif
