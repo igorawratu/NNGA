@@ -13,6 +13,7 @@
 #include "caragent.h"
 #include "mouseagent.h"
 #include "staticworldagent.h"
+#include "cubeagent.h"
 
 enum AgentType{MOUSE, CAR};
 

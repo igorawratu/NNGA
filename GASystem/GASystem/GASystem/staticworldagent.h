@@ -23,6 +23,10 @@ public:
         //no need to conform anything per tick
     }
 
+    virtual vector3 getVelocity(){
+        return vector3();
+    }
+
 protected:
     virtual btCollisionShape* getCollisionShape(ResourceManager* _rm){
         return _rm->getBulletCollisionShape(mModelName, true, true, vector3(0, 0, 0), mScale);

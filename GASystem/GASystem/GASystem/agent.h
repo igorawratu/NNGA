@@ -60,6 +60,8 @@ public:
         return mScale;
     }
 
+    virtual vector3 getVelocity()=0;
+
     virtual void tick()=0;
 
 protected:

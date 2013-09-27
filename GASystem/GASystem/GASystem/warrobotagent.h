@@ -21,6 +21,10 @@ public:
 
     virtual ~WarRobotAgent();
 
+    virtual vector3 getVelocity(){
+        return vector3();
+    }
+
     virtual void update(const vector<double>& _nnOutput){
         assert(_nnOutput.size() >= 3);
 

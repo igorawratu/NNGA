@@ -44,6 +44,12 @@ public:
         mCurrVel = calcDistance(vector3(0, 0, 0), vector3(currLinVel.getX(), currLinVel.getY(), currLinVel.getZ()));
     }
 
+    virtual vector3 getVelocity(){
+        btVector3 correctedVel = mRigidBody->getWorldTransform().getBasis() * btVector3(mCurrVel, 0, 0);
+        return vector3(correctedVel.getX(), correctedVel.getY(), correctedVel.getZ());
+    }
+
+
 protected:
     virtual btCollisionShape* getCollisionShape(ResourceManager* _rm){
         return _rm->getBulletCollisionShape(mModelName, false, false, vector3(0, 0, 0), mScale);

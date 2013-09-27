@@ -23,6 +23,17 @@ public:
         mRigidBody->setLinearVelocity(btVector3(vel.getX() + xAccel, 0, vel.getZ() + zAccel));
     }
 
+    virtual vector3 getVelocity(){
+        btVector3 vel = mRigidBody->getLinearVelocity();
+        return vector3(vel.getX(), vel.getY(), vel.getZ());
+    }
+
+    void setPosition(vector3 _pos){
+        delete mRigidBody->getMotionState();
+        btMotionState* ms = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(_pos.x, _pos.y, _pos.z)));
+        mRigidBody->setMotionState(ms);
+    }
+
     virtual void tick(){
         vector3 newVelocity;
 

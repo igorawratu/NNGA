@@ -485,15 +485,15 @@ int main(){
     StandardGAParameters params;
     params.populationSize = 50;
     params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input5h.xml";
+    params.nnFormatFilename = "neuralxmls/bridgesimulation/mouse/input5h.xml";
     params.stagnationThreshold = 10;
     params.fitnessEpsilonThreshold = 5;
     params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.1;
+    params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.2;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "MultipointCrossover";
+    params.crossoverAlgorithm = "SPX";
     params.selectionAlgorithm = "RankSelection";
     params.elitismCount = 5;
 
@@ -505,11 +505,11 @@ int main(){
     delete ga;
 
     cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/bridgesimulation/car/output2.xml");
+    solution.printToFile("neuralxmls/bridgesimulation/mouse/output.xml");
 
     cont.resetSimulation();
 #else
-    Solution solution("neuralxmls/bridgesimulation/car/output2.xml");
+    Solution solution("neuralxmls/bridgesimulation/mouse/output.xml");
 #endif
 
     cont.setSolution(&solution);

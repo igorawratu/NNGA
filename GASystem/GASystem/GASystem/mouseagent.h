@@ -28,8 +28,7 @@ public:
         if(mCurrVel > mMaxLinearVel)
             mCurrVel = mMaxLinearVel;
 
-        if(_nnOutput[2] > 0.5)
-            mCurrVel = 0;
+        mCurrVel *= _nnOutput[2];
 
         btVector3 relativeVel = btVector3(mCurrVel, 0, 0);
 
@@ -38,6 +37,11 @@ public:
         correctedVel.setY(0);
 
         mRigidBody->setLinearVelocity(correctedVel);
+    }
+
+    virtual vector3 getVelocity(){
+        btVector3 correctedVel = mRigidBody->getWorldTransform().getBasis() * btVector3(mCurrVel, 0, 0);
+        return vector3(correctedVel.getX(), correctedVel.getY(), correctedVel.getZ());
     }
 
     virtual void tick(){
