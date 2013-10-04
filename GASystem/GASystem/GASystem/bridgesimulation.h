@@ -17,12 +17,11 @@
 
 enum AgentType{MOUSE, CAR};
 
-//#define MT
-
 class BridgeSimulation : public Simulation
 {
 public:
-    BridgeSimulation(double _rangerfinderRadius, uint _numAgents, Line _finishLine, AgentType _agentType, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed);
+    BridgeSimulation(double _rangerfinderRadius, uint _numAgents, AgentType _agentType, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed);
+    BridgeSimulation(const BridgeSimulation& other);
     virtual ~BridgeSimulation();
     virtual void iterate();
     virtual double fitness(vector<Fitness*> _fit);
@@ -40,7 +39,6 @@ private:
     }
     double getRayCollisionDistance(string _agentName, const btVector3& _ray);
     void applyUpdateRules(string _agentName);
-    double calcDistance(vector3 _from, vector3 _to);
     vector3 getPositionInfo(string _entityName);
     void calcCollisions(string _agentName);
 

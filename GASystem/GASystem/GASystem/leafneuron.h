@@ -27,9 +27,6 @@ public:
     virtual Neuron* clone();
 
 private:
-    double mInputValue;
-
-private:
     LeafNeuron(){}
 };
 

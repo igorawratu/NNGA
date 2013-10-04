@@ -23,19 +23,22 @@ public:
         for(uint k = 0; k <= numWaypoints; k++)
             waypoints.push_back(_pos["Waypoint" + boost::lexical_cast<string>(k)]);
         
-        for(map<string, vector3>::const_iterator iter = _pos.begin(); iter != _pos.end(); iter++){
-            if(_intAcc[iter->first] < waypoints.size()){
-                uint currentWaypoint = _intAcc[iter->first];
+        int numAgents = _intAcc["NumAgents"];
+
+        for(int k = 0; k < numAgents; k++){
+            string agentName = "agent" + boost::lexical_cast<string>(k);
+            if(_intAcc[agentName] < waypoints.size()){
+                uint currentWaypoint = _intAcc[agentName];
                 
                 for(; currentWaypoint < waypoints.size(); currentWaypoint++){
-                    if(currentWaypoint == _intAcc[iter->first])
-                        finalFitness += calcDistance(iter->second, waypoints[currentWaypoint]);
+                    if(currentWaypoint == _intAcc[agentName])
+                        finalFitness += calcDistance(_pos[agentName], waypoints[currentWaypoint]);
                     else finalFitness += calcDistance(waypoints[currentWaypoint - 1], waypoints[currentWaypoint]);
                 }
             }
         }
 
-        return finalFitness;
+        return finalFitness * (double)_intAcc["WPFitnessWeight"];
     }
 
 private:

@@ -1,25 +1,18 @@
 #include "leafneuron.h"
 
 LeafNeuron::LeafNeuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights) : Neuron(_neuronCache, _weights, SIGMOID){
-    mInputValue = 0;
 }
 
 LeafNeuron::LeafNeuron(const LeafNeuron& _other){
     mNeuronCache = _other.mNeuronCache;
     mWeights = _other.mWeights;
-    mCurrentCounter = -1;
-    mLastOutput = 0;
     mActivationFunction = _other.mActivationFunction;
-    mInputValue = _other.mInputValue;
 }
 
 LeafNeuron& LeafNeuron::operator = (const LeafNeuron& _other){
     mNeuronCache = _other.mNeuronCache;
     mWeights = _other.mWeights;
-    mCurrentCounter = -1;
-    mLastOutput = 0;
     mActivationFunction = _other.mActivationFunction;
-    mInputValue = _other.mInputValue;
 
     return *this;
 }
@@ -33,7 +26,7 @@ Neuron* LeafNeuron::clone(){
 }
     
 double LeafNeuron::evaluate(long _counter){
-    return mInputValue;
+    return mLastOutput;
 }
 
 bool LeafNeuron::setInput(set<uint> _inputs, bool _checkForLoops){
@@ -42,7 +35,8 @@ bool LeafNeuron::setInput(set<uint> _inputs, bool _checkForLoops){
 }
 
 bool LeafNeuron::setInput(double _input){
-    mInputValue = _input;
+    mLastOutput = _input;
+
     return true;
 }
 

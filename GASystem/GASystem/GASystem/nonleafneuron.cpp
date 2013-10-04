@@ -6,8 +6,6 @@ NonLeafNeuron::NonLeafNeuron(map<uint, Neuron*> *_neuronCache, vector<double> _w
 NonLeafNeuron::NonLeafNeuron(const NonLeafNeuron& _other){
     mNeuronCache = _other.mNeuronCache;
     mWeights = _other.mWeights;
-    mCurrentCounter = -1;
-    mLastOutput = 0;
     mActivationFunction = _other.mActivationFunction;
     mPredecessors = _other.mPredecessors;
 }
@@ -15,10 +13,10 @@ NonLeafNeuron::NonLeafNeuron(const NonLeafNeuron& _other){
 NonLeafNeuron& NonLeafNeuron::operator = (const NonLeafNeuron& _other){
     mNeuronCache = _other.mNeuronCache;
     mWeights = _other.mWeights;
-    mCurrentCounter = -1;
-    mLastOutput = 0;
     mActivationFunction = _other.mActivationFunction;
     mPredecessors = _other.mPredecessors;
+    mLastOutput = 0;
+    mCurrentCounter = -1;
 
     return *this;
 }
@@ -33,9 +31,7 @@ Neuron* NonLeafNeuron::clone(){
 }
 
 double NonLeafNeuron::evaluate(long _counter){
-    if(_counter == mCurrentCounter)
-        return mLastOutput;
-    else{
+    if(!mCurrentCounter != _counter){
         mCurrentCounter = _counter;
 
         double netInputSignal = 0;
@@ -50,9 +46,8 @@ double NonLeafNeuron::evaluate(long _counter){
         netInputSignal += -1 * mWeights[k];
 
         mLastOutput = calculateActivationEnergy(netInputSignal);
-
-        return mLastOutput;    
     }
+    return mLastOutput;
 }
 
 bool NonLeafNeuron::checkLoop(Neuron* _loopNeuron){

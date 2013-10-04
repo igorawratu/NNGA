@@ -66,6 +66,8 @@ bool PrototypeSimulation::initialise(){
     if(mInitialised)
         return true;
 
+    mWaypointTracker["NumAgents"] = 2;
+
     //agents
     mWorldEntities["agentOne"] = new CubeAgent(vector3(10, 10, 10), vector3(-10, -10, -10));
     if(!mWorldEntities["agentOne"]->initialise("car.mesh", vector3(1, 1, 1), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(60, -2, 54), 0.01))

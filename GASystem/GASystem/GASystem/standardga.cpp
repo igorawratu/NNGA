@@ -44,11 +44,14 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
     Crossover* crossoverAlgorithm = CrossoverFactory::instance().create(mParameters.crossoverAlgorithm);
     Selection* selectionAlgorithm = SelectionFactory::instance().create(mParameters.selectionAlgorithm);
     
-    for(uint i = 0; i < population.size(); i++){
+    for(int i = 0; i < population.size(); ++i){
+        SimulationContainer* simcont = _simulationContainer->clone();
+
         Solution currSolution(dynamic_cast<NNChromosome*>(population[i])->getNeuralNets());
-        _simulationContainer->runFullSimulation(&currSolution);
+        simcont->runFullSimulation(&currSolution);
         population[i]->fitness() = currSolution.fitness();
-        _simulationContainer->resetSimulation();
+
+        delete simcont;
     }
 
     uint stagnationCounter = 0;
@@ -58,39 +61,46 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
 
         quicksort(population, 0, population.size() - 1);
 
+        cout << "Creating offspring..." << endl;
+
         //create offspring
         vector<Chromosome*> offspring = crossoverAlgorithm->execute(population, population.size(), mParameters.crossoverParameters);
         
+        cout << "Mutating offspring..." << endl;
         //mutate offspring
         for(uint i = 0; i < offspring.size(); i++)
             offspring[i]->mutate(mParameters.mutationAlgorithm, mParameters.mutationParameters);
 
+        cout << "Evaluating offspring..." << endl;
         //evaluate offspring
-        for(uint i = 0; i < offspring.size(); i++){
+        for(int i = 0; i < offspring.size(); ++i){
+            SimulationContainer* simcont = _simulationContainer->clone();
+
             Solution currSolution(dynamic_cast<NNChromosome*>(offspring[i])->getNeuralNets());
-            _simulationContainer->runFullSimulation(&currSolution);
-
-            //checks if the fitness of the solution is below the epsilon threshold, if it is, stop training
-            if(currSolution.fitness() <= mParameters.fitnessEpsilonThreshold){
-                for(uint i = 0; i < population.size(); i++)
-                    delete population[i];
-                for(uint i = 0; i < offspring.size(); i++)
-                    delete offspring[i];
-
-                delete crossoverAlgorithm;
-                delete selectionAlgorithm;
-
-                return currSolution;
-            }
-
+            simcont->runFullSimulation(&currSolution);
             offspring[i]->fitness() = currSolution.fitness();
-            _simulationContainer->resetSimulation();
+
+            delete simcont;
         }
 
+        cout << "Merging population..." << endl;
         //merge parents and children into 1 population as they contend with each other
         population.insert(population.end(), offspring.begin(), offspring.end());
 
         quicksort(population, 0, population.size() - 1);
+
+        //checks if the fitness of the solution is below the epsilon threshold, if it is, stop training
+        if(population[0]->fitness() <= mParameters.fitnessEpsilonThreshold){
+            Solution finalSolution(dynamic_cast<NNChromosome*>(population[0])->getNeuralNets());
+
+            for(uint i = 0; i < population.size(); i++)
+                delete population[i];
+
+            delete crossoverAlgorithm;
+            delete selectionAlgorithm;
+
+            return finalSolution;
+        }
 
         vector<Chromosome*> unselected;
         vector<Chromosome*> newPopulation;
@@ -111,9 +121,15 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
         unselected.clear();
 
         quicksort(population, 0, population.size() - 1);
+        
+        
+        cout << "Current population fitnesses..." << endl;
         for(uint i = 0; i < population.size(); i++)
-            cout << population[i]->fitness() << endl;
+            cout << population[i]->fitness() << " | ";
+        cout << endl;
 
+
+        cout << "Checking termination conditions..." << endl;
         //calculates standard deviation, if it has been below the threshold for 10(arb, can make this var) generations, then stagnation
         double meanFit = 0, variance = 0;
         for(uint i = 0; i < population.size(); i++)

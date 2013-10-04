@@ -57,6 +57,11 @@ public:
         return mSim->getCyclesPerSecond();
     }
 
+    SimulationContainer* clone(){
+        Simulation* temp = mSim->getNewCopy();
+        return new SimulationContainer(temp, mFitnessFunctions);
+    }
+
 protected:
     Simulation* mSim;
     vector<Fitness*> mFitnessFunctions;

@@ -27,6 +27,7 @@
 #include "collisionfitness.h"
 #include "bridgesimulation.h"
 #include "finishlinefitness.h"
+#include "corneringsim.h"
 
 #define TRAIN
 
@@ -460,34 +461,29 @@ int main(){
     //srand(time(0));
     int seed = rand();
     GraphicsEngine engine(NULL);
-
-    /*vector<vector3> waypoints;
-    waypoints.push_back(vector3(-44, -4, 50));
-    waypoints.push_back(vector3(-48, -4, -48));
-    waypoints.push_back(vector3(62, -4, -50));*/
-    Line finishLine;
-    finishLine.p1 = vector3(-10, 0, -25);
-    finishLine.p2 = vector3(10, 0, -25);
     
     cout << seed << endl;
 
-    BridgeSimulation* sim = new BridgeSimulation(5, 10, finishLine, CAR, 300, 5, 30, NULL, engine.getResourceManager(), seed);
+    //BridgeSimulation* sim = new BridgeSimulation(1, 10, CAR, 300, 5, 30, NULL, engine.getResourceManager(), seed);
+
+    CorneringSim* sim = new CorneringSim(1, 10, 1000, 5, 30, NULL, engine.getResourceManager(), seed);
     sim->initialise();
 
     vector<Fitness*> fitList;
-    //fitList.push_back(new WaypointFitness());
-    fitList.push_back(new CollisionFitness());
-    fitList.push_back(new FinishLineFitness());
+    fitList.push_back(new WaypointFitness());
+    //fitList.push_back(new CollisionFitness());
+    //fitList.push_back(new FinishLineFitness());
 
     SimulationContainer cont(sim, fitList);
 
 #ifdef TRAIN
     StandardGAParameters params;
-    params.populationSize = 50;
+    params.populationSize = 100;
     params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/bridgesimulation/mouse/input5h.xml";
+    params.nnFormatFilename = "neuralxmls/corneringsimulation/input6h.xml";
+    //params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input6h.xml";
     params.stagnationThreshold = 10;
-    params.fitnessEpsilonThreshold = 5;
+    params.fitnessEpsilonThreshold = 50;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.2;
@@ -505,11 +501,13 @@ int main(){
     delete ga;
 
     cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/bridgesimulation/mouse/output.xml");
+    solution.printToFile("neuralxmls/corneringsimulation/output.xml");
+    //solution.printToFile("neuralxmls/bridgesimulation/car/output.xml");
 
     cont.resetSimulation();
 #else
-    Solution solution("neuralxmls/bridgesimulation/mouse/output.xml");
+    Solution solution("neuralxmls/corneringsimulation/output.xml");
+    //Solution solution("neuralxmls/bridgesimulation/car/output.xml");
 #endif
 
     cont.setSolution(&solution);

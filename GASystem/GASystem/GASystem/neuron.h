@@ -6,6 +6,7 @@
 #include <math.h>
 #include <iostream>
 #include <set>
+#include <omp.h>
 
 #include "common.h"
 
@@ -30,9 +31,9 @@ public:
     Neuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, ActivationFunction _activationFunction){
         mNeuronCache = _neuronCache;
         mWeights = _weights;
-        mCurrentCounter = -1;
-        mLastOutput = 0;
         mActivationFunction = _activationFunction;
+        mLastOutput = 0;
+        mCurrentCounter = -1;
     }
 
     Neuron(const Neuron& _other){}

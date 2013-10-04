@@ -28,7 +28,9 @@ ResourceManager::ResourceManager(){
 }
 
 ResourceManager::~ResourceManager(){
-
+    for(map<string, ModelInfo*>::const_iterator iter = mCache.begin(); iter != mCache.end(); ++iter)
+        delete iter->second;
+    mCache.clear();
 }
 
 bool ResourceManager::getMeshInformation(string _meshName, size_t& _vertexCount, vector3*& _vertices, size_t& _indexCount, unsigned long*& _indices, const vector3& _position,
@@ -118,6 +120,8 @@ bool ResourceManager::getMeshInformation(string _meshName, size_t& _vertexCount,
         currentOffset = nextOffset;
     }
 
+    mCache[_meshName] = new ModelInfo(_vertices, _indices, _vertexCount, _indexCount);
+
     return true;
 }
 
@@ -126,45 +130,50 @@ btCollisionShape* ResourceManager::getBulletCollisionShape(string _meshName, boo
     vector3* vertices;
     size_t vertexCount = 0, indexCount = 0;
 
-    if(!getMeshInformation(_meshName, vertexCount, vertices, indexCount, indices, _position, _orientation, _scale))
-        return NULL;
-
-    btTriangleMesh* triMesh = new btTriangleMesh();
-
-    
-
-    for(size_t i = 0; i < indexCount; i+=3){
-        btVector3 v0(vertices[indices[i]].x, vertices[indices[i]].y, vertices[indices[i]].z);
-        btVector3 v1(vertices[indices[i + 1]].x, vertices[indices[i + 1]].y, vertices[indices[i + 1]].z);
-        btVector3 v2(vertices[indices[i + 2]].x, vertices[indices[i + 2]].y, vertices[indices[i + 2]].z);
-
-        triMesh->addTriangle(v0, v1, v2);
+    if(mCache.find(_meshName) == mCache.end()){
+        if(!getMeshInformation(_meshName, vertexCount, vertices, indexCount, indices, _position, _orientation, _scale))
+            return NULL;
     }
+    else{
+        ModelInfo* mInfo = mCache[_meshName];
+        indices = mInfo->indices;
+        vertices = mInfo->vertices;
+        vertexCount = mInfo->vertexCount;
+        indexCount = mInfo->indexCount;
+    }
+
     
     if(!_concave){
-        btConvexShape* unsimpShape = new btConvexTriangleMeshShape(triMesh);
-        btShapeHull* hull = new btShapeHull(unsimpShape);
-        hull->buildHull(unsimpShape->getMargin());
-        btConvexHullShape* out = new btConvexHullShape(&hull->getVertexPointer()->getX(), hull->numVertices());
-
-        delete indices;
-        delete vertices;
-        delete triMesh;
-        delete unsimpShape;
-        delete hull;
+        vector3 maxDims;
+        
+        for(size_t i = 0; i < vertexCount; i++){
+            maxDims.x = maxDims.x < fabs(vertices[i].x) ? fabs(vertices[i].x) : maxDims.x;
+            maxDims.y = maxDims.y < fabs(vertices[i].y) ? fabs(vertices[i].y) : maxDims.y;
+            maxDims.z = maxDims.z < fabs(vertices[i].z) ? fabs(vertices[i].z) : maxDims.z;
+        }
+        btConvexShape* out = new btBoxShape(btVector3(maxDims.x, maxDims.y, maxDims.z));
 
         return out;
     }
-    else if(_concave && _static){
-        btBvhTriangleMeshShape* concaveShape = new btBvhTriangleMeshShape(triMesh, true);
-
-        delete indices;
-        delete vertices;
-
-        return concaveShape;
-    }
     else{
-        //convex decomposition here
-        return 0;
+        btTriangleMesh* triMesh = new btTriangleMesh();
+
+        for(size_t i = 0; i < indexCount; i+=3){
+            btVector3 v0(vertices[indices[i]].x, vertices[indices[i]].y, vertices[indices[i]].z);
+            btVector3 v1(vertices[indices[i + 1]].x, vertices[indices[i + 1]].y, vertices[indices[i + 1]].z);
+            btVector3 v2(vertices[indices[i + 2]].x, vertices[indices[i + 2]].y, vertices[indices[i + 2]].z);
+
+            triMesh->addTriangle(v0, v1, v2);
+        }
+
+        if(_concave && _static){
+            btBvhTriangleMeshShape* concaveShape = new btBvhTriangleMeshShape(triMesh, true);
+
+            return concaveShape;
+        }
+        else{
+            //convex decomposition here
+            return 0;
+        }
     }
 }

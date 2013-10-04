@@ -39,11 +39,17 @@ public:
         mWorld = new btDiscreteDynamicsWorld(mDispatcher, mBroadphase, mSolver, mCollisionConfig);
     }
 
+    Simulation(const Simulation& other){}
+
     virtual ~Simulation(){
         for(map<string, Agent*>::const_iterator iter = mWorldEntities.begin(); iter != mWorldEntities.end(); iter++){
             mWorld->removeRigidBody(iter->second->getRigidBody());
             delete iter->second;
         }
+
+        for(uint k = 0; k < mFitnessFunctions.size(); k++)
+            delete mFitnessFunctions[k];
+        mFitnessFunctions.clear();
 
         if(mWorld)
         {
@@ -120,6 +126,8 @@ protected:
     btDiscreteDynamicsWorld* mWorld;
     Solution* mSolution;
     ResourceManager* mResourceManager;
+
+    vector<Fitness*> mFitnessFunctions;
 };
 
 #endif

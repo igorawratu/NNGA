@@ -15,8 +15,11 @@
 
 #include <string>
 #include <fstream>
+#include <omp.h>
 
 using namespace std;
+
+//#define MT
 
 struct StandardGAParameters
 {

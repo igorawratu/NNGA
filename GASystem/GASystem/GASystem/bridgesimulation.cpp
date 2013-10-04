@@ -1,15 +1,28 @@
 #include "bridgesimulation.h"
 
-BridgeSimulation::BridgeSimulation(double _rangefinderRadius, uint _numAgents, Line _finishLine, AgentType _agentType, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager){
+BridgeSimulation::BridgeSimulation(double _rangefinderRadius, uint _numAgents, AgentType _agentType, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager){
     mWorld->setInternalTickCallback(BridgeSimulation::tickCallBack, this, true);
     mCollisions = 0;
     mAgentType = _agentType;
-    mFinishLine = _finishLine;
     mSeed = _seed;
     mRangefinderRadius = _rangefinderRadius;
     mRangefinderVals = 0;
 
     for(uint k = 0; k < _numAgents; k++)
+        mAgents.push_back("agent" + boost::lexical_cast<string>(k));
+
+
+}
+
+BridgeSimulation::BridgeSimulation(const BridgeSimulation& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager){
+    mWorld->setInternalTickCallback(BridgeSimulation::tickCallBack, this, true);
+    mCollisions = 0;
+    mAgentType = other.mAgentType;
+    mSeed = other.mSeed;
+    mRangefinderRadius = other.mRangefinderRadius;
+    mRangefinderVals = 0;
+
+    for(uint k = 0; k < other.mAgents.size(); k++)
         mAgents.push_back("agent" + boost::lexical_cast<string>(k));
 }
 
@@ -37,8 +50,9 @@ double BridgeSimulation::fitness(vector<Fitness*> _fit){
 
     map<string, vector3> pos;
     map<string, long> intAcc;
-    intAcc["Collisions"] = (mRangefinderVals/5 + mCollisions); 
+    intAcc["Collisions"] = mRangefinderVals + mCollisions; 
     intAcc["FLFitnessWeight"] = 10;
+    intAcc["ColFitnessWeight"] = 1;
     intAcc["Positive"] = 0;
     pos["LineP1"] = mFinishLine.p1;
     pos["LineP2"] = mFinishLine.p2;
@@ -60,7 +74,7 @@ vector3 BridgeSimulation::getPositionInfo(string _entityName){
 }
 
 Simulation* BridgeSimulation::getNewCopy(){
-    Simulation* newsim = new BridgeSimulation(mRangefinderRadius, mAgents.size(), mFinishLine, mAgentType, mNumCycles, mCyclesPerDecision, mCyclesPerSecond, mSolution, mResourceManager, mSeed);
+    Simulation* newsim = new BridgeSimulation(*this);
     newsim->initialise();
 
     return newsim;
@@ -68,7 +82,7 @@ Simulation* BridgeSimulation::getNewCopy(){
 
 void BridgeSimulation::tick(){
 #ifdef MT
-    #pragma omp parallel for
+    //#pragma omp parallel for
 #endif
     for(int k = 0; k < mAgents.size(); k++){
         mWorldEntities[mAgents[k]]->tick();
@@ -80,9 +94,11 @@ bool BridgeSimulation::initialise(){
     if(mInitialised)
         return true;
 
+    mFinishLine.p1 = vector3(-10, 0, -25);
+    mFinishLine.p2 = vector3(10, 0, -25);
+
     //set the vals
     vector3 minDim(-20, -7.1, 25), maxDim(25, -7, 40);
-    //vector3 minDim(-20, -47, 20), maxDim(20, -46.9, 35);
 
     boost::mt19937 rng(mSeed);
     boost::mt19937 rngz(mSeed + mSeed / 2);
@@ -125,11 +141,6 @@ bool BridgeSimulation::initialise(){
         return false;
     mWorld->addRigidBody(mWorldEntities["bridgewall"]->getRigidBody());
 
-    mWorldEntities["bridgefloor"] = new StaticWorldAgent(0.5, 0.1);
-    if(!mWorldEntities["bridgefloor"]->initialise("newbridgefloor.mesh", vector3(50, 50, 50), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 0, 0), 0))
-        return false;
-    mWorld->addRigidBody(mWorldEntities["bridgefloor"]->getRigidBody());
-
     mInitialised = true;
     
     return true;
@@ -152,8 +163,8 @@ void BridgeSimulation::calcCollisions(string _agentName){
 
     if(calcCrossVal(mFinishLine.p1, mFinishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0){
         for(uint k = 1; k <= 8; k++)
-            if(input[k] * 50 < 1)
-                mRangefinderVals += 1 - input[k];
+            if(input[k] * 50 < mRangefinderRadius)
+                mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;
         
         //gets collision data
         int numManifolds = mWorld->getDispatcher()->getNumManifolds();
@@ -166,11 +177,8 @@ void BridgeSimulation::calcCollisions(string _agentName){
 		    const btCollisionObject* obA = contactManifold->getBody0();
 		    const btCollisionObject* obB = contactManifold->getBody1();
             
-            if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB)){
-                //do not count floor based collisions
-                if(!(mWorldEntities["bridgefloor"]->getRigidBody() == obA || mWorldEntities["bridgefloor"]->getRigidBody() == obB))
-                    mCollisions++;
-            }
+            if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB))
+                mCollisions++;
         }
     }
 }
@@ -249,10 +257,4 @@ double BridgeSimulation::getRayCollisionDistance(string _agentName, const btVect
         dist = calcEucDistance(vector3(agentPosition.getX(), agentPosition.getY(), agentPosition.getZ()), vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
 
     return dist;
-}
-
-double BridgeSimulation::calcDistance(vector3 _from, vector3 _to){
-    double x = _to.x - _from.x, y = _to.y - _from.y, z = _to.z - _from.z;
-
-    return sqrt(x*x + y*y + z*z);
 }
