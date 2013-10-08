@@ -415,18 +415,14 @@ void testGA(){
 
     GeneticAlgorithm* ga = new StandardGA(params);
     Simulation* sim = new DummySimulation(100, 5, 5, NULL);
-    vector<Fitness*> fit;
-    fit.push_back(new DummyFitness());
 
     //create sim container ere
-    SimulationContainer sc(sim, fit);
+    SimulationContainer sc(sim);
 
     GAEngine gaengine;
     Solution sol = gaengine.train(ga, &sc);
 
     delete sim;
-    delete fit[0];
-    fit.clear();
     delete ga;
     sol.printToFile("neuralxmls\\integration\\solution.xml");
 }
@@ -469,12 +465,7 @@ int main(){
     CorneringSim* sim = new CorneringSim(1, 10, 1000, 5, 30, NULL, engine.getResourceManager(), seed);
     sim->initialise();
 
-    vector<Fitness*> fitList;
-    fitList.push_back(new WaypointFitness());
-    //fitList.push_back(new CollisionFitness());
-    //fitList.push_back(new FinishLineFitness());
-
-    SimulationContainer cont(sim, fitList);
+    SimulationContainer cont(sim);
 
 #ifdef TRAIN
     StandardGAParameters params;
@@ -482,15 +473,15 @@ int main(){
     params.maxGenerations = 200;
     params.nnFormatFilename = "neuralxmls/corneringsimulation/input6h.xml";
     //params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input6h.xml";
-    params.stagnationThreshold = 10;
-    params.fitnessEpsilonThreshold = 50;
+    params.stagnationThreshold = 100;
+    params.fitnessEpsilonThreshold = 100;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.2;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "SPX";
-    params.selectionAlgorithm = "RankSelection";
+    params.crossoverAlgorithm = "MultipointCrossover";
+    params.selectionAlgorithm = "RankQuadraticSelection";
     params.elitismCount = 5;
 
     GeneticAlgorithm* ga = new StandardGA(params);
@@ -515,10 +506,6 @@ int main(){
     engine.setSimulation(&cont);
     
     engine.renderSimulation();
-
-    for(int k = 0; k < fitList.size(); k++)
-        delete fitList[k];
-    fitList.clear();
 
     return 0;
 }

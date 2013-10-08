@@ -22,10 +22,10 @@ void PrototypeSimulation::iterate(){
     mWorld->stepSimulation(1/(float)mCyclesPerSecond, 1, 1/(float)mCyclesPerSecond);
 }
 
-double PrototypeSimulation::fitness(vector<Fitness*> _fit){
+double PrototypeSimulation::fitness(){
     double finalFitness = 0;
 
-    for(uint k = 0; k < _fit.size(); k++){
+    for(uint k = 0; k < mFitnessFunctions.size(); k++){
         map<string, vector3> pos;
         pos["agentOne"] = getPositionInfo("agentOne");
         pos["agentTwo"] = getPositionInfo("agentTwo");
@@ -34,7 +34,7 @@ double PrototypeSimulation::fitness(vector<Fitness*> _fit){
 
         mWaypointTracker["Collisions"] = mCollisions / 6;
 
-        finalFitness += _fit[k]->evaluateFitness(pos, map<string, double>(), mWaypointTracker);
+        finalFitness += mFitnessFunctions[k]->evaluateFitness(pos, map<string, double>(), mWaypointTracker);
     }
 
     cout << finalFitness << endl;

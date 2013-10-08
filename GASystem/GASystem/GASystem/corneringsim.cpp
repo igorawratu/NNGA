@@ -46,8 +46,9 @@ void CorneringSim::iterate(){
     mWorld->stepSimulation(1/(float)mCyclesPerSecond, 1, 1/(float)mCyclesPerSecond);
 }
 
-double CorneringSim::fitness(vector<Fitness*> _fit){
+double CorneringSim::fitness(){
     double finalFitness = 0;
+    double maxCollisions = (mNumCycles / mCyclesPerDecision) * mAgents.size() * 9;
 
     map<string, vector3> pos;
 
@@ -56,14 +57,14 @@ double CorneringSim::fitness(vector<Fitness*> _fit){
     for(uint k = 0; k < mWaypoints.size(); k++)
         pos["Waypoint" + boost::lexical_cast<string>(k)] = mWaypoints[k];
 
-    for(uint k = 0; k < mAgents.size(); k++){
+    for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
-        cout << mWaypointTracker[mAgents[k]] << " ";
-    }
-    cout << endl;
 
-    for(uint k = 0; k < _fit.size(); k++)
-        finalFitness += _fit[k]->evaluateFitness(pos, map<string, double>(), mWaypointTracker);
+    
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), mWaypointTracker);
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), mWaypointTracker) : maxCollisions;
+
+    cout << mWaypointTracker["Collisions"] << "  " << finalFitness << endl;
 
     return finalFitness;
 }
@@ -79,7 +80,10 @@ bool CorneringSim::initialise(){
     if(mInitialised)
         return true;
 
-    mWaypointTracker["WPFitnessWeight"] = 4;
+    mFitnessFunctions.push_back(new WaypointFitness());
+    mFitnessFunctions.push_back(new CollisionFitness());
+
+    mWaypointTracker["WPFitnessWeight"] = 1;
     mWaypointTracker["ColFitnessWeight"] = 1;
     mWaypointTracker["NumAgents"] = mAgents.size();
 
@@ -117,11 +121,11 @@ bool CorneringSim::initialise(){
         return false;
     mWorld->addRigidBody(mWorldEntities["corneringtrack"]->getRigidBody());
 
-    for(uint k = 0; k < mWaypoints.size(); k++){
+    /*for(uint k = 0; k < mWaypoints.size(); k++){
         mWorldEntities["waypoint" + boost::lexical_cast<string>(k)] = new StaticWorldAgent(0.5, 0.1);
         if(!mWorldEntities["waypoint" + boost::lexical_cast<string>(k)]->initialise("sphere.mesh", vector3(3, 3, 3), btQuaternion(0, 0, 0, 1), mResourceManager, mWaypoints[k], 0))
             return false;
-    }
+    }*/
 
     mInitialised = true;
     
@@ -134,7 +138,7 @@ void CorneringSim::applyUpdateRules(string _agentName){
     double frontVal = -1;
 
     if(mWaypointTracker[_agentName] < mWaypoints.size()){
-        if(vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ()).calcDistance(mWaypoints[mWaypointTracker[_agentName]]) < 3)
+        if(vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ()).calcDistance(mWaypoints[mWaypointTracker[_agentName]]) < 5)
             mWaypointTracker[_agentName]++;
     }
 

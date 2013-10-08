@@ -5,6 +5,8 @@
 #include "caragent.h"
 #include "staticworldagent.h"
 #include "common.h"
+#include "collisionfitness.h"
+#include "waypointfitness.h"
 
 #include <vector>
 #include <iostream>
@@ -19,7 +21,7 @@ public:
     virtual ~CorneringSim();
     CorneringSim(const CorneringSim& other);
     virtual void iterate();
-    virtual double fitness(vector<Fitness*> _fit);
+    virtual double fitness();
     virtual Simulation* getNewCopy();
     virtual bool initialise();
     void tick();

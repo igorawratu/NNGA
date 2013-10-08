@@ -10,6 +10,9 @@
 #include "selection.h"
 
 #include "rankselection.h"
+#include "rankexponentialselection.h"
+#include "rankquadraticselection.h"
+#include "tournamentselection.h"
 
 using namespace std;
 

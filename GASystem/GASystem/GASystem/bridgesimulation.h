@@ -14,6 +14,8 @@
 #include "mouseagent.h"
 #include "staticworldagent.h"
 #include "cubeagent.h"
+#include "collisionfitness.h"
+#include "finishlinefitness.h"
 
 enum AgentType{MOUSE, CAR};
 
@@ -24,7 +26,7 @@ public:
     BridgeSimulation(const BridgeSimulation& other);
     virtual ~BridgeSimulation();
     virtual void iterate();
-    virtual double fitness(vector<Fitness*> _fit);
+    virtual double fitness();
     virtual Simulation* getNewCopy();
     virtual bool initialise();
     void tick();
@@ -40,7 +42,6 @@ private:
     double getRayCollisionDistance(string _agentName, const btVector3& _ray);
     void applyUpdateRules(string _agentName);
     vector3 getPositionInfo(string _entityName);
-    void calcCollisions(string _agentName);
 
 private:
     Line mFinishLine;

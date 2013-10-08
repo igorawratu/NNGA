@@ -18,6 +18,9 @@ void SelectionFactory::startup(){
     initialized = true;
 
     selectionFactory.mFactory.registerCreator("RankSelection", RankSelection::createRankSelection);
+    selectionFactory.mFactory.registerCreator("RankExponentialSelection", RankExponentialSelection::createRankExponentialSelection);
+    selectionFactory.mFactory.registerCreator("TournamentSelection", TournamentSelection::createTournamentSelection);
+    selectionFactory.mFactory.registerCreator("RankQuadraticSelection", RankQuadraticSelection::createRankQuadraticSelection);
 }
 
 void SelectionFactory::shutdown(){

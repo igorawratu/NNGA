@@ -88,10 +88,15 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
         population.insert(population.end(), offspring.begin(), offspring.end());
 
         quicksort(population, 0, population.size() - 1);
+        cout << "Population before selection..." << endl;
+        for(uint i = 0; i < population.size(); i++)
+            cout << population[i]->fitness() << " | ";
+        cout << endl;
 
         //checks if the fitness of the solution is below the epsilon threshold, if it is, stop training
         if(population[0]->fitness() <= mParameters.fitnessEpsilonThreshold){
             Solution finalSolution(dynamic_cast<NNChromosome*>(population[0])->getNeuralNets());
+            finalSolution.fitness() = population[0]->fitness();
 
             for(uint i = 0; i < population.size(); i++)
                 delete population[i];

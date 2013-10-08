@@ -103,7 +103,7 @@ public:
             iterate();
     }
 
-    virtual double fitness(vector<Fitness*> _fit)=0;
+    virtual double fitness()=0;
     virtual Simulation* getNewCopy()=0;
 
     const map<string, Agent*>& getSimulationState(){

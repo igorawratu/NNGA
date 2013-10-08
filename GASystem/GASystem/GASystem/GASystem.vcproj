@@ -390,6 +390,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\rankexponentialselection.h"
+				>
+			</File>
+			<File
+				RelativePath=".\rankquadraticselection.h"
+				>
+			</File>
+			<File
 				RelativePath=".\rankselection.h"
 				>
 			</File>
@@ -431,6 +439,10 @@
 			</File>
 			<File
 				RelativePath=".\staticworldagent.h"
+				>
+			</File>
+			<File
+				RelativePath=".\tournamentselection.h"
 				>
 			</File>
 			<File

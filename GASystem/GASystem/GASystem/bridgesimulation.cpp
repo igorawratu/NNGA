@@ -11,6 +11,9 @@ BridgeSimulation::BridgeSimulation(double _rangefinderRadius, uint _numAgents, A
     for(uint k = 0; k < _numAgents; k++)
         mAgents.push_back("agent" + boost::lexical_cast<string>(k));
 
+    mFitnessFunctions.push_back(new CollisionFitness());
+    mFitnessFunctions.push_back(new FinishLineFitness());
+
 
 }
 
@@ -33,9 +36,6 @@ void BridgeSimulation::iterate(){
         return;
 
     if(mCycleCounter % mCyclesPerDecision == 0){
-#ifdef MT
-        #pragma omp parallel for
-#endif
         for(int k = 0; k < mAgents.size(); k++)
             applyUpdateRules(mAgents[k]);
     }
@@ -45,7 +45,7 @@ void BridgeSimulation::iterate(){
     mWorld->stepSimulation(1/(float)mCyclesPerSecond, 1, 1/(float)mCyclesPerSecond);
 }
 
-double BridgeSimulation::fitness(vector<Fitness*> _fit){
+double BridgeSimulation::fitness(){
     double finalFitness = 0;
 
     map<string, vector3> pos;
@@ -59,8 +59,8 @@ double BridgeSimulation::fitness(vector<Fitness*> _fit){
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
-    for(uint k = 0; k < _fit.size(); k++)
-        finalFitness += _fit[k]->evaluateFitness(pos, map<string, double>(), intAcc);
+    for(uint k = 0; k < mFitnessFunctions.size(); k++)
+        finalFitness += mFitnessFunctions[k]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
 }
@@ -81,13 +81,9 @@ Simulation* BridgeSimulation::getNewCopy(){
 }
 
 void BridgeSimulation::tick(){
-#ifdef MT
-    //#pragma omp parallel for
-#endif
-    for(int k = 0; k < mAgents.size(); k++){
+    for(int k = 0; k < mAgents.size(); k++)
         mWorldEntities[mAgents[k]]->tick();
-        calcCollisions(mAgents[k]);
-    }
+
 }
 
 bool BridgeSimulation::initialise(){
@@ -146,43 +142,6 @@ bool BridgeSimulation::initialise(){
     return true;
 }
 
-void BridgeSimulation::calcCollisions(string _agentName){
-    btTransform trans;
-    mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
-
-    map<uint, double> input;
-    //rangefinders
-    input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 0)) / 50;
-    input[2] = getRayCollisionDistance(_agentName, btVector3(-100, 0.1, 0)) / 50;
-    input[3] = getRayCollisionDistance(_agentName, btVector3(0, 0.1, 100)) / 50;
-    input[4] = getRayCollisionDistance(_agentName, btVector3(0, 0.1, -100)) / 50;
-    input[5] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -100)) / 50;
-    input[6] = getRayCollisionDistance(_agentName, btVector3(-100, 0.1, 100)) / 50;
-    input[7] = getRayCollisionDistance(_agentName, btVector3(-100, 0.1, -100)) / 50;
-    input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 100)) / 50;
-
-    if(calcCrossVal(mFinishLine.p1, mFinishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0){
-        for(uint k = 1; k <= 8; k++)
-            if(input[k] * 50 < mRangefinderRadius)
-                mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;
-        
-        //gets collision data
-        int numManifolds = mWorld->getDispatcher()->getNumManifolds();
-	    for (int i=0;i<numManifolds;i++)
-	    {
-		    btPersistentManifold* contactManifold =  mWorld->getDispatcher()->getManifoldByIndexInternal(i);
-            if(contactManifold->getNumContacts() < 1)
-                continue;
-
-		    const btCollisionObject* obA = contactManifold->getBody0();
-		    const btCollisionObject* obB = contactManifold->getBody1();
-            
-            if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB))
-                mCollisions++;
-        }
-    }
-}
-
 void BridgeSimulation::applyUpdateRules(string _agentName){
     btTransform trans;
     mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
@@ -235,6 +194,27 @@ void BridgeSimulation::applyUpdateRules(string _agentName){
     output.push_back(frontVal);
 
     mWorldEntities[_agentName]->update(output);
+
+    if(calcCrossVal(mFinishLine.p1, mFinishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0){
+        for(uint k = 1; k <= 8; k++)
+            if(input[k] * 50 < mRangefinderRadius)
+                mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;
+        
+        //gets collision data
+        int numManifolds = mWorld->getDispatcher()->getNumManifolds();
+	    for (int i=0;i<numManifolds;i++)
+	    {
+		    btPersistentManifold* contactManifold =  mWorld->getDispatcher()->getManifoldByIndexInternal(i);
+            if(contactManifold->getNumContacts() < 1)
+                continue;
+
+		    const btCollisionObject* obA = contactManifold->getBody0();
+		    const btCollisionObject* obB = contactManifold->getBody1();
+            
+            if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB))
+                mCollisions++;
+        }
+    }
 }
 
 double BridgeSimulation::getRayCollisionDistance(string _agentName, const btVector3& _ray){

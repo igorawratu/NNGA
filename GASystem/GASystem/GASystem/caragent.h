@@ -18,6 +18,9 @@ public:
         mRigidBody->applyTorque(btVector3(0, (_nnOutput[0] - 0.5)/2, 0));
 
         double currAcc = _nnOutput[1] - 0.3;
+        
+        //cout << currAcc << endl;
+
         mCurrVel += currAcc * 3;
         if(mCurrVel > mMaxLinearVel)
             mCurrVel = mMaxLinearVel;

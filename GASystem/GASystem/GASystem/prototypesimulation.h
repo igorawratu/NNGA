@@ -19,7 +19,7 @@ public:
     PrototypeSimulation(vector<vector3> _waypoints, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager);
     virtual ~PrototypeSimulation();
     virtual void iterate();
-    virtual double fitness(vector<Fitness*> _fit);
+    virtual double fitness();
     virtual Simulation* getNewCopy();
     virtual bool initialise();
     void conformVelocities();

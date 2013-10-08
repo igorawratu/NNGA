@@ -19,14 +19,14 @@ public:
         mWorld->stepSimulation(1/24.f, 24, 1/24.f);
     }
 
-    virtual double fitness(vector<Fitness*> _fit){
+    virtual double fitness(){
         double finalFitness = 0;
         map<string, double> dblAcc;
         map<string, long> intAcc;
         map<string, vector3> pos;
 
-        for(uint k = 0; k < _fit.size(); k++)
-            finalFitness += _fit[k]->evaluateFitness(pos, dblAcc, intAcc);
+        for(uint k = 0; k < mFitnessFunctions.size(); k++)
+            finalFitness += mFitnessFunctions[k]->evaluateFitness(pos, dblAcc, intAcc);
 
         return finalFitness;
     }

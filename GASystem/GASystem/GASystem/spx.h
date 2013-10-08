@@ -12,7 +12,7 @@ public:
     virtual vector<Chromosome*> execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters){
         assert(_population.size() >= 4);
 
-        Selection* selectionAlgorithm = SelectionFactory::instance().create("RankSelection");
+        Selection* selectionAlgorithm = SelectionFactory::instance().create("RankQuadraticSelection");
         assert(selectionAlgorithm);
         
         vector<Chromosome*> offspring;

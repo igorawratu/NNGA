@@ -34,7 +34,7 @@ void CarCrashSimulation::iterate(){
     mWorld->stepSimulation(1/(float)mCyclesPerSecond, 1, 1/(float)mCyclesPerSecond);
 }
 
-double CarCrashSimulation::fitness(vector<Fitness*> _fit){
+double CarCrashSimulation::fitness(){
     double finalFitness = 0;
 
     map<string, vector3> groupOnePos, groupTwoPos;
@@ -46,9 +46,9 @@ double CarCrashSimulation::fitness(vector<Fitness*> _fit){
     for(uint k = 0; k < mGroupTwoAgents.size(); k++)
         groupTwoPos[mGroupTwoAgents[k]] = getPositionInfo(mGroupTwoAgents[k]);
 
-    for(uint k = 0; k < _fit.size(); k++){
+    for(uint k = 0; k < mFitnessFunctions.size(); k++){
         //check type in order to evaluate separate groups of agents
-        finalFitness += _fit[k]->evaluateFitness(groupOnePos, map<string, double>(), intAcc);
+        finalFitness += mFitnessFunctions[k]->evaluateFitness(groupOnePos, map<string, double>(), intAcc);
     }
 
     cout << finalFitness << endl;

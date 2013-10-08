@@ -9,8 +9,7 @@ class SimulationContainer
 {
 public:
     //the sim container does NOT delete the pointers passed here, whoever created these must delete them
-    SimulationContainer(Simulation* _sim, vector<Fitness*> _fit){
-        mFitnessFunctions = _fit;
+    SimulationContainer(Simulation* _sim){
         mSim = _sim;
     }
     ~SimulationContainer(){
@@ -33,7 +32,7 @@ public:
     void runFullSimulation(Solution* _solution){
         mSim->setSolution(_solution);
         mSim->runFullSimulation();
-        _solution->fitness() = mSim->fitness(mFitnessFunctions);
+        _solution->fitness() = mSim->fitness();
     }
     
 
@@ -59,13 +58,11 @@ public:
 
     SimulationContainer* clone(){
         Simulation* temp = mSim->getNewCopy();
-        return new SimulationContainer(temp, mFitnessFunctions);
+        return new SimulationContainer(temp);
     }
 
 protected:
     Simulation* mSim;
-    vector<Fitness*> mFitnessFunctions;
-
 };
 
 #endif

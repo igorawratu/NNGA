@@ -22,7 +22,7 @@ public:
     CarCrashSimulation(uint _agentsPerSide, Line _groupOneFinish, Line _groupTwoFinish, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed);
     virtual ~CarCrashSimulation();
     virtual void iterate();
-    virtual double fitness(vector<Fitness*> _fit);
+    virtual double fitness();
     virtual Simulation* getNewCopy();
     virtual bool initialise();
     void tick();
