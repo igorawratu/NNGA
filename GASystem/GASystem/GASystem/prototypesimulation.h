@@ -23,6 +23,7 @@ public:
     virtual Simulation* getNewCopy();
     virtual bool initialise();
     void conformVelocities();
+    virtual double realFitness();
     static void tickCallBack(btDynamicsWorld* world, btScalar timeStep){
         PrototypeSimulation* sim = (PrototypeSimulation*)world->getWorldUserInfo();
         sim->conformVelocities();

@@ -10,11 +10,6 @@ BridgeSimulation::BridgeSimulation(double _rangefinderRadius, uint _numAgents, A
 
     for(uint k = 0; k < _numAgents; k++)
         mAgents.push_back("agent" + boost::lexical_cast<string>(k));
-
-    mFitnessFunctions.push_back(new CollisionFitness());
-    mFitnessFunctions.push_back(new FinishLineFitness());
-
-
 }
 
 BridgeSimulation::BridgeSimulation(const BridgeSimulation& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager){
@@ -51,7 +46,7 @@ double BridgeSimulation::fitness(){
     map<string, vector3> pos;
     map<string, long> intAcc;
     intAcc["Collisions"] = mRangefinderVals + mCollisions; 
-    intAcc["FLFitnessWeight"] = 10;
+    intAcc["FLFitnessWeight"] = 1;
     intAcc["ColFitnessWeight"] = 1;
     intAcc["Positive"] = 0;
     pos["LineP1"] = mFinishLine.p1;
@@ -59,8 +54,8 @@ double BridgeSimulation::fitness(){
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
-    for(uint k = 0; k < mFitnessFunctions.size(); k++)
-        finalFitness += mFitnessFunctions[k]->evaluateFitness(pos, map<string, double>(), intAcc);
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
 
     return finalFitness;
 }
@@ -86,9 +81,32 @@ void BridgeSimulation::tick(){
 
 }
 
+double BridgeSimulation::realFitness(){
+    double finalFitness = 0;
+
+    map<string, vector3> pos;
+    map<string, long> intAcc;
+    intAcc["Collisions"] = mCollisions; 
+    intAcc["FLFitnessWeight"] = 1;
+    intAcc["ColFitnessWeight"] = 1;
+    intAcc["Positive"] = 0;
+    pos["LineP1"] = mFinishLine.p1;
+    pos["LineP2"] = mFinishLine.p2;
+    for(uint k = 0; k < mAgents.size(); k++)
+        pos[mAgents[k]] = getPositionInfo(mAgents[k]);
+
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+
+    return finalFitness;
+}
+
 bool BridgeSimulation::initialise(){
     if(mInitialised)
         return true;
+
+    mFitnessFunctions.push_back(new FinishLineFitness());
+    mFitnessFunctions.push_back(new CollisionFitness());
 
     mFinishLine.p1 = vector3(-10, 0, -25);
     mFinishLine.p2 = vector3(10, 0, -25);

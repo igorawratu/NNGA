@@ -33,8 +33,8 @@ public:
         mSim->setSolution(_solution);
         mSim->runFullSimulation();
         _solution->fitness() = mSim->fitness();
+        _solution->realFitness() = mSim->realFitness();
     }
-    
 
     void iterate(){
         mSim->iterate();

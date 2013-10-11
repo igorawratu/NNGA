@@ -87,6 +87,8 @@ public:
         return mCyclesPerSecond;
     }
 
+    virtual double realFitness()=0;
+
     void setSolution(Solution* _solution){
         mSolution = _solution;
     }

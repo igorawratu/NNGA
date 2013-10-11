@@ -22,6 +22,7 @@ public:
     CorneringSim(const CorneringSim& other);
     virtual void iterate();
     virtual double fitness();
+    virtual double realFitness();
     virtual Simulation* getNewCopy();
     virtual bool initialise();
     void tick();

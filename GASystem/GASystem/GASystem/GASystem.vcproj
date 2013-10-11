@@ -188,6 +188,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\carracesimulation.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\corneringsim.cpp"
 				>
 			</File>
@@ -271,6 +275,10 @@
 			</File>
 			<File
 				RelativePath=".\carcrashsimulation.h"
+				>
+			</File>
+			<File
+				RelativePath=".\carracesimulation.h"
 				>
 			</File>
 			<File
@@ -459,6 +467,10 @@
 			</File>
 			<File
 				RelativePath=".\windowmanager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\winnerfitness.h"
 				>
 			</File>
 		</Filter>

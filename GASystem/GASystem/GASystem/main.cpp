@@ -455,7 +455,7 @@ void runGATests(){
 
 int main(){
     //srand(time(0));
-    int seed = rand();
+    int seed = 50;rand();
     GraphicsEngine engine(NULL);
     
     cout << seed << endl;
@@ -474,7 +474,7 @@ int main(){
     params.nnFormatFilename = "neuralxmls/corneringsimulation/input6h.xml";
     //params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input6h.xml";
     params.stagnationThreshold = 100;
-    params.fitnessEpsilonThreshold = 100;
+    params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.2;

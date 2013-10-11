@@ -23,13 +23,14 @@ public:
     void printToFile(string _filename);
 
     double& fitness(){return mFitness;}
+    double& realFitness(){return mRealFitness;}
 
 private:
     Solution(){}
 
 private:
     vector<NeuralNetwork> mNeuralNets;
-    double mFitness;
+    double mFitness, mRealFitness;
 };
 
 #endif

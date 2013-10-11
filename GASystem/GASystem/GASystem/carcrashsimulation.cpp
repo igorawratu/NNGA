@@ -1,17 +1,17 @@
 #include "carcrashsimulation.h"
 
-CarCrashSimulation::CarCrashSimulation(uint _agentsPerSide, Line _groupOneFinish, Line _groupTwoFinish, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed)
+CarCrashSimulation::CarCrashSimulation(double _rangefinderRadius, uint _agentsPerSide, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed)
  : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager){
     mWorld->setInternalTickCallback(CarCrashSimulation::tickCallBack, this, true);
-    mCollisions = 0;
-    mGroupOneFinish = _groupOneFinish;
-    mGroupTwoFinish = _groupTwoFinish;
+    mCollisions = mRangefinderVals = 0;
     mSeed = _seed;
+    mRangefinderRadius = _rangefinderRadius;
 
-    for(uint k = 0; k < _agentsPerSide; k++){
-        mGroupOneAgents.push_back("Group1Agent" + boost::lexical_cast<string>(k));
-        mGroupTwoAgents.push_back("Group2Agent" + boost::lexical_cast<string>(k));
-    }
+    for(uint k = 0; k < _agentsPerSide; k++)
+        mGroupOneAgents.push_back("agent" + boost::lexical_cast<string>(k));
+
+    for(uint k = _agentsPerSide; k < _agentsPerSide * 2; k++)
+        mGroupTwoAgents.push_back("agent" + boost::lexical_cast<string>(k));
 }
 
 CarCrashSimulation::~CarCrashSimulation(){
@@ -37,27 +37,41 @@ void CarCrashSimulation::iterate(){
 double CarCrashSimulation::fitness(){
     double finalFitness = 0;
 
-    map<string, vector3> groupOnePos, groupTwoPos;
+    map<string, vector3> pos;
     map<string, long> intAcc;
-    intAcc["Collisions"] = mCollisions / 5;
-
+    intAcc["Collisions"] = mRangefinderVals + mCollisions; 
+    intAcc["FLFitnessWeight"] = 1;
+    intAcc["ColFitnessWeight"] = 1;
+    
+    
     for(uint k = 0; k < mGroupOneAgents.size(); k++)
-        groupOnePos[mGroupOneAgents[k]] = getPositionInfo(mGroupOneAgents[k]);
+        pos[mGroupOneAgents[0]] = getPositionInfo(mGroupOneAgents[k]);
+    intAcc["Positive"] = 0;
+    pos["LineP1"] = mGroupOneFinish.p1;
+    pos["LineP2"] = mGroupOneFinish.p2;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
+
+    pos.clear();
+
     for(uint k = 0; k < mGroupTwoAgents.size(); k++)
-        groupTwoPos[mGroupTwoAgents[k]] = getPositionInfo(mGroupTwoAgents[k]);
+        pos[mGroupTwoAgents[k]] = getPositionInfo(mGroupTwoAgents[k]);
+    intAcc["Positive"] = 1;
+    pos["LineP1"] = mGroupTwoFinish.p1;
+    pos["LineP2"] = mGroupTwoFinish.p2;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
 
-    for(uint k = 0; k < mFitnessFunctions.size(); k++){
-        //check type in order to evaluate separate groups of agents
-        finalFitness += mFitnessFunctions[k]->evaluateFitness(groupOnePos, map<string, double>(), intAcc);
-    }
 
-    cout << finalFitness << endl;
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
 
     return finalFitness;
 }
 
+double CarCrashSimulation::realFitness(){
+    return fitness() - mRangefinderVals;
+}
+
 Simulation* CarCrashSimulation::getNewCopy(){
-    Simulation* sim = new CarCrashSimulation(mGroupOneAgents.size(), mGroupOneFinish, mGroupTwoFinish, mNumCycles, mCyclesPerDecision, mCyclesPerSecond, mSolution, mResourceManager, mSeed);
+    Simulation* sim = new CarCrashSimulation(mRangefinderRadius, mGroupOneAgents.size(), mNumCycles, mCyclesPerDecision, mCyclesPerSecond, mSolution, mResourceManager, mSeed);
     sim->initialise();
     
     return sim;
@@ -67,50 +81,34 @@ bool CarCrashSimulation::initialise(){
     if(mInitialised)
         return true;
 
-    //set the vals
-    vector3 minDimOne(-1, 0, 1), maxDimOne(1, 0, 1), minDimTwo(-1, 0, 1), maxDimTwo(1, 0, 1);
+    mFitnessFunctions.push_back(new FinishLineFitness());
+    mFitnessFunctions.push_back(new CollisionFitness());
 
-    boost::mt19937 rngxOne(mSeed);
-    boost::mt19937 rngzOne(mSeed + mSeed / 2);
-
-    boost::uniform_real<double> distxOne(minDimOne.x, maxDimOne.x);
-    boost::uniform_real<double> distzOne(minDimOne.z, maxDimOne.z);
-
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genxOne(rngxOne, distxOne);
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genzOne(rngzOne, distzOne);
-
-    boost::mt19937 rngxTwo(mSeed / 2);
-    boost::mt19937 rngzTwo(mSeed + mSeed / 3);
-
-    boost::uniform_real<double> distxTwo(minDimTwo.x, maxDimTwo.x);
-    boost::uniform_real<double> distzTwo(minDimTwo.z, maxDimTwo.z);
-
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genxTwo(rngxTwo, distxTwo);
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genzTwo(rngzTwo, distzTwo);
-
+    mGroupOneFinish.p1 = vector3(-20, 0, 30); mGroupOneFinish.p2 = vector3(20, 0, 30);
+    mGroupTwoFinish.p1 = vector3(-20, 0, -30); mGroupTwoFinish.p2 = vector3(20, 0, -30);
 
     btQuaternion rotGroupOne(0, 0, 0, 1), rotGroupTwo(0, 0, 0, 1);
     rotGroupOne.setEuler(PI/2, 0, 0);
     rotGroupTwo.setEuler(PI + PI/2, 0, 0);
 
     for(uint k = 0; k < mGroupOneAgents.size(); k++){
-        mWorldEntities[mGroupOneAgents[k]] = new CarAgent(10, 0.5);
-        if(!mWorldEntities[mGroupOneAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rotGroupOne, mResourceManager, vector3(genxOne(), 0, genzOne()), 0.01))
+        mWorldEntities[mGroupOneAgents[k]] = new CarAgent(10, 1);
+        if(!mWorldEntities[mGroupOneAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rotGroupOne, mResourceManager, vector3(k, 0, -30), 0.01))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupOneAgents[k]]->getRigidBody());
     }
 
     for(uint k = 0; k < mGroupTwoAgents.size(); k++){
-        mWorldEntities[mGroupTwoAgents[k]] = new CarAgent(10, 0.5);
-        if(!mWorldEntities[mGroupTwoAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rotGroupTwo, mResourceManager, vector3(genxTwo(), 0, genzTwo()), 0.01))
+        mWorldEntities[mGroupTwoAgents[k]] = new CarAgent(10, 1);
+        if(!mWorldEntities[mGroupTwoAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rotGroupTwo, mResourceManager, vector3(k, 0, 30), 0.01))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupTwoAgents[k]]->getRigidBody());
     }
     
-    mWorldEntities["alley"] = new StaticWorldAgent(0.5, 0.1);
-    if(!mWorldEntities["alley"]->initialise("alley.mesh", vector3(50, 50, 50), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 0, 0), 0))
+    mWorldEntities["corridor"] = new StaticWorldAgent(0.5, 0.1);
+    if(!mWorldEntities["corridor"]->initialise("corridor.mesh", vector3(50, 50, 50), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 0, 0), 0))
         return false;
-    mWorld->addRigidBody(mWorldEntities["alley"]->getRigidBody());
+    mWorld->addRigidBody(mWorldEntities["corridor"]->getRigidBody());
 
     mInitialised = true;
 
@@ -127,12 +125,14 @@ void CarCrashSimulation::tick(){
 
 double CarCrashSimulation::getRayCollisionDistance(string _agentName, const btVector3& _ray){
     double dist = 100;
-    btVector3 correctedRay = _ray * mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis();
+    btVector3 correctedRot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * _ray;
 
     btTransform trans;
     mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
 
     btVector3 agentPosition = trans.getOrigin();
+
+    btVector3 correctedRay(correctedRot.getX() + agentPosition.getX(), correctedRot.getY() + agentPosition.getY(), correctedRot.getZ() + agentPosition.getZ());
 
     btCollisionWorld::ClosestRayResultCallback ray(agentPosition, correctedRay);
 
@@ -162,38 +162,46 @@ void CarCrashSimulation::applyUpdateRules(string _agentName, uint _groupNum){
 
     //agent position
     input[9] = trans.getOrigin().getX() / 50;
-    input[10] = trans.getOrigin().getY() / 50;
-    input[11] = trans.getOrigin().getZ() / 50;
+    input[10] = trans.getOrigin().getZ() / 50;
     
     //goal line
-    input[12] = _groupNum == 1 ? mGroupOneFinish.p1.x / 50 : mGroupTwoFinish.p1.x / 50;
-    input[13] = _groupNum == 1 ? mGroupOneFinish.p1.y / 50 : mGroupTwoFinish.p1.y / 50;
-    input[14] = _groupNum == 1 ? mGroupOneFinish.p1.z / 50 : mGroupTwoFinish.p1.z / 50;
-    input[15] = _groupNum == 1 ? mGroupOneFinish.p2.x / 50 : mGroupTwoFinish.p2.x / 50;
-    input[16] = _groupNum == 1 ? mGroupOneFinish.p2.y / 50 : mGroupTwoFinish.p2.y / 50;
-    input[17] = _groupNum == 1 ? mGroupOneFinish.p2.z / 50 : mGroupTwoFinish.p2.z / 50;
+    input[11] = _groupNum == 1 ? mGroupOneFinish.p1.x / 50 : mGroupTwoFinish.p1.x / 50;
+    input[12] = _groupNum == 1 ? mGroupOneFinish.p1.z / 50 : mGroupTwoFinish.p1.z / 50;
+    input[13] = _groupNum == 1 ? mGroupOneFinish.p2.x / 50 : mGroupTwoFinish.p2.x / 50;
+    input[14] = _groupNum == 1 ? mGroupOneFinish.p2.z / 50 : mGroupTwoFinish.p2.z / 50;
+
+    //velocity
+    vector3 agentVel = mWorldEntities[_agentName]->getVelocity();
+    input[15] = agentVel.x;
+    input[16] = agentVel.z;
 
     vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
 
     mWorldEntities[_agentName]->update(output);
 
-    //gets collision data
-    int numManifolds = mWorld->getDispatcher()->getNumManifolds();
-	for (int i=0;i<numManifolds;i++)
-	{
-		btPersistentManifold* contactManifold =  mWorld->getDispatcher()->getManifoldByIndexInternal(i);
-		const btCollisionObject* obA = contactManifold->getBody0();
-		const btCollisionObject* obB = contactManifold->getBody1();
+    bool checkCollisions = _groupNum == 1? calcCrossVal(mGroupOneFinish.p1, mGroupOneFinish.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0 : 
+        calcCrossVal(mGroupTwoFinish.p1, mGroupTwoFinish.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) < 0;
 
-        if(mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB)
-            mCollisions++;
+    if(checkCollisions){
+        for(uint k = 1; k <= 8; k++)
+            if(input[k] * 50 < mRangefinderRadius)
+                mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;
+        
+        //gets collision data
+        int numManifolds = mWorld->getDispatcher()->getNumManifolds();
+	    for (int i=0;i<numManifolds;i++)
+	    {
+		    btPersistentManifold* contactManifold =  mWorld->getDispatcher()->getManifoldByIndexInternal(i);
+            if(contactManifold->getNumContacts() < 1)
+                continue;
+
+		    const btCollisionObject* obA = contactManifold->getBody0();
+		    const btCollisionObject* obB = contactManifold->getBody1();
+            
+            if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB))
+                mCollisions++;
+        }
     }
-}
-
-double CarCrashSimulation::calcDistance(vector3 _from, vector3 _to){
-    double x = _to.x - _from.x, y = _to.y - _from.y, z = _to.z - _from.z;
-
-    return sqrt(x*x + y*y + z*z);
 }
  
 vector3 CarCrashSimulation::getPositionInfo(string _entityName){

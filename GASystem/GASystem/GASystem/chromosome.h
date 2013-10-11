@@ -24,10 +24,11 @@ public:
     virtual void setStructure(vector<map<uint, NeuronInfo>>& _struct)=0;
     virtual Chromosome* clone()=0;
 
-    double& fitness(){return mFitness;}    
+    double& fitness(){return mFitness;}
+    double& realFitness(){return mRealFitness;}
 
 protected:
-    double mFitness;
+    double mFitness, mRealFitness;
 };
 
 #endif

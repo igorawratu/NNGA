@@ -52,7 +52,30 @@ double CorneringSim::fitness(){
 
     map<string, vector3> pos;
 
-    mWaypointTracker["Collisions"] = mCollisions + mRangefinderVals / 5;
+    mWaypointTracker["Collisions"] = mCollisions + mRangefinderVals;
+
+    for(uint k = 0; k < mWaypoints.size(); k++)
+        pos["Waypoint" + boost::lexical_cast<string>(k)] = mWaypoints[k];
+
+    for(uint k = 0; k < mAgents.size(); k++)
+        pos[mAgents[k]] = getPositionInfo(mAgents[k]);
+
+    
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), mWaypointTracker);
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), mWaypointTracker) : maxCollisions;
+
+    cout << mWaypointTracker["Collisions"] << "  " << finalFitness << endl;
+
+    return finalFitness;
+}
+
+double CorneringSim::realFitness(){
+    double finalFitness = 0;
+    double maxCollisions = (mNumCycles / mCyclesPerDecision) * mAgents.size() * 9;
+
+    map<string, vector3> pos;
+
+    mWaypointTracker["Collisions"] = mCollisions;
 
     for(uint k = 0; k < mWaypoints.size(); k++)
         pos["Waypoint" + boost::lexical_cast<string>(k)] = mWaypoints[k];

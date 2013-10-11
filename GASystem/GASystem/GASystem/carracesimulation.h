@@ -1,5 +1,5 @@
-#ifndef CARCRASHSIMULATION_H
-#define CARCRASHSIMULATION_H
+#ifndef CARRACESIMULATION_H
+#define CARRACESIMULATION_H
 
 #include <boost/lexical_cast.hpp>
 #include <boost/random.hpp>
@@ -12,17 +12,15 @@
 #include "staticworldagent.h"
 #include "finishlinefitness.h"
 #include "collisionfitness.h"
+#include "winnerfitness.h"
 
 #include <iostream>
 #include <vector>
 
-using namespace std;
-
-class CarCrashSimulation : public Simulation
+class CarRaceSimulation : public Simulation
 {
-public:
-    CarCrashSimulation(double _rangefinderRadius, uint _agentsPerSide, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed);
-    virtual ~CarCrashSimulation();
+    CarRaceSimulation(double _rangefinderRadius, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed);
+    virtual ~CarRaceSimulation();
     virtual void iterate();
     virtual double fitness();
     virtual Simulation* getNewCopy();
@@ -30,7 +28,7 @@ public:
     void tick();
     virtual double realFitness();
     static void tickCallBack(btDynamicsWorld* world, btScalar timeStep){
-        CarCrashSimulation* sim = (CarCrashSimulation*)world->getWorldUserInfo();
+        CarRaceSimulation* sim = (CarRaceSimulation*)world->getWorldUserInfo();
         sim->tick();
     }
 
@@ -43,10 +41,10 @@ private:
     }
 
 private:
-    Line mGroupOneFinish, mGroupTwoFinish;
-    vector<string> mGroupOneAgents, mGroupTwoAgents; 
+    Line mFinishLine;
+    vector<string> mAgents; 
     long mCollisions, mRangefinderVals, mRangefinderRadius;
-    int mSeed;
+    int mSeed, mWinner;
 };
 
 #endif

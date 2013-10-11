@@ -30,6 +30,10 @@ public:
 
         return finalFitness;
     }
+    
+    virtual double realFitness(){
+        return 0;
+    }
 
     virtual Simulation* getNewCopy(){
         return new DummySimulation(mNumCycles, mCyclesPerDecision, mCyclesPerSecond, mResourceManager);

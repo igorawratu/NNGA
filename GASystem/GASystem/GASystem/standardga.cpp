@@ -50,6 +50,7 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
         Solution currSolution(dynamic_cast<NNChromosome*>(population[i])->getNeuralNets());
         simcont->runFullSimulation(&currSolution);
         population[i]->fitness() = currSolution.fitness();
+        population[i]->realFitness() = currSolution.realFitness();
 
         delete simcont;
     }
@@ -79,6 +80,7 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
             Solution currSolution(dynamic_cast<NNChromosome*>(offspring[i])->getNeuralNets());
             simcont->runFullSimulation(&currSolution);
             offspring[i]->fitness() = currSolution.fitness();
+            offspring[i]->realFitness() = currSolution.realFitness();
 
             delete simcont;
         }
@@ -90,21 +92,23 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
         quicksort(population, 0, population.size() - 1);
         cout << "Population before selection..." << endl;
         for(uint i = 0; i < population.size(); i++)
-            cout << population[i]->fitness() << " | ";
+            cout << population[i]->fitness() << " " << population[i]->realFitness() << " | ";
         cout << endl;
 
         //checks if the fitness of the solution is below the epsilon threshold, if it is, stop training
-        if(population[0]->fitness() <= mParameters.fitnessEpsilonThreshold){
-            Solution finalSolution(dynamic_cast<NNChromosome*>(population[0])->getNeuralNets());
-            finalSolution.fitness() = population[0]->fitness();
+        for(uint i = 0; i < population.size(); ++i){
+            if(population[i]->realFitness() <= mParameters.fitnessEpsilonThreshold){
+                Solution finalSolution(dynamic_cast<NNChromosome*>(population[0])->getNeuralNets());
+                finalSolution.fitness() = population[i]->fitness();
 
-            for(uint i = 0; i < population.size(); i++)
-                delete population[i];
+                for(uint j = 0; j < population.size(); ++j)
+                    delete population[j];
 
-            delete crossoverAlgorithm;
-            delete selectionAlgorithm;
+                delete crossoverAlgorithm;
+                delete selectionAlgorithm;
 
-            return finalSolution;
+                return finalSolution;
+            }
         }
 
         vector<Chromosome*> unselected;

@@ -42,6 +42,26 @@ double PrototypeSimulation::fitness(){
     return finalFitness;
 }
 
+double PrototypeSimulation::realFitness(){
+    double finalFitness = 0;
+
+    for(uint k = 0; k < mFitnessFunctions.size(); k++){
+        map<string, vector3> pos;
+        pos["agentOne"] = getPositionInfo("agentOne");
+        pos["agentTwo"] = getPositionInfo("agentTwo");
+        for(uint k = 1; k <= mWaypoints.size(); k++)
+            pos["Waypoint" + boost::lexical_cast<string>(k)] = mWaypoints[k - 1];
+
+        mWaypointTracker["Collisions"] = mCollisions / 6;
+
+        finalFitness += mFitnessFunctions[k]->evaluateFitness(pos, map<string, double>(), mWaypointTracker);
+    }
+
+    cout << finalFitness << endl;
+
+    return finalFitness;
+}
+
 vector3 PrototypeSimulation::getPositionInfo(string _entityName){
     btRigidBody* rb = mWorldEntities[_entityName]->getRigidBody();
     btTransform trans;
