@@ -45,7 +45,8 @@ private:
 private:
     Line mGroupOneFinish, mGroupTwoFinish;
     vector<string> mGroupOneAgents, mGroupTwoAgents; 
-    long mCollisions, mRangefinderVals, mRangefinderRadius;
+    long mCollisions;
+    double mRangefinderVals, mRangefinderRadius;
     int mSeed;
 };
 

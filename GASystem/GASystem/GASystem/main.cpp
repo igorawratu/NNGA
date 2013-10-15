@@ -28,6 +28,7 @@
 #include "bridgesimulation.h"
 #include "finishlinefitness.h"
 #include "corneringsim.h"
+#include "carcrashsimulation.h"
 
 #define TRAIN
 
@@ -453,14 +454,103 @@ void runGATests(){
     testMultipointCrossover();
 }
 
-int main(){
-    //srand(time(0));
-    int seed = 50;rand();
+void runBridgeCarSim(){
+    int seed = 50;
     GraphicsEngine engine(NULL);
-    
-    cout << seed << endl;
 
-    //BridgeSimulation* sim = new BridgeSimulation(1, 10, CAR, 300, 5, 30, NULL, engine.getResourceManager(), seed);
+    BridgeSimulation* sim = new BridgeSimulation(1, 10, CAR, 300, 5, 30, NULL, engine.getResourceManager(), seed);
+    sim->initialise();
+
+    SimulationContainer cont(sim);
+
+#ifdef TRAIN
+    StandardGAParameters params;
+    params.populationSize = 100;
+    params.maxGenerations = 5;
+    params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input6h.xml";
+    params.stagnationThreshold = 100;
+    params.fitnessEpsilonThreshold = 0;
+    params.mutationAlgorithm = "GaussianMutation";
+    params.mutationParameters["MutationProbability"] = 0.02;
+    params.mutationParameters["Deviation"] = 0.2;
+    params.mutationParameters["MaxConstraint"] = 1;
+    params.mutationParameters["MinConstraint"] = -1;
+    params.crossoverAlgorithm = "MultipointCrossover";
+    params.selectionAlgorithm = "RankQuadraticSelection";
+    params.elitismCount = 5;
+
+    GeneticAlgorithm* ga = new StandardGA(params);
+
+    GAEngine gaengine;
+    Solution solution = gaengine.train(ga, &cont);
+
+    delete ga;
+
+    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
+    solution.printToFile("neuralxmls/bridgesimulation/car/output.xml");
+
+    cont.resetSimulation();
+#else
+    Solution solution("neuralxmls/bridgesimulation/car/output.xml");
+#endif
+
+    cont.setSolution(&solution);
+    
+    engine.setSimulation(&cont);
+    
+    engine.renderSimulation();
+}
+
+void runBridgeMouseSim(){
+    int seed = 50;
+    GraphicsEngine engine(NULL);
+
+    BridgeSimulation* sim = new BridgeSimulation(1, 30, MOUSE, 300, 5, 30, NULL, engine.getResourceManager(), seed);
+    sim->initialise();
+
+    SimulationContainer cont(sim);
+
+#ifdef TRAIN
+    StandardGAParameters params;
+    params.populationSize = 100;
+    params.maxGenerations = 200;
+    params.nnFormatFilename = "neuralxmls/bridgesimulation/mouse/input6h.xml";
+    params.stagnationThreshold = 10;
+    params.fitnessEpsilonThreshold = 0;
+    params.mutationAlgorithm = "GaussianMutation";
+    params.mutationParameters["MutationProbability"] = 0.1;
+    params.mutationParameters["Deviation"] = 0.2;
+    params.mutationParameters["MaxConstraint"] = 1;
+    params.mutationParameters["MinConstraint"] = -1;
+    params.crossoverAlgorithm = "MultipointCrossover";
+    params.selectionAlgorithm = "RankQuadraticSelection";
+    params.elitismCount = 5;
+
+    GeneticAlgorithm* ga = new StandardGA(params);
+
+    GAEngine gaengine;
+    Solution solution = gaengine.train(ga, &cont);
+
+    delete ga;
+
+    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
+    solution.printToFile("neuralxmls/bridgesimulation/mouse/output.xml");
+
+    cont.resetSimulation();
+#else
+    Solution solution("neuralxmls/bridgesimulation/mouse/output.xml");
+#endif
+
+    cont.setSolution(&solution);
+    
+    engine.setSimulation(&cont);
+    
+    engine.renderSimulation();
+}
+
+void runCorneringSim(){
+    int seed = 50;
+    GraphicsEngine engine(NULL);
 
     CorneringSim* sim = new CorneringSim(1, 10, 1000, 5, 30, NULL, engine.getResourceManager(), seed);
     sim->initialise();
@@ -472,7 +562,6 @@ int main(){
     params.populationSize = 100;
     params.maxGenerations = 200;
     params.nnFormatFilename = "neuralxmls/corneringsimulation/input6h.xml";
-    //params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input6h.xml";
     params.stagnationThreshold = 100;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
@@ -493,12 +582,10 @@ int main(){
 
     cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
     solution.printToFile("neuralxmls/corneringsimulation/output.xml");
-    //solution.printToFile("neuralxmls/bridgesimulation/car/output.xml");
 
     cont.resetSimulation();
 #else
     Solution solution("neuralxmls/corneringsimulation/output.xml");
-    //Solution solution("neuralxmls/bridgesimulation/car/output.xml");
 #endif
 
     cont.setSolution(&solution);
@@ -506,6 +593,58 @@ int main(){
     engine.setSimulation(&cont);
     
     engine.renderSimulation();
+}
+
+void runCarCrashSim(){
+    int seed = 110;
+    GraphicsEngine engine(NULL);
+
+    CarCrashSimulation* sim = new CarCrashSimulation(1, 10, 300, 5, 30, NULL, engine.getResourceManager(), seed);
+    sim->initialise();
+
+    SimulationContainer cont(sim);
+
+#ifdef TRAIN
+    StandardGAParameters params;
+    params.populationSize = 100;
+    params.maxGenerations = 200;
+    params.nnFormatFilename = "neuralxmls/carcrashsimulation/input6h.xml";
+    params.stagnationThreshold = 100;
+    params.fitnessEpsilonThreshold = 0;
+    params.mutationAlgorithm = "GaussianMutation";
+    params.mutationParameters["MutationProbability"] = 0.1;
+    params.mutationParameters["Deviation"] = 0.2;
+    params.mutationParameters["MaxConstraint"] = 1;
+    params.mutationParameters["MinConstraint"] = -1;
+    params.crossoverAlgorithm = "MultipointCrossover";
+    params.selectionAlgorithm = "RankQuadraticSelection";
+    params.elitismCount = 5;
+
+    GeneticAlgorithm* ga = new StandardGA(params);
+
+    GAEngine gaengine;
+    Solution solution = gaengine.train(ga, &cont);
+
+    delete ga;
+
+    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
+    solution.printToFile("neuralxmls/carcrashsimulation/jumble.xml");
+
+    cont.resetSimulation();
+#else
+    Solution solution("neuralxmls/carcrashsimulation/jumble.xml");
+#endif
+
+    cont.setSolution(&solution);
+    
+    engine.setSimulation(&cont);
+    
+    engine.renderSimulation();
+}
+
+int main(){
+    runCarCrashSim();
+    //runBridgeMouseSim();
 
     return 0;
 }
