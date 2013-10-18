@@ -86,6 +86,23 @@ void GraphicsEngine::renderSimulation(){
     mRoot->startRendering();
 }
 
+void GraphicsEngine::destroyAllAttachedMovableObjects(SceneNode* _sceneNode)
+{
+   SceneNode::ObjectIterator iter = _sceneNode->getAttachedObjectIterator();
+
+   while(iter.hasMoreElements()){
+      MovableObject* obj = static_cast<MovableObject*>(iter.getNext());
+      _sceneNode->getCreator()->destroyMovableObject(obj);
+   }
+
+   SceneNode::ChildNodeIterator childiter = _sceneNode->getChildIterator();
+
+   while (childiter.hasMoreElements()){
+      SceneNode* child = static_cast<SceneNode*>(childiter.getNext());
+      DestroyAllAttachedMovableObjects(child);
+   }
+}
+
 bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
     if(mWindowManager->isWindowClosed())
         return false;
@@ -107,6 +124,15 @@ bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
             mSimulation->iterate();
             mTimer += mUpdateInterval;
         }
+    }
+
+    //remove specified scene nodes
+    vector<string> toRemove = mSimulation->getRemoveList();
+    for(uint k = 0; k < toRemove.size; ++k){
+        Ogre::SceneNode* node = mSceneManager->getSceneNode(toRemove[k]);
+        destroyAllAttachedMovableObjects(node);
+        node->removeAndDestroyAllChildren();
+        mSceneManager->destroySceneNode(node);
     }
 
     //sync

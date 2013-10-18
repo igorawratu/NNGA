@@ -19,6 +19,7 @@ void CrossoverFactory::startup(){
 
     crossoverFactory.mFactory.registerCreator("MultipointCrossover", MultipointCrossover::createMultipointCrossover);
     crossoverFactory.mFactory.registerCreator("SPX", SPX::createSPX);
+    crossoverFactory.mFactory.registerCreator("BLX", BLX::createBLX);
 }
 
 void CrossoverFactory::shutdown(){

@@ -38,6 +38,9 @@ public:
     }
 
 private:
+    void destroyAllAttachedMovableObjects(SceneNode* i_pSceneNode);
+
+private:
     Ogre::Root* mRoot;
     Ogre::String mPlugins;
     SimulationContainer* mSimulation;

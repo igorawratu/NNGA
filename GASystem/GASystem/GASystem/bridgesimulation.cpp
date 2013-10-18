@@ -140,7 +140,7 @@ bool BridgeSimulation::initialise(){
     else if(mAgentType == MOUSE){
         for(uint k = 0; k < mAgents.size(); k++){
             mWorldEntities[mAgents[k]] = new MouseAgent(10, 1);
-            if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(genx(), geny(), genz()), 0.01))
+            if(!mWorldEntities[mAgents[k]]->initialise("mouse.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(genx(), geny(), genz()), 0.01))
                 return false;
             mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());
         }

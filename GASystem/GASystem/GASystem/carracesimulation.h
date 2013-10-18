@@ -16,9 +16,11 @@
 
 #include <iostream>
 #include <vector>
+#include <math.h>
 
 class CarRaceSimulation : public Simulation
 {
+public:
     CarRaceSimulation(double _rangefinderRadius, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed);
     virtual ~CarRaceSimulation();
     virtual void iterate();
@@ -43,8 +45,10 @@ private:
 private:
     Line mFinishLine;
     vector<string> mAgents; 
-    long mCollisions, mRangefinderVals, mRangefinderRadius;
+    long mCollisions;
+    double mRangefinderVals, mRangefinderRadius;
     int mSeed, mWinner;
+    double mWinToExpectedDistance;
 };
 
 #endif

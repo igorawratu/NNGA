@@ -112,6 +112,14 @@ public:
         return mWorldEntities;
     }
 
+    virtual vector<string> getRemoveList(){
+        return vector<string>();
+    }
+
+    virtual vector<Line> getLines(){
+        return vector<Line>();
+    }
+
     
 protected:
     bool mInitialised;
