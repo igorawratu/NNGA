@@ -49,6 +49,13 @@ float inline calcEucDistance(vector3 from, vector3 to){
 
 struct Line
 {
+    bool operator==(const Line& rhs){ 
+        bool one = (p1.x == rhs.p1.x && p1.y == rhs.p1.y && p1.z == rhs.p1.z) && (p2.x == rhs.p2.x && p2.y == rhs.p2.y && p2.z == rhs.p2.z);
+        bool two = (p1.x == rhs.p2.x && p1.y == rhs.p2.y && p1.z == rhs.p2.z) && (p2.x == rhs.p1.x && p2.y == rhs.p1.y && p2.z == rhs.p1.z);
+
+        return one || two;
+    }
+
     vector3 p1;
     vector3 p2;
 };

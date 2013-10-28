@@ -5,6 +5,7 @@
 #include "windowmanager.h"
 #include "inputmanager.h"
 #include "resourcemanager.h"
+#include "common.h"
 
 #include <OgreRoot.h>
 #include <OgreConfigFile.h>
@@ -13,10 +14,14 @@
 #include <OgreSceneManager.h>
 #include <OgreRenderWindow.h>
 #include <OgreEntity.h>
+#include <OgreManualObject.h>
 
 #include <btBulletDynamicsCommon.h>
 
 #include <iostream>
+#include <map>
+#include <vector>
+#include <string>
 
 using namespace std;
 
@@ -38,7 +43,9 @@ public:
     }
 
 private:
-    void destroyAllAttachedMovableObjects(SceneNode* i_pSceneNode);
+    void destroyAllAttachedMovableObjects(Ogre::SceneNode* _sceneNode);
+    string createLineObject(int _index);
+    string attachNewLine(Line _line);
 
 private:
     Ogre::Root* mRoot;
@@ -48,6 +55,9 @@ private:
     Ogre::SceneManager* mSceneManager;
     ResourceManager* mResourceManager;
     double mUpdateInterval, mTimer;
+
+    vector<pair<string, Line>> mLinesInUse;
+    vector<string> mLinePool;
 
 private:
     GraphicsEngine(){}

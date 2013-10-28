@@ -21,6 +21,7 @@ WarRobotSimulation::~WarRobotSimulation(){
 }
 
 void WarRobotSimulation::iterate(){
+    cout << "begin" << endl;
     if(mCycleCounter > mNumCycles)
         return;
 
@@ -29,9 +30,9 @@ void WarRobotSimulation::iterate(){
     if(mCycleCounter % mCyclesPerDecision == 0){
         mRaysShot.clear();
         for(uint k = 0; k < mGroupOneAgents.size(); ++k)
-            applyUpdateRules(mGroupOneAgents[k], k);
+            applyUpdateRules(mGroupOneAgents[k], 0);
         for(uint k = 0; k < mGroupTwoAgents.size(); ++k)
-            applyUpdateRules(mGroupTwoAgents[k], k + mGroupOneAgents.size());
+            applyUpdateRules(mGroupTwoAgents[k], 1);
 
         //remove dead agents from simulation
         for(uint k = 0; k < mObjectsToRemove.size(); ++k){
@@ -60,6 +61,7 @@ void WarRobotSimulation::iterate(){
     mCycleCounter++;
 
     mWorld->stepSimulation(1/(float)mCyclesPerSecond, 1, 1/(float)mCyclesPerSecond);
+    cout << "end" << endl;
 }
 
 double WarRobotSimulation::fitness(){
@@ -109,19 +111,37 @@ bool WarRobotSimulation::initialise(){
     mFitnessFunctions.push_back(new CollisionFitness());
 
     btQuaternion rotG1(0, 0, 0, 1), rotG2(0, 0, 0, 1);
-    rotG1.setEuler(PI/2, 0, 0); rotG2.setEuler(PI + PI/2, 0, 0);
+    rotG1.setEuler(0, 0, 0); rotG2.setEuler(PI, 0, 0);
+
+    vector3 minDimOne(-80, 0, -80), maxDimOne(-30, 0, 80);
+    vector3 minDimTwo(30, 0, -80), maxDimTwo(80, 0, 80);
+
+    boost::mt19937 rngonex(mSeed);
+    boost::mt19937 rngonez(mSeed + mSeed / 2);
+    boost::mt19937 rngtwox(mSeed / 2);
+    boost::mt19937 rngtwoz(mSeed * 2);
+
+    boost::uniform_real<double> distxone(minDimOne.x, maxDimOne.x);
+    boost::uniform_real<double> distzone(minDimOne.z, maxDimOne.z);
+    boost::uniform_real<double> distxtwo(minDimTwo.x, maxDimTwo.x);
+    boost::uniform_real<double> distztwo(minDimTwo.z, maxDimTwo.z);
+
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genxone(rngonex, distxone);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genzone(rngonez, distzone);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genxtwo(rngtwox, distxtwo);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genztwo(rngtwoz, distztwo);
 
     //remember: set positions
     for(uint k = 0; k < mGroupOneAgents.size(); ++k){
         mWorldEntities[mGroupOneAgents[k]] = new WarRobotAgent(10, 1, 15);
-        if(!mWorldEntities[mGroupOneAgents[k]]->initialise("warrobot.mesh", vector3(1, 1, 1), rotG1, mResourceManager, vector3(0, 0, 0), 0.01))
+        if(!mWorldEntities[mGroupOneAgents[k]]->initialise("warrobot.mesh", vector3(1, 1, 1), rotG1, mResourceManager, vector3(genxone(), 0, genzone()), 0.01))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupOneAgents[k]]->getRigidBody());
     }
     
     for(uint k = 0; k < mGroupTwoAgents.size(); ++k){
         mWorldEntities[mGroupTwoAgents[k]] = new WarRobotAgent(10, 1, 15);
-        if(!mWorldEntities[mGroupTwoAgents[k]]->initialise("warrobot.mesh", vector3(1, 1, 1), rotG2, mResourceManager, vector3(0, 0, 0), 0.01))
+        if(!mWorldEntities[mGroupTwoAgents[k]]->initialise("warrobot.mesh", vector3(1, 1, 1), rotG2, mResourceManager, vector3(genxtwo(), 0, genztwo()), 0.01))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupTwoAgents[k]]->getRigidBody());
     }
@@ -177,7 +197,7 @@ double WarRobotSimulation::realFitness(){
     return finalFitness;
 }
 
-double WarRobotSimulation::getRayCollisionDistance(string _agentName, const btVector3& _ray, const btCollisionObject*& _collidedObject){
+double WarRobotSimulation::getRayCollisionDistance(string _agentName, const btVector3& _ray, const btCollisionObject*& _collidedObject, vector3& _hitpos){
     double dist = 500;
     btVector3 correctedRot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * _ray;
 
@@ -196,6 +216,7 @@ double WarRobotSimulation::getRayCollisionDistance(string _agentName, const btVe
     if(ray.hasHit()){
         dist = calcEucDistance(vector3(agentPosition.getX(), agentPosition.getY(), agentPosition.getZ()), vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
         _collidedObject = ray.m_collisionObject;
+        _hitpos = vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ());
     }
     else _collidedObject = 0;
     return dist;
@@ -229,38 +250,39 @@ void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     const btCollisionObject* front;
     string colliderName, otherColliderName;
     int teamInd, frontTeamInd;
+    vector3 hitposfront, hitposother;
 
     map<uint, double> input;
     //rangefinders
-    input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), front) / 50;
+    input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), front, hitposfront) / 50;
     checkRayObject(_groupNum, front, frontTeamInd, colliderName);
     input[13] = frontTeamInd;
 
-    input[2] = getRayCollisionDistance(_agentName, btVector3(-100, 0, 0), obj) / 50;
+    input[2] = getRayCollisionDistance(_agentName, btVector3(-100, 0, 0), obj, hitposother) / 50;
     checkRayObject(_groupNum, obj, teamInd, otherColliderName);
     input[14] = teamInd;
 
-    input[3] = getRayCollisionDistance(_agentName, btVector3(0, 0, 100), obj) / 50;
+    input[3] = getRayCollisionDistance(_agentName, btVector3(0, 0, 100), obj, hitposother) / 50;
     checkRayObject(_groupNum, obj, teamInd, otherColliderName);
     input[15] = teamInd;
 
-    input[4] = getRayCollisionDistance(_agentName, btVector3(0, 0, 100), obj) / 50;
+    input[4] = getRayCollisionDistance(_agentName, btVector3(0, 0, 100), obj, hitposother) / 50;
     checkRayObject(_groupNum, obj, teamInd, otherColliderName);
     input[16] = teamInd;
 
-    input[5] = getRayCollisionDistance(_agentName, btVector3(100, 0, -100), obj) / 50;
+    input[5] = getRayCollisionDistance(_agentName, btVector3(100, 0, -100), obj, hitposother) / 50;
     checkRayObject(_groupNum, obj, teamInd, otherColliderName);
     input[17] = teamInd;
 
-    input[6] = getRayCollisionDistance(_agentName, btVector3(-100, 0, 100), obj) / 50;
+    input[6] = getRayCollisionDistance(_agentName, btVector3(-100, 0, 100), obj, hitposother) / 50;
     checkRayObject(_groupNum, obj, teamInd, otherColliderName);
     input[18] = teamInd;
 
-    input[7] = getRayCollisionDistance(_agentName, btVector3(-100, 0, -100), obj) / 50;
+    input[7] = getRayCollisionDistance(_agentName, btVector3(-100, 0, -100), obj, hitposother) / 50;
     checkRayObject(_groupNum, obj, teamInd, otherColliderName);
     input[19] = teamInd;
 
-    input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0, 100), obj) / 50;
+    input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0, 100), obj, hitposother) / 50;
     checkRayObject(_groupNum, obj, teamInd, otherColliderName);
     input[20] = teamInd;
 
@@ -274,6 +296,9 @@ void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     input[12] = agentVel.z;
 
     vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
+    /*vector<double> output;
+    output.push_back(1);
+    output.push_back(1);*/
 
     mWorldEntities[_agentName]->update(output);
 
@@ -282,16 +307,11 @@ void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum){
         Line ray;
         //first ray point
         ray.p1 = getPositionInfo(_agentName);
-
-        //calculate second ray point for now, change to acquire rather
-        btVector3 correctedRot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * btVector3(100, 0, 0);
-        btTransform trans;
-        mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
-        ray.p2 = vector3(correctedRot.getX() + ray.p1.x, correctedRot.getY() + ray.p1.y, correctedRot.getZ() + ray.p1.z);
+        ray.p2 = hitposfront;
 
         if(ray.p1.calcDistance(ray.p2) < 20){
             mRaysShot.push_back(ray);
-            mObjectsToRemove.push_back(colliderName);
+            //mObjectsToRemove.push_back(colliderName);
         }
     }
 

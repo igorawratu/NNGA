@@ -34,6 +34,16 @@ public:
         sim->tick();
     }
 
+    virtual vector<Line> getLines(){
+        if(mCycleCounter % 10 < 5){
+            vector<Line> finishLine;
+            finishLine.push_back(mFinishLine);
+
+            return finishLine;
+        }
+        return vector<Line>();
+    }
+
 private:
     double getRayCollisionDistance(string _agentName, const btVector3& _ray);
     void applyUpdateRules(string _agentName, uint groupNum);

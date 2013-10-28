@@ -19,7 +19,7 @@ public:
     virtual ~BLX(){}
 
     virtual vector<Chromosome*> execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters){
-        assert(_population.size >= 2);
+        assert(_population.size() >= 2);
 
         Selection* selectionAlgorithm = SelectionFactory::instance().create("RankQuadraticSelection");
         if(!selectionAlgorithm)

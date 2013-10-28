@@ -30,8 +30,9 @@
 #include "corneringsim.h"
 #include "carcrashsimulation.h"
 #include "carracesimulation.h"
+#include "warrobotsimulation.h"
 
-#define TRAIN
+//#define TRAIN
 
 using namespace std;
 
@@ -467,16 +468,16 @@ void runBridgeCarSim(){
 #ifdef TRAIN
     StandardGAParameters params;
     params.populationSize = 100;
-    params.maxGenerations = 5;
+    params.maxGenerations = 200;
     params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input6h.xml";
-    params.stagnationThreshold = 100;
+    params.stagnationThreshold = 0;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
+    params.mutationParameters["MutationProbability"] = 0.1;
     params.mutationParameters["Deviation"] = 0.2;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "MultipointCrossover";
+    params.crossoverAlgorithm = "BLX";
     params.selectionAlgorithm = "RankQuadraticSelection";
     params.elitismCount = 5;
 
@@ -610,14 +611,14 @@ void runCarCrashSim(){
     params.populationSize = 100;
     params.maxGenerations = 200;
     params.nnFormatFilename = "neuralxmls/carcrashsimulation/input6h.xml";
-    params.stagnationThreshold = 100;
+    params.stagnationThreshold = 10;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.1;
     params.mutationParameters["Deviation"] = 0.2;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "MultipointCrossover";
+    params.crossoverAlgorithm = "BLX";
     params.selectionAlgorithm = "RankQuadraticSelection";
     params.elitismCount = 5;
 
@@ -657,14 +658,14 @@ void runCarRaceSim(){
     params.populationSize = 100;
     params.maxGenerations = 200;
     params.nnFormatFilename = "neuralxmls/carracesimulation/input5h.xml";
-    params.stagnationThreshold = 10;
+    params.stagnationThreshold = 0;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.1;
+    params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.2;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "MultipointCrossover";
+    params.crossoverAlgorithm = "BLX";
     params.selectionAlgorithm = "RankQuadraticSelection";
     params.elitismCount = 5;
 
@@ -690,10 +691,59 @@ void runCarRaceSim(){
     engine.renderSimulation();
 }
 
+void runWarRobotSim(){
+    int seed = 110;
+    GraphicsEngine engine(NULL);
+
+    WarRobotSimulation* sim = new WarRobotSimulation(1, 900, 5, 30, NULL, engine.getResourceManager(), seed);
+    sim->initialise();
+
+    SimulationContainer cont(sim);
+
+#ifdef TRAIN
+    StandardGAParameters params;
+    params.populationSize = 100;
+    params.maxGenerations = 200;
+    params.nnFormatFilename = "neuralxmls/warrobotsimulation/input6h.xml";
+    params.stagnationThreshold = 0;
+    params.fitnessEpsilonThreshold = 0;
+    params.mutationAlgorithm = "GaussianMutation";
+    params.mutationParameters["MutationProbability"] = 0.02;
+    params.mutationParameters["Deviation"] = 0.2;
+    params.mutationParameters["MaxConstraint"] = 1;
+    params.mutationParameters["MinConstraint"] = -1;
+    params.crossoverAlgorithm = "BLX";
+    params.selectionAlgorithm = "RankQuadraticSelection";
+    params.elitismCount = 5;
+
+    GeneticAlgorithm* ga = new StandardGA(params);
+
+    GAEngine gaengine;
+    Solution solution = gaengine.train(ga, &cont);
+
+    delete ga;
+
+    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
+    solution.printToFile("neuralxmls/warrobotsimulation/output.xml");
+
+    cont.resetSimulation();
+#else
+    Solution solution("neuralxmls/warrobotsimulation/output.xml");
+#endif
+
+    cont.setSolution(&solution);
+    
+    engine.setSimulation(&cont);
+    
+    engine.renderSimulation();
+}
+
 int main(){
     //runCarCrashSim();
     //runBridgeMouseSim();
-    runCarRaceSim();
+    //runCarRaceSim();
+    //runBridgeCarSim();
+    runWarRobotSim();
 
     return 0;
 }

@@ -56,6 +56,7 @@ double BridgeSimulation::fitness(){
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
     finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+    //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
 }
@@ -97,6 +98,7 @@ double BridgeSimulation::realFitness(){
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
     finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+    //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
 }

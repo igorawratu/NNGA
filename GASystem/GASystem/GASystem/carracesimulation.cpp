@@ -10,7 +10,7 @@ CarRaceSimulation::CarRaceSimulation(double _rangefinderRadius, uint _numCycles,
     for(uint k = 0; k < 10; ++k)
         mAgents.push_back("agent" + boost::lexical_cast<string>(k));
 
-    mWinToExpectedDistance = 0;
+    mWinToExpectedDistance = 200;
 }
 
 CarRaceSimulation::~CarRaceSimulation(){
@@ -41,7 +41,7 @@ double CarRaceSimulation::fitness(){
     intAcc["Collisions"] = ceil(mRangefinderVals) + mCollisions; 
     intAcc["FLFitnessWeight"] = 1;
     intAcc["ColFitnessWeight"] = 1;
-    intAcc["WinnerFitnessWeight"] = 1;
+    intAcc["WinnerFitnessWeight"] = 2000;
     
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
@@ -53,8 +53,13 @@ double CarRaceSimulation::fitness(){
     pos["LineP2"] = mFinishLine.p2;
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+    //finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+    //finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
+    finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc);
+
+    cout << finalFitness << endl;
 
     return finalFitness;
 }
@@ -88,8 +93,8 @@ bool CarRaceSimulation::initialise(){
     btQuaternion rot(0, 0, 0, 1);
     rot.setEuler(PI/2, 0, 0);
 
-    mWorldEntities[mAgents[0]] = new CarAgent(10, 1);
-    if(!mWorldEntities[mAgents[0]]->initialise("carone.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(4.5, 0, 38), 0.01))
+    mWorldEntities[mAgents[0]] = new CarAgent(10, 0.5);
+    if(!mWorldEntities[mAgents[0]]->initialise("carone.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(-7.5, 0, 38), 0.01))
         return false;
     mWorld->addRigidBody(mWorldEntities[mAgents[0]]->getRigidBody());
 
@@ -101,12 +106,12 @@ bool CarRaceSimulation::initialise(){
             pos.z = 34;
         }
         else{
-            pos.x = ((double)k - 6) * 3 - 7.5;
+            pos.x = ((double)k - 5) * 3 - 7.5;
             pos.y = 0;
             pos.z = 38;
         }
 
-        mWorldEntities[mAgents[k]] = new CarAgent(10, 1);
+        mWorldEntities[mAgents[k]] = new CarAgent(10, 0.5);
         if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, pos, 0.01))
             return false;
         mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());
@@ -135,20 +140,23 @@ double CarRaceSimulation::realFitness(){
     intAcc["Collisions"] = mCollisions; 
     intAcc["FLFitnessWeight"] = 1;
     intAcc["ColFitnessWeight"] = 1;
-    intAcc["WinnerFitnessWeight"] = 1;
+    intAcc["WinnerFitnessWeight"] = 5;
     
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
     intAcc["Positive"] = 0;
     intAcc["Winner"] = mWinner;
     intAcc["ExpectedWinner"] = 0;
-    intAcc["WinnerVal"] = mWinToExpectedDistance;
+    intAcc["WinnerVal"] = ceil(mWinToExpectedDistance);
     pos["LineP1"] = mFinishLine.p1;
     pos["LineP2"] = mFinishLine.p2;
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+    //finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+    //finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
+    finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
 }
@@ -205,19 +213,18 @@ void CarRaceSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     input[15] = agentVel.x;
     input[16] = agentVel.z;
 
-    if(_groupNum == 1){
-        input[17] = mWorldEntities[mAgents[0]]->getVelocity().x;
-        input[18] = mWorldEntities[mAgents[0]]->getVelocity().z;
+    input[17] = mWorldEntities[mAgents[0]]->getVelocity().x;
+    input[18] = mWorldEntities[mAgents[0]]->getVelocity().z;
 
-        btTransform winnerTrans;
-        mWorldEntities[mAgents[0]]->getRigidBody()->getMotionState()->getWorldTransform(winnerTrans);
-        input[19] = winnerTrans.getOrigin().getX() / 50;
-        input[20] = winnerTrans.getOrigin().getZ() / 50;
-    }
-
+    btTransform winnerTrans;
+    mWorldEntities[mAgents[0]]->getRigidBody()->getMotionState()->getWorldTransform(winnerTrans);
+    input[19] = winnerTrans.getOrigin().getX() / 50;
+    input[20] = winnerTrans.getOrigin().getZ() / 50;
+    input[21] = _groupNum == 0 ? -1 : 1;
 
 
-    vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
+
+    vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
 
     mWorldEntities[_agentName]->update(output);
 

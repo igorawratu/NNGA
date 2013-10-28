@@ -61,12 +61,41 @@ double CarCrashSimulation::fitness(){
 
 
     finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+    //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
 }
 
 double CarCrashSimulation::realFitness(){
-    return fitness() - mRangefinderVals;
+    double finalFitness = 0;
+
+    map<string, vector3> pos;
+    map<string, long> intAcc;
+    intAcc["Collisions"] = mCollisions; 
+    intAcc["FLFitnessWeight"] = 1;
+    intAcc["ColFitnessWeight"] = 1;
+    
+    for(uint k = 0; k < mGroupOneAgents.size(); k++)
+        pos[mGroupOneAgents[k]] = getPositionInfo(mGroupOneAgents[k]);
+    intAcc["Positive"] = 0;
+    pos["LineP1"] = mGroupOneFinish.p1;
+    pos["LineP2"] = mGroupOneFinish.p2;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
+
+    pos.clear();
+
+    for(uint k = 0; k < mGroupTwoAgents.size(); k++)
+        pos[mGroupTwoAgents[k]] = getPositionInfo(mGroupTwoAgents[k]);
+    intAcc["Positive"] = 0;
+    pos["LineP1"] = mGroupTwoFinish.p1;
+    pos["LineP2"] = mGroupTwoFinish.p2;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
+
+
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+    //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
+
+    return finalFitness;
 }
 
 Simulation* CarCrashSimulation::getNewCopy(){

@@ -61,6 +61,14 @@ public:
         return new SimulationContainer(temp);
     }
 
+    vector<string> getRemoveList(){
+        return mSim->getRemoveList();
+    }
+
+    vector<Line> getLines(){
+        return mSim->getLines();
+    }
+
 protected:
     Simulation* mSim;
 };

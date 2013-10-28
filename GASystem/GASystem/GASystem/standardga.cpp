@@ -156,6 +156,7 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
 
         if(stagnationCounter > 10)        
         {
+            cout << "Population stagnated" << endl;
             quicksort(population, 0, population.size() - 1);
 
             Solution finalSolution(dynamic_cast<NNChromosome*>(population[0])->getNeuralNets());
