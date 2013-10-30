@@ -21,7 +21,6 @@ WarRobotSimulation::~WarRobotSimulation(){
 }
 
 void WarRobotSimulation::iterate(){
-    cout << "begin" << endl;
     if(mCycleCounter > mNumCycles)
         return;
 
@@ -53,7 +52,8 @@ void WarRobotSimulation::iterate(){
                 for(uint i = 0; i < mGroupTwoAgents.size(); ++i)
                     if(mGroupTwoAgents[i] == mObjectsToRemove[k])
                         pos = i;
-                mGroupTwoAgents.erase(mGroupOneAgents.begin() + pos);
+                if(pos > -1)
+                    mGroupTwoAgents.erase(mGroupTwoAgents.begin() + pos);
             }
         }
     }
@@ -61,7 +61,6 @@ void WarRobotSimulation::iterate(){
     mCycleCounter++;
 
     mWorld->stepSimulation(1/(float)mCyclesPerSecond, 1, 1/(float)mCyclesPerSecond);
-    cout << "end" << endl;
 }
 
 double WarRobotSimulation::fitness(){
@@ -81,17 +80,19 @@ double WarRobotSimulation::fitness(){
     dblAcc["UpperBound"] = 11;
     dblAcc["Value"] = mGroupTwoAgents.size();
     dblAcc["EVWeight"] = 1;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
     dblAcc["LowerBound"] = mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;
     dblAcc["UpperBound"] = mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 10;
     dblAcc["Value"] = mVelocityAcc;
     dblAcc["EVWeight"] = 1;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
+    //finalFitness += finalFitness == 0 ? mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc) : mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;
 
     intAcc["Collisions"] = ceil(mRangefinderVals) + mCollisions; 
     intAcc["ColFitnessWeight"] = 1;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
+    //finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
+
+    cout << finalFitness << endl;
 
     return finalFitness;
 }
@@ -133,14 +134,14 @@ bool WarRobotSimulation::initialise(){
 
     //remember: set positions
     for(uint k = 0; k < mGroupOneAgents.size(); ++k){
-        mWorldEntities[mGroupOneAgents[k]] = new WarRobotAgent(10, 1, 15);
+        mWorldEntities[mGroupOneAgents[k]] = new WarRobotAgent(vector3(10, 0, 10), vector3(-10, 0, -10), 1, 30);
         if(!mWorldEntities[mGroupOneAgents[k]]->initialise("warrobot.mesh", vector3(1, 1, 1), rotG1, mResourceManager, vector3(genxone(), 0, genzone()), 0.01))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupOneAgents[k]]->getRigidBody());
     }
     
     for(uint k = 0; k < mGroupTwoAgents.size(); ++k){
-        mWorldEntities[mGroupTwoAgents[k]] = new WarRobotAgent(10, 1, 15);
+        mWorldEntities[mGroupTwoAgents[k]] = new WarRobotAgent(vector3(10, 0, 10), vector3(-10, 0, -10), 1, 30);
         if(!mWorldEntities[mGroupTwoAgents[k]]->initialise("warrobot.mesh", vector3(1, 1, 1), rotG2, mResourceManager, vector3(genxtwo(), 0, genztwo()), 0.01))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupTwoAgents[k]]->getRigidBody());
@@ -182,17 +183,17 @@ double WarRobotSimulation::realFitness(){
     dblAcc["UpperBound"] = 11;
     dblAcc["Value"] = mGroupTwoAgents.size();
     dblAcc["EVWeight"] = 1;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
     dblAcc["LowerBound"] = mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;
     dblAcc["UpperBound"] = mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 10; 
     dblAcc["Value"] = mVelocityAcc;
     dblAcc["EVWeight"] = 1;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
+    //finalFitness += finalFitness == 0 ? mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc) : mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;
 
     intAcc["Collisions"] = mCollisions; 
     intAcc["ColFitnessWeight"] = 1;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
+    //finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
 
     return finalFitness;
 }
@@ -222,10 +223,10 @@ double WarRobotSimulation::getRayCollisionDistance(string _agentName, const btVe
     return dist;
 }
 
-void WarRobotSimulation::checkRayObject(uint _groupNum, const btCollisionObject* _obj, int& _team, string& _entityName){
+void WarRobotSimulation::checkRayObject(int _groupNum, const btCollisionObject* _obj, int& _team, string& _entityName){
     for(uint k = 0; k < mGroupOneAgents.size(); k++){
         if(_obj == mWorldEntities[mGroupOneAgents[k]]->getRigidBody()){
-            _team == _groupNum == 0 ? -1 : 1;
+            _team = _groupNum == 0 ? -1 : 1;
             _entityName = mGroupOneAgents[k];
             return;
         }
@@ -233,7 +234,7 @@ void WarRobotSimulation::checkRayObject(uint _groupNum, const btCollisionObject*
 
     for(uint k = 0; k < mGroupTwoAgents.size(); k++){
         if(_obj == mWorldEntities[mGroupTwoAgents[k]]->getRigidBody()){
-            _team == _groupNum == 1 ? -1 : 1;
+            _team = _groupNum == 1 ? -1 : 1;
             _entityName = mGroupTwoAgents[k];
             return;
         }
@@ -309,9 +310,9 @@ void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum){
         ray.p1 = getPositionInfo(_agentName);
         ray.p2 = hitposfront;
 
-        if(ray.p1.calcDistance(ray.p2) < 20){
+        if(ray.p1.calcDistance(ray.p2) < 40){
             mRaysShot.push_back(ray);
-            //mObjectsToRemove.push_back(colliderName);
+            mObjectsToRemove.push_back(colliderName);
         }
     }
 

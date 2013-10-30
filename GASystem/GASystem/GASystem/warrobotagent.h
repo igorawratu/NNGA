@@ -7,8 +7,9 @@
 class WarRobotAgent : public Agent
 {
 public:
-    WarRobotAgent(double _maxLinearVel, double _maxAngularVel, uint _cooldownRate){
-        mMaxLinearVel = _maxLinearVel;
+    WarRobotAgent(vector3 _maxVel, vector3 _minVel, double _maxAngularVel, uint _cooldownRate){
+        mMaxVel = _maxVel;
+        mMinVel = _minVel;
         mMaxAngularVel = _maxAngularVel;
         mCurrVel = 0;
         mCooldownRate = _cooldownRate;
@@ -16,13 +17,17 @@ public:
     }
 
     virtual void update(const vector<double>& _nnOutput){
-        assert(_nnOutput.size() >= 2);
+        assert(_nnOutput.size() >= 3);
 
         mRigidBody->applyTorque(btVector3(0, (_nnOutput[0] - 0.5)/2, 0));
 
-        double currAcc = _nnOutput[1] - 0.5;
+        double currAccX = _nnOutput[1] - 0.5;
+        double currAccZ = _nnOutput[2] - 0.5;
 
-        mCurrVel += currAcc * 10;
+        btVector3 vel = mRigidBody->getLinearVelocity();
+        mRigidBody->setLinearVelocity(btVector3(vel.getX() + currAccX, 0, vel.getZ() + currAccZ));
+
+        /*mCurrVel += currAcc * 10;
         if(mCurrVel > mMaxLinearVel)
             mCurrVel = mMaxLinearVel;
         else if(mCurrVel < 0) mCurrVel = 0;
@@ -33,7 +38,7 @@ public:
         btVector3 correctedVel = rot * relativeVel;
         correctedVel.setY(0);
 
-        mRigidBody->setLinearVelocity(correctedVel);
+        mRigidBody->setLinearVelocity(correctedVel);*/
     }
 
     bool shootRay(){
@@ -52,9 +57,22 @@ public:
             mRigidBody->setAngularVelocity(btVector3(newAngVel.x, newAngVel.y, newAngVel.z));
         }
 
-        btVector3 currLinVel = mRigidBody->getLinearVelocity();
+        vector3 newVelocity(0, 0, 0);
 
-        mCurrVel = calcDistance(vector3(0, 0, 0), vector3(currLinVel.getX(), currLinVel.getY(), currLinVel.getZ()));
+        if(mRigidBody->getLinearVelocity().getX() > mMaxVel.x)
+            newVelocity.x = mMaxVel.x;
+        else if(mRigidBody->getLinearVelocity().getX() < mMinVel.x)
+            newVelocity.x = mMinVel.x;
+        else newVelocity.x = mRigidBody->getLinearVelocity().getX();
+
+        if(mRigidBody->getLinearVelocity().getZ() > mMaxVel.z)
+            newVelocity.z = mMaxVel.z;
+        else if(mRigidBody->getLinearVelocity().getZ() < mMinVel.z)
+            newVelocity.z = mMinVel.z;
+        else newVelocity.z = mRigidBody->getLinearVelocity().getZ();
+
+        mRigidBody->setLinearVelocity(btVector3(newVelocity.x, newVelocity.y, newVelocity.z));
+
 
         mCanShoot = mCanShoot == 0 ? 0 : mCanShoot - 1;
     }
@@ -101,7 +119,7 @@ private:
     }
 
 private:
-    double mMaxLinearVel;
+    vector3 mMaxVel, mMinVel;
     double mMaxAngularVel;
     double mCurrVel;
     uint mCooldownRate, mCanShoot;

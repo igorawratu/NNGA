@@ -32,7 +32,7 @@
 #include "carracesimulation.h"
 #include "warrobotsimulation.h"
 
-//#define TRAIN
+#define TRAIN
 
 using namespace std;
 
@@ -704,7 +704,7 @@ void runWarRobotSim(){
     StandardGAParameters params;
     params.populationSize = 100;
     params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/warrobotsimulation/input6h.xml";
+    params.nnFormatFilename = "neuralxmls/warrobotsimulation/input5h.xml";
     params.stagnationThreshold = 0;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";

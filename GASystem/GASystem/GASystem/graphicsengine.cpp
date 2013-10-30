@@ -161,7 +161,6 @@ bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
     
     //line rendering logic
 
-    cout << "begin" << endl;
     //check if there are lines needed to be rendered
     vector<Line> simulationLines = mSimulation->getLines();
     if(simulationLines.size() > 0 || mLinesInUse.size() > 0){
@@ -217,8 +216,9 @@ bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
         }
 
         //check if pool needs to be expanded, expand by doubling size each time
+        int expandsize = mLinePool.size() + mLinesInUse.size();
         while(mLinePool.size() < newlines.size()){
-            for(uint k = 0; k < mLinePool.size() + mLinesInUse.size(); ++k)
+            for(uint k = 0; k < expandsize; ++k)
                 mLinePool.push_back(createLineObject(mLinePool.size()));
         }
 
@@ -227,15 +227,12 @@ bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
             mLinesInUse.push_back(make_pair(attachNewLine(newlines[k]), newlines[k]));
 
     }
-    cout << "end" << endl;
 
     //remove specified scene nodes
     vector<string> toRemove = mSimulation->getRemoveList();
     for(uint k = 0; k < toRemove.size(); ++k){
         Ogre::SceneNode* node = mSceneManager->getSceneNode(toRemove[k]);
-        destroyAllAttachedMovableObjects(node);
-        node->removeAndDestroyAllChildren();
-        mSceneManager->destroySceneNode(node);
+        node->detachObject(mSceneManager->getEntity(toRemove[k]));
     }
 
     //sync
@@ -245,13 +242,15 @@ bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
 
         Ogre::SceneNode* node = mSceneManager->getSceneNode(entityName);
         
+        if(node->numAttachedObjects() == 0)
+            node->attachObject(mSceneManager->getEntity(entityName));
+        
         btQuaternion rot = entityBody->getWorldTransform().getRotation();
         btVector3 pos = entityBody->getWorldTransform().getOrigin();
         
         node->setPosition(Ogre::Vector3(pos.getX(), pos.getY(), pos.getZ()));
         node->setOrientation(Ogre::Quaternion(rot.w(), rot.x(), rot.y(), rot.z()));
     }
-
     if(mWindowManager->getInputManager()->isMousebuttonDown(OIS::MB_Left)){
         Ogre::SceneNode* cam = mSceneManager->getSceneNode("CameraNode");
         cout << cam->getPosition().x << " " << cam->getPosition().y << " " << cam->getPosition().z << endl;
