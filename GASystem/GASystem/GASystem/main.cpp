@@ -702,7 +702,7 @@ void runWarRobotSim(){
 
 #ifdef TRAIN
     StandardGAParameters params;
-    params.populationSize = 100;
+    params.populationSize = 50;
     params.maxGenerations = 200;
     params.nnFormatFilename = "neuralxmls/warrobotsimulation/input5h.xml";
     params.stagnationThreshold = 0;

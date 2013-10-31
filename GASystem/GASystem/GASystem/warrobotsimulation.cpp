@@ -90,9 +90,9 @@ double WarRobotSimulation::fitness(){
 
     intAcc["Collisions"] = ceil(mRangefinderVals) + mCollisions; 
     intAcc["ColFitnessWeight"] = 1;
-    //finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 5000;
 
-    cout << finalFitness << endl;
+    cout << finalFitness << " " << mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) << endl;
 
     return finalFitness;
 }
@@ -134,14 +134,14 @@ bool WarRobotSimulation::initialise(){
 
     //remember: set positions
     for(uint k = 0; k < mGroupOneAgents.size(); ++k){
-        mWorldEntities[mGroupOneAgents[k]] = new WarRobotAgent(vector3(10, 0, 10), vector3(-10, 0, -10), 1, 30);
+        mWorldEntities[mGroupOneAgents[k]] = new WarRobotAgent(10, vector3(10, 0, 10), vector3(-10, 0, -10), 1, 30);
         if(!mWorldEntities[mGroupOneAgents[k]]->initialise("warrobot.mesh", vector3(1, 1, 1), rotG1, mResourceManager, vector3(genxone(), 0, genzone()), 0.01))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupOneAgents[k]]->getRigidBody());
     }
     
     for(uint k = 0; k < mGroupTwoAgents.size(); ++k){
-        mWorldEntities[mGroupTwoAgents[k]] = new WarRobotAgent(vector3(10, 0, 10), vector3(-10, 0, -10), 1, 30);
+        mWorldEntities[mGroupTwoAgents[k]] = new WarRobotAgent(10, vector3(10, 0, 10), vector3(-10, 0, -10), 1, 30);
         if(!mWorldEntities[mGroupTwoAgents[k]]->initialise("warrobot.mesh", vector3(1, 1, 1), rotG2, mResourceManager, vector3(genxtwo(), 0, genztwo()), 0.01))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupTwoAgents[k]]->getRigidBody());
@@ -193,7 +193,7 @@ double WarRobotSimulation::realFitness(){
 
     intAcc["Collisions"] = mCollisions; 
     intAcc["ColFitnessWeight"] = 1;
-    //finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 5000;
 
     return finalFitness;
 }

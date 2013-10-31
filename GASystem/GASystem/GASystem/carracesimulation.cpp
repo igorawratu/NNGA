@@ -203,10 +203,10 @@ void CarRaceSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     input[10] = trans.getOrigin().getZ() / 50;
     
     //goal line
-    input[11] = _groupNum == mFinishLine.p1.x / 50;
-    input[12] = _groupNum == mFinishLine.p1.z / 50;
-    input[13] = _groupNum == mFinishLine.p2.x / 50;
-    input[14] = _groupNum == mFinishLine.p2.z / 50;
+    input[11] = mFinishLine.p1.x / 50;
+    input[12] = mFinishLine.p1.z / 50;
+    input[13] = mFinishLine.p2.x / 50;
+    input[14] = mFinishLine.p2.z / 50;
 
     //velocity
     vector3 agentVel = mWorldEntities[_agentName]->getVelocity();

@@ -216,6 +216,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\mouseescapesimulation.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\mousescattersimulation.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\mutationfactory.cpp"
 				>
 			</File>
@@ -367,6 +375,14 @@
 			</File>
 			<File
 				RelativePath=".\mouseagent.h"
+				>
+			</File>
+			<File
+				RelativePath=".\mouseescapesimulation.h"
+				>
+			</File>
+			<File
+				RelativePath=".\mousescattersimulation.h"
 				>
 			</File>
 			<File

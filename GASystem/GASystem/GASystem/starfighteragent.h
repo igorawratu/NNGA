@@ -3,48 +3,53 @@
 
 #include "agent.h"
 
-#include <iostream>
-
-using namespace std;
-
-class StarfighterAgent : public Agent
+class StarFighterAgent : public Agent
 {
 public:
-    StarfighterAgent(double _maxLinVel, double _maxAngVel){
-        mMaxLinVel = _maxLinVel;
-        mMaxAngVel = _maxAngVel;
-    }
-
-    virtual vector3 getVelocity(){
-        return vector3();
+    StarFighterAgent(double _maxLinearVel, double _maxAngularVel){
+        mMaxLinearVel = _maxLinearVel;
+        mMaxAngularVel = _maxAngularVel;
+        mCurrVel = 0;
     }
 
     virtual void update(const vector<double>& _nnOutput){
-        assert(_nnOutput.size() >= 2);
+        assert(_nnOutput.size() >= 4);
 
-        mRigidBody->applyTorque(btVector3(_nnOutput[0]/10, _nnOutput[1]/10, _nnOutput[2]/10));
+        mRigidBody->applyTorque(btVector3((_nnOutput[0] - 0.5)/2, (_nnOutput[1] - 0.5)/2, (_nnOutput[2] - 0.5)/2));
 
-        btVector3 relativeForce = btVector3(_nnOutput[3], 0, 0);
+        double currAcc = _nnOutput[3] - 0.5;
+
+        mCurrVel += currAcc * 10;
+        if(mCurrVel > mMaxLinearVel)
+            mCurrVel = mMaxLinearVel;
+        else if(mCurrVel < 0) mCurrVel = 0;
+
+        btVector3 relativeVel = btVector3(mCurrVel, 0, 0);
+
         btMatrix3x3& rot = mRigidBody->getWorldTransform().getBasis();
-        btVector3 correctedForce = rot * relativeForce;
-        mRigidBody->applyCentralForce(correctedForce);
+        btVector3 correctedVel = rot * relativeVel;
+
+        mRigidBody->setLinearVelocity(correctedVel);
     }
 
     virtual void tick(){
         btVector3 currAngVel = mRigidBody->getAngularVelocity();
 
-        if(calcDistance(vector3(0, 0, 0), vector3(currAngVel.getX(), currAngVel.getY(), currAngVel.getZ())) > mMaxAngularVel){
+        if(vector3(0, 0, 0).calcDistance(vector3(currAngVel.getX(), currAngVel.getY(), currAngVel.getZ())) > mMaxAngularVel){
             vector3 newAngVel = normalize(vector3(currAngVel.getX(), currAngVel.getY(), currAngVel.getZ()), mMaxAngularVel);
             mRigidBody->setAngularVelocity(btVector3(newAngVel.x, newAngVel.y, newAngVel.z));
         }
 
         btVector3 currLinVel = mRigidBody->getLinearVelocity();
 
-        if(calcDistance(vector3(0, 0, 0), vector3(currLinVel.getX(), currLinVel.getY(), currLinVel.getZ())) > mMaxLinearVel){
-            vector3 newLinVel = normalize(vector3(currLinVel.getX(), currLinVel.getY(), currLinVel.getZ()), mMaxLinearVel);
-            mRigidBody->setLinearVelocity(btVector3(newLinVel.x, newLinVel.y, newLinVel.z));
-        }
+        mCurrVel = vector3(0, 0, 0).calcDistance(vector3(currLinVel.getX(), currLinVel.getY(), currLinVel.getZ()));
     }
+
+    virtual vector3 getVelocity(){
+        btVector3 correctedVel = mRigidBody->getWorldTransform().getBasis() * btVector3(mCurrVel, 0, 0);
+        return vector3(correctedVel.getX(), correctedVel.getY(), correctedVel.getZ());
+    }
+
 
 protected:
     virtual btCollisionShape* getCollisionShape(ResourceManager* _rm){
@@ -52,7 +57,7 @@ protected:
     }
 
     virtual void setRigidbodyProperties(){
-        mRigidBody->setRestitution(1);
+        mRigidBody->setRestitution(0.7);
         mRigidBody->setSleepingThresholds(0.f, 0.0f);
     }
 
@@ -65,7 +70,7 @@ protected:
 
 private:
     vector3 normalize(vector3 _vec, double _normVal){
-        double mag = calcDistance(vector3(0, 0, 0), _vec);
+        double mag = _vec.calcDistance(vector3(0, 0, 0));
         _vec.x = _vec.x / mag * _normVal;
         _vec.y = _vec.y / mag * _normVal;
         _vec.z = _vec.z / mag * _normVal;
@@ -73,14 +78,10 @@ private:
         return _vec;
     }
 
-    double calcDistance(vector3 _from, vector3 _to){
-        double x = _to.x - _from.x, y = _to.y - _from.y, z = _to.z - _from.z;
-
-        return sqrt(x*x + y*y + z*z);
-    }
-
 private:
-    double mMaxLinVel, mMaxAngVel;
+    double mMaxLinearVel;
+    double mMaxAngularVel;
+    double mCurrVel;
 };
 
 #endif
