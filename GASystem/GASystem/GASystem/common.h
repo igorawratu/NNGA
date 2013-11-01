@@ -40,6 +40,47 @@ struct vector3
         return sqrt(finalx*finalx + finaly*finaly + finalz*finalz);
     }
 
+    void normalize(){
+        double length = calcDistance(vector3(0, 0, 0));
+        x /= length; y /= length; z /= length;
+    }
+
+    vector3 operator * (const double& rhs){
+        x *= rhs;
+        y *= rhs;
+        z *= rhs;
+
+        return *this;
+    }
+
+    vector3 operator / (const double& rhs){
+        x /= rhs;
+        y /= rhs;
+        z /= rhs;
+
+        return *this;
+    }
+
+    vector3 operator + (const vector3& rhs){
+        x += rhs.x;
+        y += rhs.y;
+        z += rhs.z;
+
+        return *this;
+    }
+
+    vector3 operator - (const vector3& rhs){
+        x -= rhs.x;
+        y -= rhs.y;
+        z -= rhs.z;
+
+        return *this;
+    }
+
+    double dotValue(const vector3& other){
+        return x * other.x + y * other.y + z * other.z;
+    }
+
 
 };
 

@@ -741,9 +741,9 @@ void runWarRobotSim(){
 int main(){
     //runCarCrashSim();
     //runBridgeMouseSim();
-    //runCarRaceSim();
+    runCarRaceSim();
     //runBridgeCarSim();
-    runWarRobotSim();
+    //runWarRobotSim();
 
     return 0;
 }

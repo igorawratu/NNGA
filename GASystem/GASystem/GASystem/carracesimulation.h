@@ -35,13 +35,10 @@ public:
     }
 
     virtual vector<Line> getLines(){
-        if(mCycleCounter % 10 < 5){
-            vector<Line> finishLine;
-            finishLine.push_back(mFinishLine);
+        vector<Line> finishLine;
+        finishLine.push_back(mFinishLine);
 
-            return finishLine;
-        }
-        return vector<Line>();
+        return finishLine;
     }
 
 private:

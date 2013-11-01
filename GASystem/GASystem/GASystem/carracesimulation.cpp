@@ -41,7 +41,7 @@ double CarRaceSimulation::fitness(){
     intAcc["Collisions"] = ceil(mRangefinderVals) + mCollisions; 
     intAcc["FLFitnessWeight"] = 1;
     intAcc["ColFitnessWeight"] = 1;
-    intAcc["WinnerFitnessWeight"] = 2000;
+    intAcc["WinnerFitnessWeight"] = 1;
     
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
@@ -53,13 +53,11 @@ double CarRaceSimulation::fitness(){
     pos["LineP2"] = mFinishLine.p2;
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
-    //finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
-    //finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
 
-    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
-    finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc);
-
-    cout << finalFitness << endl;
+    //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
+    //finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
 }
@@ -140,7 +138,7 @@ double CarRaceSimulation::realFitness(){
     intAcc["Collisions"] = mCollisions; 
     intAcc["FLFitnessWeight"] = 1;
     intAcc["ColFitnessWeight"] = 1;
-    intAcc["WinnerFitnessWeight"] = 5;
+    intAcc["WinnerFitnessWeight"] = 1;
     
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
@@ -152,11 +150,11 @@ double CarRaceSimulation::realFitness(){
     pos["LineP2"] = mFinishLine.p2;
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
-    //finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
-    //finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
 
-    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
-    finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc);
+    //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
+    //finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
 }

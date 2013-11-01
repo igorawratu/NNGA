@@ -180,251 +180,13 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\bridgesimulation.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\carcrashsimulation.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\carracesimulation.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\corneringsim.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\crossoverfactory.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\gaengine.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\graphicsengine.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\leafneuron.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\main.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\mouseescapesimulation.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\mousescattersimulation.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\mutationfactory.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\neuralnetwork.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\nnchromosome.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\nonleafneuron.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\prototypesimulation.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\pugixml.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\resourcemanager.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\selectionfactory.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\solution.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\standardga.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\warrobotsimulation.cpp"
 				>
 			</File>
 		</Filter>
 		<Filter
-			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+			Name="Selection"
 			>
-			<File
-				RelativePath=".\agent.h"
-				>
-			</File>
-			<File
-				RelativePath=".\blx.h"
-				>
-			</File>
-			<File
-				RelativePath=".\bridgesimulation.h"
-				>
-			</File>
-			<File
-				RelativePath=".\caragent.h"
-				>
-			</File>
-			<File
-				RelativePath=".\carcrashsimulation.h"
-				>
-			</File>
-			<File
-				RelativePath=".\carracesimulation.h"
-				>
-			</File>
-			<File
-				RelativePath=".\chromosome.h"
-				>
-			</File>
-			<File
-				RelativePath=".\collisionfitness.h"
-				>
-			</File>
-			<File
-				RelativePath=".\common.h"
-				>
-			</File>
-			<File
-				RelativePath=".\corneringsim.h"
-				>
-			</File>
-			<File
-				RelativePath=".\crossover.h"
-				>
-			</File>
-			<File
-				RelativePath=".\crossoverfactory.h"
-				>
-			</File>
-			<File
-				RelativePath=".\cubeagent.h"
-				>
-			</File>
-			<File
-				RelativePath=".\dummyfitness.h"
-				>
-			</File>
-			<File
-				RelativePath=".\dummysimulation.h"
-				>
-			</File>
-			<File
-				RelativePath=".\expectedvaluefitness.h"
-				>
-			</File>
-			<File
-				RelativePath=".\factory.h"
-				>
-			</File>
-			<File
-				RelativePath=".\finishlinefitness.h"
-				>
-			</File>
-			<File
-				RelativePath=".\fitness.h"
-				>
-			</File>
-			<File
-				RelativePath=".\gaengine.h"
-				>
-			</File>
-			<File
-				RelativePath=".\gaussianmutation.h"
-				>
-			</File>
-			<File
-				RelativePath=".\geneticalgorithm.h"
-				>
-			</File>
-			<File
-				RelativePath=".\graphicsengine.h"
-				>
-			</File>
-			<File
-				RelativePath=".\inputmanager.h"
-				>
-			</File>
-			<File
-				RelativePath=".\leafneuron.h"
-				>
-			</File>
-			<File
-				RelativePath=".\mouseagent.h"
-				>
-			</File>
-			<File
-				RelativePath=".\mouseescapesimulation.h"
-				>
-			</File>
-			<File
-				RelativePath=".\mousescattersimulation.h"
-				>
-			</File>
-			<File
-				RelativePath=".\multipointcrossover.h"
-				>
-			</File>
-			<File
-				RelativePath=".\mutation.h"
-				>
-			</File>
-			<File
-				RelativePath=".\mutationfactory.h"
-				>
-			</File>
-			<File
-				RelativePath=".\neuralnetwork.h"
-				>
-			</File>
-			<File
-				RelativePath=".\neuron.h"
-				>
-			</File>
-			<File
-				RelativePath=".\nnchromosome.h"
-				>
-			</File>
-			<File
-				RelativePath=".\nonleafneuron.h"
-				>
-			</File>
-			<File
-				RelativePath=".\prototypesimulation.h"
-				>
-			</File>
-			<File
-				RelativePath=".\pugiconfig.hpp"
-				>
-			</File>
-			<File
-				RelativePath=".\pugixml.hpp"
-				>
-			</File>
 			<File
 				RelativePath=".\rankexponentialselection.h"
 				>
@@ -438,15 +200,91 @@
 				>
 			</File>
 			<File
-				RelativePath=".\resourcemanager.h"
-				>
-			</File>
-			<File
 				RelativePath=".\selection.h"
 				>
 			</File>
 			<File
+				RelativePath=".\selectionfactory.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\selectionfactory.h"
+				>
+			</File>
+			<File
+				RelativePath=".\tournamentselection.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Simulations"
+			>
+			<File
+				RelativePath=".\bridgesimulation.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bridgesimulation.h"
+				>
+			</File>
+			<File
+				RelativePath=".\carcrashsimulation.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\carcrashsimulation.h"
+				>
+			</File>
+			<File
+				RelativePath=".\carracesimulation.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\carracesimulation.h"
+				>
+			</File>
+			<File
+				RelativePath=".\corneringsim.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\corneringsim.h"
+				>
+			</File>
+			<File
+				RelativePath=".\dummysimulation.h"
+				>
+			</File>
+			<File
+				RelativePath=".\mouseescapesimulation.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\mouseescapesimulation.h"
+				>
+			</File>
+			<File
+				RelativePath=".\mousescattersimulation.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\mousescattersimulation.h"
+				>
+			</File>
+			<File
+				RelativePath=".\prototypesimulation.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\prototypesimulation.h"
+				>
+			</File>
+			<File
+				RelativePath=".\sfsimulation.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\sfsimulation.h"
 				>
 			</File>
 			<File
@@ -458,7 +296,35 @@
 				>
 			</File>
 			<File
-				RelativePath=".\solution.h"
+				RelativePath=".\warrobotsimulation.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\warrobotsimulation.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Crossover"
+			>
+			<File
+				RelativePath=".\blx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\crossover.h"
+				>
+			</File>
+			<File
+				RelativePath=".\crossoverfactory.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\crossoverfactory.h"
+				>
+			</File>
+			<File
+				RelativePath=".\multipointcrossover.h"
 				>
 			</File>
 			<File
@@ -466,7 +332,27 @@
 				>
 			</File>
 			<File
-				RelativePath=".\standardga.h"
+				RelativePath=".\undx.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Agents"
+			>
+			<File
+				RelativePath=".\agent.h"
+				>
+			</File>
+			<File
+				RelativePath=".\caragent.h"
+				>
+			</File>
+			<File
+				RelativePath=".\cubeagent.h"
+				>
+			</File>
+			<File
+				RelativePath=".\mouseagent.h"
 				>
 			</File>
 			<File
@@ -478,27 +364,39 @@
 				>
 			</File>
 			<File
-				RelativePath=".\tournamentselection.h"
-				>
-			</File>
-			<File
-				RelativePath=".\undx.h"
-				>
-			</File>
-			<File
 				RelativePath=".\warrobotagent.h"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="Fitness"
+			>
 			<File
-				RelativePath=".\warrobotsimulation.h"
+				RelativePath=".\collisionfitness.h"
+				>
+			</File>
+			<File
+				RelativePath=".\dummyfitness.h"
+				>
+			</File>
+			<File
+				RelativePath=".\expectedvaluefitness.h"
+				>
+			</File>
+			<File
+				RelativePath=".\finishlinefitness.h"
+				>
+			</File>
+			<File
+				RelativePath=".\fitness.h"
+				>
+			</File>
+			<File
+				RelativePath=".\goalpointfitness.h"
 				>
 			</File>
 			<File
 				RelativePath=".\waypointfitness.h"
-				>
-			</File>
-			<File
-				RelativePath=".\windowmanager.h"
 				>
 			</File>
 			<File
@@ -507,10 +405,148 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+			Name="Mutation"
 			>
+			<File
+				RelativePath=".\gaussianmutation.h"
+				>
+			</File>
+			<File
+				RelativePath=".\mutation.h"
+				>
+			</File>
+			<File
+				RelativePath=".\mutationfactory.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\mutationfactory.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="ANNEngine"
+			>
+			<File
+				RelativePath=".\chromosome.h"
+				>
+			</File>
+			<File
+				RelativePath=".\factory.h"
+				>
+			</File>
+			<File
+				RelativePath=".\gaengine.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\gaengine.h"
+				>
+			</File>
+			<File
+				RelativePath=".\geneticalgorithm.h"
+				>
+			</File>
+			<File
+				RelativePath=".\leafneuron.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\leafneuron.h"
+				>
+			</File>
+			<File
+				RelativePath=".\neuralnetwork.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\neuralnetwork.h"
+				>
+			</File>
+			<File
+				RelativePath=".\neuron.h"
+				>
+			</File>
+			<File
+				RelativePath=".\nnchromosome.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\nnchromosome.h"
+				>
+			</File>
+			<File
+				RelativePath=".\nonleafneuron.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\nonleafneuron.h"
+				>
+			</File>
+			<File
+				RelativePath=".\solution.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\solution.h"
+				>
+			</File>
+			<File
+				RelativePath=".\standardga.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\standardga.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="GraphicsEngine"
+			>
+			<File
+				RelativePath=".\common.h"
+				>
+			</File>
+			<File
+				RelativePath=".\graphicsengine.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\graphicsengine.h"
+				>
+			</File>
+			<File
+				RelativePath=".\inputmanager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\resourcemanager.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\resourcemanager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\windowmanager.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="pugixml"
+			>
+			<File
+				RelativePath=".\pugiconfig.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\pugixml.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\pugixml.hpp"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
