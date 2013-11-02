@@ -24,6 +24,10 @@ SFSimulation::SFSimulation(const SFSimulation& other) : Simulation(other.mNumCyc
 
     for(uint k = 0; k < other.mAgents.size(); k++)
         mAgents.push_back("agent" + boost::lexical_cast<string>(k));
+
+    mFitnessFunctions.push_back(new GoalPointFitness());
+    //evf?
+    mFitnessFunctions.push_back(new CollisionFitness());
 }
 
 SFSimulation::~SFSimulation(){}

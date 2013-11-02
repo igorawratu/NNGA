@@ -280,11 +280,35 @@
 				>
 			</File>
 			<File
+				RelativePath=".\sfobstaclefieldsimulation.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\sfobstaclefieldsimulation.h"
+				>
+			</File>
+			<File
+				RelativePath=".\sfobstaclesimulation.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\sfobstaclesimulation.h"
+				>
+			</File>
+			<File
 				RelativePath=".\sfsimulation.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\sfsimulation.h"
+				>
+			</File>
+			<File
+				RelativePath=".\sfturnbacksimulation.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\sfturnbacksimulation.h"
 				>
 			</File>
 			<File
