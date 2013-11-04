@@ -256,6 +256,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\formationsimulation.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\formationsimulation.h"
+				>
+			</File>
+			<File
 				RelativePath=".\mouseescapesimulation.cpp"
 				>
 			</File>
