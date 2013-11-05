@@ -8,7 +8,7 @@ CorneringSim::CorneringSim(double _rangefinderRadius, uint _numAgents, uint _num
     mRangefinderRadius = _rangefinderRadius;
 
     for(uint k = 0; k < _numAgents; k++){
-        mAgents.push_back("agent" + boost::lexical_cast<string>(k));
+        mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
         mWaypointTracker[mAgents[k]] = 0;
     }
 }   
@@ -25,7 +25,7 @@ CorneringSim::CorneringSim(const CorneringSim& other) : Simulation(other.mNumCyc
     mRangefinderRadius = other.mRangefinderRadius;
 
     for(uint k = 0; k < other.mAgents.size(); k++){
-        mAgents.push_back("agent" + boost::lexical_cast<string>(k));
+        mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
         mWaypointTracker[mAgents[k]] = 0;
     }
 }   
@@ -51,8 +51,11 @@ double CorneringSim::fitness(){
     double maxCollisions = (mNumCycles / mCyclesPerDecision) * mAgents.size() * 9;
 
     map<string, vector3> pos;
-
-    mWaypointTracker["Collisions"] = mCollisions + mRangefinderVals;
+    map<string, double> doubleAcc;
+    map<string, long> intAcc;
+    doubleAcc["ColFitnessWeight"] = 1;
+    doubleAcc["Collisions"] = mCollisions + mRangefinderVals;
+    intAcc = mWaypointTracker;
 
     for(uint k = 0; k < mWaypoints.size(); k++)
         pos["Waypoint" + boost::lexical_cast<string>(k)] = mWaypoints[k];
@@ -61,10 +64,8 @@ double CorneringSim::fitness(){
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
     
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), mWaypointTracker);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), mWaypointTracker) : maxCollisions;
-
-    cout << mWaypointTracker["Collisions"] << "  " << finalFitness << endl;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, mWaypointTracker) : maxCollisions;
 
     return finalFitness;
 }
@@ -74,8 +75,11 @@ double CorneringSim::realFitness(){
     double maxCollisions = (mNumCycles / mCyclesPerDecision) * mAgents.size() * 9;
 
     map<string, vector3> pos;
-
-    mWaypointTracker["Collisions"] = mCollisions;
+    map<string, double> doubleAcc;
+    map<string, long> intAcc;
+    doubleAcc["ColFitnessWeight"] = 1;
+    doubleAcc["Collisions"] = mCollisions;
+    intAcc = mWaypointTracker;
 
     for(uint k = 0; k < mWaypoints.size(); k++)
         pos["Waypoint" + boost::lexical_cast<string>(k)] = mWaypoints[k];
@@ -84,10 +88,8 @@ double CorneringSim::realFitness(){
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
     
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), mWaypointTracker);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), mWaypointTracker) : maxCollisions;
-
-    cout << mWaypointTracker["Collisions"] << "  " << finalFitness << endl;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, mWaypointTracker) : maxCollisions;
 
     return finalFitness;
 }
@@ -218,34 +220,4 @@ void CorneringSim::applyUpdateRules(string _agentName){
 void CorneringSim::tick(){
     for(uint k = 0; k < mAgents.size(); k++)
         mWorldEntities[mAgents[k]]->tick();
-}
-
-double CorneringSim::getRayCollisionDistance(string _agentName, const btVector3& _ray){
-        double dist = 100;
-    btVector3 correctedRot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * _ray;
-
-    btTransform trans;
-    mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
-
-    btVector3 agentPosition = trans.getOrigin();
-
-    btVector3 correctedRay(correctedRot.getX() + agentPosition.getX(), correctedRot.getY() + agentPosition.getY(), correctedRot.getZ() + agentPosition.getZ());
-
-    btCollisionWorld::ClosestRayResultCallback ray(agentPosition, correctedRay);
-
-    mWorld->rayTest(agentPosition, correctedRay, ray);
-
-    vector3 from(agentPosition.getX(), agentPosition.getY(), agentPosition.getZ());
-    if(ray.hasHit())
-        dist = calcEucDistance(vector3(agentPosition.getX(), agentPosition.getY(), agentPosition.getZ()), vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
-
-    return dist;
-}
-
-vector3 CorneringSim::getPositionInfo(string _entityName){
-    btRigidBody* rb = mWorldEntities[_entityName]->getRigidBody();
-    btTransform trans;
-    rb->getMotionState()->getWorldTransform(trans);
-
-    return vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ());
 }

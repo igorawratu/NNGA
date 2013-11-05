@@ -8,7 +8,7 @@ MouseScatterSimulation::MouseScatterSimulation(double _rangefinderRadius, uint _
     mRangefinderVals = 0;
 
     for(uint k = 0; k < _numAgents; k++)
-        mAgents.push_back("agent" + boost::lexical_cast<string>(k));
+        mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 }
 
 MouseScatterSimulation::MouseScatterSimulation(const MouseScatterSimulation& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager){
@@ -19,7 +19,7 @@ MouseScatterSimulation::MouseScatterSimulation(const MouseScatterSimulation& oth
     mRangefinderVals = 0;
 
     for(uint k = 0; k < other.mAgents.size(); k++)
-        mAgents.push_back("agent" + boost::lexical_cast<string>(k));
+        mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 }
 
 MouseScatterSimulation::~MouseScatterSimulation(){}
@@ -44,8 +44,8 @@ double MouseScatterSimulation::fitness(){
     map<string, vector3> pos;
     map<string, long> intAcc;
     map<string, double> dblAcc;
-    intAcc["Collisions"] = mRangefinderVals + mCollisions; 
-    intAcc["ColFitnessWeight"] = 1;
+    dblAcc["Collisions"] = mRangefinderVals + mCollisions; 
+    dblAcc["ColFitnessWeight"] = 1;
     intAcc["Positive"] = 0;
 
     dblAcc["EVFitnessWeight"] = 1;
@@ -61,14 +61,6 @@ double MouseScatterSimulation::fitness(){
     //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
-}
-
-vector3 MouseScatterSimulation::getPositionInfo(string _entityName){
-    btRigidBody* rb = mWorldEntities[_entityName]->getRigidBody();
-    btTransform trans;
-    rb->getMotionState()->getWorldTransform(trans);
-
-    return vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ());
 }
 
 Simulation* MouseScatterSimulation::getNewCopy(){
@@ -89,8 +81,8 @@ double MouseScatterSimulation::realFitness(){
     map<string, vector3> pos;
     map<string, long> intAcc;
     map<string, double> dblAcc;
-    intAcc["Collisions"] = mCollisions; 
-    intAcc["ColFitnessWeight"] = 1;
+    dblAcc["Collisions"] = mCollisions; 
+    dblAcc["ColFitnessWeight"] = 1;
     intAcc["Positive"] = 0;
 
     dblAcc["EVFitnessWeight"] = 1;
@@ -219,26 +211,4 @@ void MouseScatterSimulation::applyUpdateRules(string _agentName){
         if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB))
             mCollisions++;
     }
-}
-
-double MouseScatterSimulation::getRayCollisionDistance(string _agentName, const btVector3& _ray){
-    double dist = 100;
-    btVector3 correctedRot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * _ray;
-
-    btTransform trans;
-    mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
-
-    btVector3 agentPosition = trans.getOrigin();
-
-    btVector3 correctedRay(correctedRot.getX() + agentPosition.getX(), correctedRot.getY() + agentPosition.getY(), correctedRot.getZ() + agentPosition.getZ());
-
-    btCollisionWorld::ClosestRayResultCallback ray(agentPosition, correctedRay);
-
-    mWorld->rayTest(agentPosition, correctedRay, ray);
-
-    vector3 from(agentPosition.getX(), agentPosition.getY(), agentPosition.getZ());
-    if(ray.hasHit())
-        dist = calcEucDistance(vector3(agentPosition.getX(), agentPosition.getY(), agentPosition.getZ()), vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
-
-    return dist;
 }

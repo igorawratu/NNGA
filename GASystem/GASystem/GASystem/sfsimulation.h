@@ -34,9 +34,7 @@ public:
     }
 
 protected:
-    double getRayCollisionDistance(string _agentName, const btVector3& _ray);
     void applyUpdateRules(string _agentName);
-    vector3 getPositionInfo(string _entityName);
     bool reached(string _agentName);
 
 protected:

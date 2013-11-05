@@ -13,8 +13,8 @@ void PrototypeSimulation::iterate(){
         return;
 
     if(mCycleCounter % mCyclesPerDecision == 0){
-        applyUpdateRules("agentOne");
-        applyUpdateRules("agentTwo");
+        applyUpdateRules("Agent0");
+        applyUpdateRules("Agent1");
     }
 
     mCycleCounter++;
@@ -27,8 +27,8 @@ double PrototypeSimulation::fitness(){
 
     for(uint k = 0; k < mFitnessFunctions.size(); k++){
         map<string, vector3> pos;
-        pos["agentOne"] = getPositionInfo("agentOne");
-        pos["agentTwo"] = getPositionInfo("agentTwo");
+        pos["Agent0"] = getPositionInfo("Agent0");
+        pos["Agent1"] = getPositionInfo("Agent1");
         for(uint k = 1; k <= mWaypoints.size(); k++)
             pos["Waypoint" + boost::lexical_cast<string>(k)] = mWaypoints[k - 1];
 
@@ -47,8 +47,8 @@ double PrototypeSimulation::realFitness(){
 
     for(uint k = 0; k < mFitnessFunctions.size(); k++){
         map<string, vector3> pos;
-        pos["agentOne"] = getPositionInfo("agentOne");
-        pos["agentTwo"] = getPositionInfo("agentTwo");
+        pos["Agent0"] = getPositionInfo("Agent0");
+        pos["Agent1"] = getPositionInfo("Agent1");
         for(uint k = 1; k <= mWaypoints.size(); k++)
             pos["Waypoint" + boost::lexical_cast<string>(k)] = mWaypoints[k - 1];
 
@@ -78,8 +78,8 @@ Simulation* PrototypeSimulation::getNewCopy(){
 }
 
 void PrototypeSimulation::conformVelocities(){
-    mWorldEntities["agentOne"]->tick();
-    mWorldEntities["agentTwo"]->tick();
+    mWorldEntities["Agent0"]->tick();
+    mWorldEntities["Agent1"]->tick();
 }
 
 bool PrototypeSimulation::initialise(){
@@ -89,17 +89,17 @@ bool PrototypeSimulation::initialise(){
     mWaypointTracker["NumAgents"] = 2;
 
     //agents
-    mWorldEntities["agentOne"] = new CubeAgent(vector3(10, 10, 10), vector3(-10, -10, -10));
-    if(!mWorldEntities["agentOne"]->initialise("car.mesh", vector3(1, 1, 1), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(60, -2, 54), 0.01))
+    mWorldEntities["Agent0"] = new CubeAgent(vector3(10, 10, 10), vector3(-10, -10, -10));
+    if(!mWorldEntities["Agent0"]->initialise("car.mesh", vector3(1, 1, 1), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(60, -2, 54), 0.01))
         return false;
-    mWorld->addRigidBody(mWorldEntities["agentOne"]->getRigidBody());
+    mWorld->addRigidBody(mWorldEntities["agent0"]->getRigidBody());
     
-    mWorldEntities["agentTwo"] = new CubeAgent(vector3(10, 10, 10), vector3(-10, -10, -10));
-    if(!mWorldEntities["agentTwo"]->initialise("cube.mesh", vector3(1, 1, 1), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(60, -2, 50), 0.01))
+    mWorldEntities["Agent1"] = new CubeAgent(vector3(10, 10, 10), vector3(-10, -10, -10));
+    if(!mWorldEntities["Agent1"]->initialise("cube.mesh", vector3(1, 1, 1), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(60, -2, 50), 0.01))
         return false;
-    mWorld->addRigidBody(mWorldEntities["agentTwo"]->getRigidBody());
+    mWorld->addRigidBody(mWorldEntities["agent1"]->getRigidBody());
 
-    mWaypointTracker["agentOne"] = mWaypointTracker["agentTwo"] = 0;
+    mWaypointTracker["Agent0"] = mWaypointTracker["Agent1"] = 0;
     
     //maze
     mWorldEntities["maze"] = new StaticWorldAgent(0.5, 0.1);

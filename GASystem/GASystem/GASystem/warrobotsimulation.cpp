@@ -6,14 +6,13 @@ WarRobotSimulation::WarRobotSimulation(double _rangefinderRadius, uint _numCycle
     mCollisions = mRangefinderVals = 0;
     mSeed = _seed;
     mRangefinderRadius = _rangefinderRadius;
+    mVelocityAcc = 0;
 
     for(uint k = 0; k < 40; ++k)
-        mGroupOneAgents.push_back("agent" + boost::lexical_cast<string>(k));
+        mGroupOneAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 
     for(uint k = 40; k < 80; ++k)
-        mGroupTwoAgents.push_back("agent" + boost::lexical_cast<string>(k));
-
-    mVelocityAcc = 0;
+        mGroupTwoAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 }
 
 WarRobotSimulation::~WarRobotSimulation(){
@@ -88,8 +87,8 @@ double WarRobotSimulation::fitness(){
     dblAcc["EVWeight"] = 1;
     //finalFitness += finalFitness == 0 ? mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc) : mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;
 
-    intAcc["Collisions"] = ceil(mRangefinderVals) + mCollisions; 
-    intAcc["ColFitnessWeight"] = 1;
+    dblAcc["Collisions"] = mRangefinderVals + mCollisions; 
+    dblAcc["ColFitnessWeight"] = 1;
     finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 5000;
 
     cout << finalFitness << " " << mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) << endl;
@@ -191,35 +190,26 @@ double WarRobotSimulation::realFitness(){
     dblAcc["EVWeight"] = 1;
     //finalFitness += finalFitness == 0 ? mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc) : mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;
 
-    intAcc["Collisions"] = mCollisions; 
-    intAcc["ColFitnessWeight"] = 1;
+    dblAcc["Collisions"] = mCollisions; 
+    dblAcc["ColFitnessWeight"] = 1;
     finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 5000;
 
     return finalFitness;
 }
 
 double WarRobotSimulation::getRayCollisionDistance(string _agentName, const btVector3& _ray, const btCollisionObject*& _collidedObject, vector3& _hitpos){
-    double dist = 500;
-    btVector3 correctedRot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * _ray;
+    double dist = 200;
 
-    btTransform trans;
-    mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
+    btCollisionWorld::ClosestRayResultCallback ray = calculateRay(_agentName, _ray);
 
-    btVector3 agentPosition = trans.getOrigin();
-
-    btVector3 correctedRay(correctedRot.getX() + agentPosition.getX(), correctedRot.getY() + agentPosition.getY(), correctedRot.getZ() + agentPosition.getZ());
-
-    btCollisionWorld::ClosestRayResultCallback ray(agentPosition, correctedRay);
-
-    mWorld->rayTest(agentPosition, correctedRay, ray);
-
-    vector3 from(agentPosition.getX(), agentPosition.getY(), agentPosition.getZ());
+    vector3 from = getPositionInfo(_agentName);
     if(ray.hasHit()){
-        dist = calcEucDistance(vector3(agentPosition.getX(), agentPosition.getY(), agentPosition.getZ()), vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
+        dist = from.calcDistance(vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
         _collidedObject = ray.m_collisionObject;
         _hitpos = vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ());
     }
     else _collidedObject = 0;
+
     return dist;
 }
 
@@ -340,12 +330,4 @@ void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum){
         if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB))
             mCollisions++;
     }
-}
-
-vector3 WarRobotSimulation::getPositionInfo(string _entityName){
-    btRigidBody* rb = mWorldEntities[_entityName]->getRigidBody();
-    btTransform trans;
-    rb->getMotionState()->getWorldTransform(trans);
-
-    return vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ());
 }

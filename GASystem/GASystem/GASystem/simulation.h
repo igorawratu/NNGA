@@ -34,6 +34,9 @@ public:
     
         mBroadphase = new btDbvtBroadphase();
         mCollisionConfig = new btDefaultCollisionConfiguration();
+
+        
+
         mDispatcher = new btCollisionDispatcher(mCollisionConfig);
         mSolver = new btSequentialImpulseConstraintSolver();
         mWorld = new btDiscreteDynamicsWorld(mDispatcher, mBroadphase, mSolver, mCollisionConfig);
@@ -118,6 +121,45 @@ public:
 
     virtual vector<Line> getLines(){
         return vector<Line>();
+    }
+
+protected:
+    vector3 getPositionInfo(string _entityName){
+        btRigidBody* rb = mWorldEntities[_entityName]->getRigidBody();
+        btTransform trans;
+        rb->getMotionState()->getWorldTransform(trans);
+
+        return vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ());
+    }
+
+
+    double getRayCollisionDistance(string _agentName, const btVector3& _ray){
+        double dist = 100;
+
+        btCollisionWorld::ClosestRayResultCallback ray = calculateRay(_agentName, _ray);
+
+        vector3 from = getPositionInfo(_agentName);
+        if(ray.hasHit())
+            dist = from.calcDistance(vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
+
+        return dist;
+    }
+
+    btCollisionWorld::ClosestRayResultCallback calculateRay(string _agentName, const btVector3& _ray){
+        btVector3 correctedRot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * _ray;
+
+        btTransform trans;
+        mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
+
+        btVector3 agentPosition = trans.getOrigin();
+
+        btVector3 correctedRay(correctedRot.getX() + agentPosition.getX(), correctedRot.getY() + agentPosition.getY(), correctedRot.getZ() + agentPosition.getZ());
+
+        btCollisionWorld::ClosestRayResultCallback ray(agentPosition, correctedRay);
+
+        mWorld->rayTest(agentPosition, correctedRay, ray);
+
+        return ray;
     }
 
     

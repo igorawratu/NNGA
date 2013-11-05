@@ -8,7 +8,7 @@ SFSimulation::SFSimulation(double _rangefinderRadius, uint _numAgents, uint _num
     mRangefinderVals = 0;
 
     for(uint k = 0; k < _numAgents; k++)
-        mAgents.push_back("agent" + boost::lexical_cast<string>(k));
+        mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 
     mFitnessFunctions.push_back(new GoalPointFitness());
     //evf?
@@ -23,7 +23,7 @@ SFSimulation::SFSimulation(const SFSimulation& other) : Simulation(other.mNumCyc
     mRangefinderVals = 0;
 
     for(uint k = 0; k < other.mAgents.size(); k++)
-        mAgents.push_back("agent" + boost::lexical_cast<string>(k));
+        mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 
     mFitnessFunctions.push_back(new GoalPointFitness());
     //evf?
@@ -52,8 +52,8 @@ double SFSimulation::fitness(){
     map<string, vector3> pos;
     map<string, long> intAcc;
     map<string, double> doubleAcc;
-    intAcc["Collisions"] = mRangefinderVals + mCollisions; 
-    intAcc["ColFitnessWeight"] = 1;
+    doubleAcc["Collisions"] = mRangefinderVals + mCollisions; 
+    doubleAcc["ColFitnessWeight"] = 1;
     intAcc["Positive"] = 0;
 
     doubleAcc["GPWeight"] = 1;
@@ -72,14 +72,6 @@ double SFSimulation::fitness(){
     return finalFitness;
 }
 
-vector3 SFSimulation::getPositionInfo(string _entityName){
-    btRigidBody* rb = mWorldEntities[_entityName]->getRigidBody();
-    btTransform trans;
-    rb->getMotionState()->getWorldTransform(trans);
-
-    return vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ());
-}
-
 void SFSimulation::tick(){
     for(int k = 0; k < mAgents.size(); k++)
         mWorldEntities[mAgents[k]]->tick();
@@ -91,8 +83,8 @@ double SFSimulation::realFitness(){
     map<string, vector3> pos;
     map<string, long> intAcc;
     map<string, double> doubleAcc;
-    intAcc["Collisions"] = mCollisions; 
-    intAcc["ColFitnessWeight"] = 1;
+    doubleAcc["Collisions"] = mCollisions; 
+    doubleAcc["ColFitnessWeight"] = 1;
     intAcc["Positive"] = 0;
 
     doubleAcc["GPWeight"] = 1;
@@ -169,28 +161,6 @@ void SFSimulation::applyUpdateRules(string _agentName){
                 mCollisions++;
         }
     }
-}
-
-double SFSimulation::getRayCollisionDistance(string _agentName, const btVector3& _ray){
-    double dist = 100;
-    btVector3 correctedRot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * _ray;
-
-    btTransform trans;
-    mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
-
-    btVector3 agentPosition = trans.getOrigin();
-
-    btVector3 correctedRay(correctedRot.getX() + agentPosition.getX(), correctedRot.getY() + agentPosition.getY(), correctedRot.getZ() + agentPosition.getZ());
-
-    btCollisionWorld::ClosestRayResultCallback ray(agentPosition, correctedRay);
-
-    mWorld->rayTest(agentPosition, correctedRay, ray);
-
-    vector3 from(agentPosition.getX(), agentPosition.getY(), agentPosition.getZ());
-    if(ray.hasHit())
-        dist = calcEucDistance(vector3(agentPosition.getX(), agentPosition.getY(), agentPosition.getZ()), vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
-
-    return dist;
 }
 
 bool SFSimulation::reached(string _agentName){

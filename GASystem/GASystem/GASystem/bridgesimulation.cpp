@@ -9,7 +9,7 @@ BridgeSimulation::BridgeSimulation(double _rangefinderRadius, uint _numAgents, A
     mRangefinderVals = 0;
 
     for(uint k = 0; k < _numAgents; k++)
-        mAgents.push_back("agent" + boost::lexical_cast<string>(k));
+        mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 }
 
 BridgeSimulation::BridgeSimulation(const BridgeSimulation& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager){
@@ -21,7 +21,7 @@ BridgeSimulation::BridgeSimulation(const BridgeSimulation& other) : Simulation(o
     mRangefinderVals = 0;
 
     for(uint k = 0; k < other.mAgents.size(); k++)
-        mAgents.push_back("agent" + boost::lexical_cast<string>(k));
+        mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 }
 
 BridgeSimulation::~BridgeSimulation(){}
@@ -45,28 +45,21 @@ double BridgeSimulation::fitness(){
 
     map<string, vector3> pos;
     map<string, long> intAcc;
-    intAcc["Collisions"] = mRangefinderVals + mCollisions; 
-    intAcc["FLFitnessWeight"] = 1;
-    intAcc["ColFitnessWeight"] = 1;
+    map<string, double> dblAcc;
+    dblAcc["Collisions"] = mRangefinderVals + mCollisions; 
+    dblAcc["FLFitnessWeight"] = 1;
+    dblAcc["ColFitnessWeight"] = 1;
     intAcc["Positive"] = 0;
     pos["LineP1"] = mFinishLine.p1;
     pos["LineP2"] = mFinishLine.p2;
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
     //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
-}
-
-vector3 BridgeSimulation::getPositionInfo(string _entityName){
-    btRigidBody* rb = mWorldEntities[_entityName]->getRigidBody();
-    btTransform trans;
-    rb->getMotionState()->getWorldTransform(trans);
-
-    return vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ());
 }
 
 Simulation* BridgeSimulation::getNewCopy(){
@@ -87,17 +80,18 @@ double BridgeSimulation::realFitness(){
 
     map<string, vector3> pos;
     map<string, long> intAcc;
-    intAcc["Collisions"] = mCollisions; 
-    intAcc["FLFitnessWeight"] = 1;
-    intAcc["ColFitnessWeight"] = 1;
+    map<string, double> dblAcc;
+    dblAcc["Collisions"] = mCollisions; 
+    dblAcc["FLFitnessWeight"] = 1;
+    dblAcc["ColFitnessWeight"] = 1;
     intAcc["Positive"] = 0;
     pos["LineP1"] = mFinishLine.p1;
     pos["LineP2"] = mFinishLine.p2;
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
     //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
@@ -235,26 +229,4 @@ void BridgeSimulation::applyUpdateRules(string _agentName){
                 mCollisions++;
         }
     }
-}
-
-double BridgeSimulation::getRayCollisionDistance(string _agentName, const btVector3& _ray){
-    double dist = 100;
-    btVector3 correctedRot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * _ray;
-
-    btTransform trans;
-    mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
-
-    btVector3 agentPosition = trans.getOrigin();
-
-    btVector3 correctedRay(correctedRot.getX() + agentPosition.getX(), correctedRot.getY() + agentPosition.getY(), correctedRot.getZ() + agentPosition.getZ());
-
-    btCollisionWorld::ClosestRayResultCallback ray(agentPosition, correctedRay);
-
-    mWorld->rayTest(agentPosition, correctedRay, ray);
-
-    vector3 from(agentPosition.getX(), agentPosition.getY(), agentPosition.getZ());
-    if(ray.hasHit())
-        dist = calcEucDistance(vector3(agentPosition.getX(), agentPosition.getY(), agentPosition.getZ()), vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
-
-    return dist;
 }

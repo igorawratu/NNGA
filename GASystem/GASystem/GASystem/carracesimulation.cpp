@@ -8,9 +8,7 @@ CarRaceSimulation::CarRaceSimulation(double _rangefinderRadius, uint _numCycles,
     mRangefinderRadius = _rangefinderRadius;
 
     for(uint k = 0; k < 10; ++k)
-        mAgents.push_back("agent" + boost::lexical_cast<string>(k));
-
-    mWinToExpectedDistance = 200;
+        mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 }
 
 CarRaceSimulation::~CarRaceSimulation(){
@@ -38,23 +36,24 @@ double CarRaceSimulation::fitness(){
 
     map<string, vector3> pos;
     map<string, long> intAcc;
-    intAcc["Collisions"] = ceil(mRangefinderVals) + mCollisions; 
-    intAcc["FLFitnessWeight"] = 1;
-    intAcc["ColFitnessWeight"] = 1;
-    intAcc["WinnerFitnessWeight"] = 1;
+    map<string, double> doubleAcc;
+    doubleAcc["Collisions"] = mRangefinderVals + mCollisions; 
+    doubleAcc["FLFitnessWeight"] = 1;
+    doubleAcc["ColFitnessWeight"] = 1;
+    doubleAcc["WinnerFitnessWeight"] = 1;
     
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
     intAcc["Positive"] = 0;
     intAcc["Winner"] = mWinner;
     intAcc["ExpectedWinner"] = 0;
-    intAcc["WinnerVal"] = ceil(mWinToExpectedDistance);
+    doubleAcc["WinnerVal"] = ceil(mWinToExpectedDistance);
     pos["LineP1"] = mFinishLine.p1;
     pos["LineP2"] = mFinishLine.p2;
 
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
 
     //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
     //finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc);
@@ -72,6 +71,8 @@ Simulation* CarRaceSimulation::getNewCopy(){
 bool CarRaceSimulation::initialise(){
     if(mInitialised)
         return true;
+
+    mWinToExpectedDistance = 200;
     
     mWinner = -1;
 
@@ -135,50 +136,29 @@ double CarRaceSimulation::realFitness(){
 
     map<string, vector3> pos;
     map<string, long> intAcc;
-    intAcc["Collisions"] = mCollisions; 
-    intAcc["FLFitnessWeight"] = 1;
-    intAcc["ColFitnessWeight"] = 1;
-    intAcc["WinnerFitnessWeight"] = 1;
+    map<string, double> doubleAcc;
+    doubleAcc["Collisions"] = mCollisions; 
+    doubleAcc["FLFitnessWeight"] = 1;
+    doubleAcc["ColFitnessWeight"] = 1;
+    doubleAcc["WinnerFitnessWeight"] = 1;
     
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
     intAcc["Positive"] = 0;
     intAcc["Winner"] = mWinner;
     intAcc["ExpectedWinner"] = 0;
-    intAcc["WinnerVal"] = ceil(mWinToExpectedDistance);
+    doubleAcc["WinnerVal"] = ceil(mWinToExpectedDistance);
     pos["LineP1"] = mFinishLine.p1;
     pos["LineP2"] = mFinishLine.p2;
 
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
 
     //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
     //finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
-}
-
-double CarRaceSimulation::getRayCollisionDistance(string _agentName, const btVector3& _ray){
-    double dist = 100;
-    btVector3 correctedRot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * _ray;
-
-    btTransform trans;
-    mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
-
-    btVector3 agentPosition = trans.getOrigin();
-
-    btVector3 correctedRay(correctedRot.getX() + agentPosition.getX(), correctedRot.getY() + agentPosition.getY(), correctedRot.getZ() + agentPosition.getZ());
-
-    btCollisionWorld::ClosestRayResultCallback ray(agentPosition, correctedRay);
-
-    mWorld->rayTest(agentPosition, correctedRay, ray);
-
-    vector3 from(agentPosition.getX(), agentPosition.getY(), agentPosition.getZ());
-    if(ray.hasHit())
-        dist = calcEucDistance(vector3(agentPosition.getX(), agentPosition.getY(), agentPosition.getZ()), vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
-
-    return dist;
 }
 
 void CarRaceSimulation::applyUpdateRules(string _agentName, uint _groupNum){
@@ -247,7 +227,7 @@ void CarRaceSimulation::applyUpdateRules(string _agentName, uint _groupNum){
         
         //gets collision data
         int numManifolds = mWorld->getDispatcher()->getNumManifolds();
-	    for (int i=0;i<numManifolds;i++)
+	    for(int i=0;i<numManifolds;i++)
 	    {
 		    btPersistentManifold* contactManifold =  mWorld->getDispatcher()->getManifoldByIndexInternal(i);
             if(contactManifold->getNumContacts() < 1)
@@ -260,12 +240,4 @@ void CarRaceSimulation::applyUpdateRules(string _agentName, uint _groupNum){
                 mCollisions++;
         }
     }
-}
-
-vector3 CarRaceSimulation::getPositionInfo(string _entityName){
-    btRigidBody* rb = mWorldEntities[_entityName]->getRigidBody();
-    btTransform trans;
-    rb->getMotionState()->getWorldTransform(trans);
-
-    return vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ());
 }

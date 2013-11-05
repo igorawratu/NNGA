@@ -8,12 +8,19 @@ class FinishLineFitness : public Fitness
 {
 public:
     FinishLineFitness(){
+        mDoubleStrings.push_back("FLFitnessWeight");
+        mIntStrings.push_back("Positive");
+        mVectorStrings.push_back("LineP1");
+        mVectorStrings.push_back("LineP2");
     }
 
     virtual double evaluateFitness(map<string, vector3> _pos, map<string, double> _dblAcc, map<string, long> _intAcc){
+        if(!checkParams(_pos, _dblAcc, _intAcc))
+            return 0;
+
         double fitness = 0;
         Line line;
-        long weight = _intAcc["FLFitnessWeight"];
+        double weight = _dblAcc["FLFitnessWeight"];
         bool isPositive = _intAcc["Positive"] != 0;
         line.p1 = _pos["LineP1"];
         line.p2 = _pos["LineP2"];
@@ -25,7 +32,7 @@ public:
             double crossVal = calcCrossVal(line.p1, line.p2, iter->second);
             bool passed = isPositive ? crossVal > 0 : crossVal < 0;
             if(!passed)
-                fitness += calcDistance(iter->second, midpoint);
+                fitness += midpoint.calcDistance(iter->second);
         }
 
         return fitness * weight;
@@ -34,11 +41,6 @@ public:
 private:
     double calcCrossVal(vector3 a, vector3 b, vector3 c){
         return (b.x - a.z)*(c.z - a.z) - (b.z - a.z)*(c.x - a.x);
-    }
-
-    double calcDistance(vector3 _from, vector3 _to){
-        double x = _to.x - _from.x, y = _to.y - _from.y, z = _to.z - _from.z;
-        return sqrt(x*x + y*y + z*z);
     }
 };
 

@@ -8,10 +8,10 @@ MouseEscapeSimulation::MouseEscapeSimulation(double _rangefinderRadius, uint _nu
     mRangefinderRadius = _rangefinderRadius;
 
     for(uint k = 0; k < 35; ++k)
-        mMouseAgents.push_back("agent" + boost::lexical_cast<string>(k));
+        mMouseAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 
     for(uint k = 35; k < 40; ++k)
-        mRobotAgents.push_back("agent" + boost::lexical_cast<string>(k));
+        mRobotAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 
     mVelocityAcc = 0;
 }
@@ -62,7 +62,7 @@ double MouseEscapeSimulation::fitness(){
     map<string, vector3> pos;
     map<string, long> intAcc;
     map<string, double> dblAcc;
-    intAcc["FLFitnessWeight"] = 1;
+    dblAcc["FLFitnessWeight"] = 1;
     dblAcc["EVWeight"] = 1;
 
     for(uint k = 0; k < mMouseAgents.size(); k++)
@@ -84,11 +84,10 @@ double MouseEscapeSimulation::fitness(){
     dblAcc["Value"] = mVelocityAcc;
     finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : mRobotAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;
 
-    /*intAcc["Collisions"] = ceil(mRangefinderVals) + mCollisions; 
-    intAcc["ColFitnessWeight"] = 1;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 5000;*/
-
-    cout << finalFitness << endl;
+    //change max val
+    dblAcc["Collisions"] = mRangefinderVals + mCollisions; 
+    dblAcc["ColFitnessWeight"] = 1;
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, dblAcc, intAcc) : 5000;
 
     return finalFitness;
 }
@@ -171,7 +170,7 @@ double MouseEscapeSimulation::realFitness(){
     map<string, vector3> pos;
     map<string, long> intAcc;
     map<string, double> dblAcc;
-    intAcc["FLFitnessWeight"] = 1;
+    dblAcc["FLFitnessWeight"] = 1;
     dblAcc["EVWeight"] = 1;
 
     for(uint k = 0; k < mMouseAgents.size(); k++)
@@ -193,37 +192,27 @@ double MouseEscapeSimulation::realFitness(){
     dblAcc["Value"] = mVelocityAcc;
     finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : mRobotAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;
 
-    /*intAcc["Collisions"] = ceil(mRangefinderVals); 
-    intAcc["ColFitnessWeight"] = 1;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 5000;*/
-
-    cout << finalFitness << endl;
+    //change max val
+    dblAcc["Collisions"] = mCollisions; 
+    dblAcc["ColFitnessWeight"] = 1;
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, dblAcc, intAcc) : 5000;
 
     return finalFitness;
 }
 
 double MouseEscapeSimulation::getRayCollisionDistance(string _agentName, const btVector3& _ray, const btCollisionObject*& _collidedObject, vector3& _hitpos){
-    double dist = 500;
-    btVector3 correctedRot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * _ray;
+    double dist = 200;
 
-    btTransform trans;
-    mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
+    btCollisionWorld::ClosestRayResultCallback ray = calculateRay(_agentName, _ray);
 
-    btVector3 agentPosition = trans.getOrigin();
-
-    btVector3 correctedRay(correctedRot.getX() + agentPosition.getX(), correctedRot.getY() + agentPosition.getY(), correctedRot.getZ() + agentPosition.getZ());
-
-    btCollisionWorld::ClosestRayResultCallback ray(agentPosition, correctedRay);
-
-    mWorld->rayTest(agentPosition, correctedRay, ray);
-
-    vector3 from(agentPosition.getX(), agentPosition.getY(), agentPosition.getZ());
+    vector3 from = getPositionInfo(_agentName);
     if(ray.hasHit()){
-        dist = calcEucDistance(vector3(agentPosition.getX(), agentPosition.getY(), agentPosition.getZ()), vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
+        dist = from.calcDistance(vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
         _collidedObject = ray.m_collisionObject;
         _hitpos = vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ());
     }
     else _collidedObject = 0;
+
     return dist;
 }
 
@@ -374,14 +363,6 @@ void MouseEscapeSimulation::applyUpdateRules(string _agentName, uint _groupNum){
                 mCollisions++;
         }
     }
-}
-
-vector3 MouseEscapeSimulation::getPositionInfo(string _entityName){
-    btRigidBody* rb = mWorldEntities[_entityName]->getRigidBody();
-    btTransform trans;
-    rb->getMotionState()->getWorldTransform(trans);
-
-    return vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ());
 }
 
 bool MouseEscapeSimulation::crossed(string _agentName){

@@ -49,7 +49,6 @@ public:
 private:
     double getRayCollisionDistance(string _agentName, const btVector3& _ray, const btCollisionObject*& _collidedObject, vector3& _hitpos);
     void applyUpdateRules(string _agentName, uint _groupNum);
-    vector3 getPositionInfo(string _entityName);
     void checkRayObject(int _groupNum, const btCollisionObject* _obj, int& _team, string& _entityName);
     bool crossed(string _agentName);
     double calcCrossVal(vector3 a, vector3 b, vector3 c){

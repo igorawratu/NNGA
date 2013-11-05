@@ -23,17 +23,17 @@ public:
     virtual void execute(vector<double>& _weights, map<string, double>& _parameters){
         double mutationProbability, deviation, maxConstraint, minConstraint;
 
-        if(!getParameter(_parameters, mutationProbability, "MutationProbability"))
+        if(!getParameter<double>(_parameters, mutationProbability, "MutationProbability"))
             return;
 
-        if(!getParameter(_parameters, deviation, "Deviation"))
+        if(!getParameter<double>(_parameters, deviation, "Deviation"))
             return;
 
         //change the constraints to work on the NN side instead
-        if(!getParameter(_parameters, maxConstraint, "MaxConstraint"))
+        if(!getParameter<double>(_parameters, maxConstraint, "MaxConstraint"))
             return;
 
-        if(!getParameter(_parameters, minConstraint, "MinConstraint"))
+        if(!getParameter<double>(_parameters, minConstraint, "MinConstraint"))
             return;
 
         boost::mt19937 mRNGMutationProb(rand()), mRNGMutation(rand());

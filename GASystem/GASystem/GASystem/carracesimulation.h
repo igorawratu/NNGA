@@ -42,9 +42,7 @@ public:
     }
 
 private:
-    double getRayCollisionDistance(string _agentName, const btVector3& _ray);
     void applyUpdateRules(string _agentName, uint groupNum);
-    vector3 getPositionInfo(string _entityName);
     double calcCrossVal(vector3 a, vector3 b, vector3 c){
         return (b.x - a.z)*(c.z - a.z) - (b.z - a.z)*(c.x - a.x);
     }

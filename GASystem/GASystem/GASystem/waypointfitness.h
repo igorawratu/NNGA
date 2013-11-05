@@ -13,9 +13,16 @@ class WaypointFitness : public Fitness
 {
 public:
     WaypointFitness(){
+        mIntStrings.push_back("NumWaypoints");
+        mIntStrings.push_back("NumAgents");
+        mDoubleStrings.push_back("WPFitnessWeight");
+
     }
 
     virtual double evaluateFitness(map<string, vector3> _pos, map<string, double> _dblAcc, map<string, long> _intAcc){
+        if(!checkParams(_pos, _dblAcc, _intAcc))
+            return 0;
+
         double finalFitness = 0;
 
         long numWaypoints = _intAcc["NumWaypoints"];
@@ -26,8 +33,7 @@ public:
         int numAgents = _intAcc["NumAgents"];
 
         for(int k = 0; k < numAgents; k++){
-            string agentName = "agent" + boost::lexical_cast<string>(k);
-            cout << _intAcc[agentName] << " ";
+            string agentName = "Agent" + boost::lexical_cast<string>(k);
             double val = 0;
             if(_intAcc[agentName] < waypoints.size()){
                 
@@ -42,7 +48,7 @@ public:
             }
         }
 
-        return finalFitness * (double)_intAcc["WPFitnessWeight"];
+        return finalFitness * _dblAcc["WPFitnessWeight"];
     }
 
 private:

@@ -16,8 +16,8 @@ typedef pugi::xml_document xmldoc;
 typedef pugi::xml_node xmlnode;
 typedef pugi::xml_attribute xmlattr;
 
-bool inline getParameter(map<string, double>& param, double& val, string key){
-    map<string, double>::const_iterator iter = param.find(key);
+template<class T> bool inline getParameter(map<string, T>& param, T& val, string key){
+    map<string, T>::const_iterator iter = param.find(key);
     if(iter == param.end()){
         cerr << "Error: unable to find " << key << " parameter for algorithm" << endl;
         return false;        

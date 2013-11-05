@@ -8,10 +8,10 @@ CarCrashSimulation::CarCrashSimulation(double _rangefinderRadius, uint _agentsPe
     mRangefinderRadius = _rangefinderRadius;
 
     for(uint k = 0; k < _agentsPerSide; k++)
-        mGroupOneAgents.push_back("agent" + boost::lexical_cast<string>(k));
+        mGroupOneAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 
     for(uint k = _agentsPerSide; k < _agentsPerSide * 2; k++)
-        mGroupTwoAgents.push_back("agent" + boost::lexical_cast<string>(k));
+        mGroupTwoAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 }
 
 CarCrashSimulation::~CarCrashSimulation(){
@@ -39,16 +39,17 @@ double CarCrashSimulation::fitness(){
 
     map<string, vector3> pos;
     map<string, long> intAcc;
-    intAcc["Collisions"] = mRangefinderVals + mCollisions; 
-    intAcc["FLFitnessWeight"] = 1;
-    intAcc["ColFitnessWeight"] = 1;
+    map<string, double> doubleAcc;
+    doubleAcc["Collisions"] = mRangefinderVals + mCollisions; 
+    doubleAcc["FLFitnessWeight"] = 1;
+    doubleAcc["ColFitnessWeight"] = 1;
     
     for(uint k = 0; k < mGroupOneAgents.size(); k++)
         pos[mGroupOneAgents[k]] = getPositionInfo(mGroupOneAgents[k]);
     intAcc["Positive"] = 0;
     pos["LineP1"] = mGroupOneFinish.p1;
     pos["LineP2"] = mGroupOneFinish.p2;
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
 
     pos.clear();
 
@@ -57,10 +58,10 @@ double CarCrashSimulation::fitness(){
     intAcc["Positive"] = 0;
     pos["LineP1"] = mGroupTwoFinish.p1;
     pos["LineP2"] = mGroupTwoFinish.p2;
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
 
 
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
     //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
@@ -71,16 +72,17 @@ double CarCrashSimulation::realFitness(){
 
     map<string, vector3> pos;
     map<string, long> intAcc;
-    intAcc["Collisions"] = mCollisions; 
-    intAcc["FLFitnessWeight"] = 1;
-    intAcc["ColFitnessWeight"] = 1;
+    map<string, double> doubleAcc;
+    doubleAcc["Collisions"] = mRangefinderVals + mCollisions; 
+    doubleAcc["FLFitnessWeight"] = 1;
+    doubleAcc["ColFitnessWeight"] = 1;
     
     for(uint k = 0; k < mGroupOneAgents.size(); k++)
         pos[mGroupOneAgents[k]] = getPositionInfo(mGroupOneAgents[k]);
     intAcc["Positive"] = 0;
     pos["LineP1"] = mGroupOneFinish.p1;
     pos["LineP2"] = mGroupOneFinish.p2;
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
 
     pos.clear();
 
@@ -89,10 +91,10 @@ double CarCrashSimulation::realFitness(){
     intAcc["Positive"] = 0;
     pos["LineP1"] = mGroupTwoFinish.p1;
     pos["LineP2"] = mGroupTwoFinish.p2;
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, map<string, double>(), intAcc);
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
 
 
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc) : 1000;
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
     //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
@@ -184,28 +186,6 @@ void CarCrashSimulation::tick(){
         mWorldEntities[mGroupTwoAgents[k]]->tick();
 }
 
-double CarCrashSimulation::getRayCollisionDistance(string _agentName, const btVector3& _ray){
-    double dist = 100;
-    btVector3 correctedRot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * _ray;
-
-    btTransform trans;
-    mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
-
-    btVector3 agentPosition = trans.getOrigin();
-
-    btVector3 correctedRay(correctedRot.getX() + agentPosition.getX(), correctedRot.getY() + agentPosition.getY(), correctedRot.getZ() + agentPosition.getZ());
-
-    btCollisionWorld::ClosestRayResultCallback ray(agentPosition, correctedRay);
-
-    mWorld->rayTest(agentPosition, correctedRay, ray);
-
-    vector3 from(agentPosition.getX(), agentPosition.getY(), agentPosition.getZ());
-    if(ray.hasHit())
-        dist = calcEucDistance(vector3(agentPosition.getX(), agentPosition.getY(), agentPosition.getZ()), vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
-
-    return dist;
-}
-
 void CarCrashSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     btTransform trans;
     mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
@@ -264,12 +244,4 @@ void CarCrashSimulation::applyUpdateRules(string _agentName, uint _groupNum){
                 mCollisions++;
         }
     }
-}
- 
-vector3 CarCrashSimulation::getPositionInfo(string _entityName){
-    btRigidBody* rb = mWorldEntities[_entityName]->getRigidBody();
-    btTransform trans;
-    rb->getMotionState()->getWorldTransform(trans);
-
-    return vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ());
 }

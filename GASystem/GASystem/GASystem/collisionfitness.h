@@ -6,12 +6,16 @@
 class CollisionFitness : public Fitness
 {
 public:
-    CollisionFitness(){}
+    CollisionFitness(){
+        mDoubleStrings.push_back("ColFitnessWeight");
+        mDoubleStrings.push_back("Collisions");
+    }
 
     virtual double evaluateFitness(map<string, vector3> _pos, map<string, double> _dblAcc, map<string, long> _intAcc){
-        if(_intAcc.find("Collisions") != _intAcc.end() && _intAcc.find("ColFitnessWeight") != _intAcc.end())
-            return _intAcc["Collisions"] * _intAcc["ColFitnessWeight"];
-        else return 0;
+        if(!checkParams(_pos, _dblAcc, _intAcc))
+            return 0;
+
+        return _dblAcc["Collisions"] * _dblAcc["ColFitnessWeight"];
     }
 };
 
