@@ -188,11 +188,39 @@
 			Name="Selection"
 			>
 			<File
-				RelativePath=".\rankexponentialselection.h"
+				RelativePath=".\boltzmannselection.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\rankquadraticselection.h"
+				RelativePath=".\boltzmannselection.h"
+				>
+			</File>
+			<File
+				RelativePath=".\lrankselection.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\lrankselection.h"
+				>
+			</File>
+			<File
+				RelativePath=".\nlrankselection.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\nlrankselection.h"
+				>
+			</File>
+			<File
+				RelativePath=".\quadraticrankselection.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\quadraticrankselection.h"
+				>
+			</File>
+			<File
+				RelativePath=".\rankselection.cpp"
 				>
 			</File>
 			<File
@@ -209,6 +237,10 @@
 			</File>
 			<File
 				RelativePath=".\selectionfactory.h"
+				>
+			</File>
+			<File
+				RelativePath=".\tournamentselection.cpp"
 				>
 			</File>
 			<File
@@ -320,7 +352,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\simulation.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\simulation.h"
+				>
+			</File>
+			<File
+				RelativePath=".\simulationcontainer.cpp"
 				>
 			</File>
 			<File
@@ -340,6 +380,10 @@
 			Name="Crossover"
 			>
 			<File
+				RelativePath=".\blx.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\blx.h"
 				>
 			</File>
@@ -356,7 +400,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\multipointcrossover.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\multipointcrossover.h"
+				>
+			</File>
+			<File
+				RelativePath=".\spx.cpp"
 				>
 			</File>
 			<File
@@ -372,7 +424,15 @@
 			Name="Agents"
 			>
 			<File
+				RelativePath=".\agent.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\agent.h"
+				>
+			</File>
+			<File
+				RelativePath=".\caragent.cpp"
 				>
 			</File>
 			<File
@@ -380,7 +440,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\cubeagent.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\cubeagent.h"
+				>
+			</File>
+			<File
+				RelativePath=".\mouseagent.cpp"
 				>
 			</File>
 			<File
@@ -388,11 +456,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\starfighteragent.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\starfighteragent.h"
 				>
 			</File>
 			<File
+				RelativePath=".\staticworldagent.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\staticworldagent.h"
+				>
+			</File>
+			<File
+				RelativePath=".\warrobotagent.cpp"
 				>
 			</File>
 			<File
@@ -404,6 +484,10 @@
 			Name="Fitness"
 			>
 			<File
+				RelativePath=".\collisionfitness.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\collisionfitness.h"
 				>
 			</File>
@@ -412,7 +496,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\expectedvaluefitness.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\expectedvaluefitness.h"
+				>
+			</File>
+			<File
+				RelativePath=".\finishlinefitness.cpp"
 				>
 			</File>
 			<File
@@ -420,7 +512,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\fitness.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\fitness.h"
+				>
+			</File>
+			<File
+				RelativePath=".\goalpointfitness.cpp"
 				>
 			</File>
 			<File
@@ -428,7 +528,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\waypointfitness.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\waypointfitness.h"
+				>
+			</File>
+			<File
+				RelativePath=".\winnerfitness.cpp"
 				>
 			</File>
 			<File
@@ -439,6 +547,10 @@
 		<Filter
 			Name="Mutation"
 			>
+			<File
+				RelativePath=".\gaussianmutation.cpp"
+				>
+			</File>
 			<File
 				RelativePath=".\gaussianmutation.h"
 				>
@@ -496,6 +608,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\neuron.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\neuron.h"
 				>
 			</File>
@@ -536,6 +652,10 @@
 			Name="GraphicsEngine"
 			>
 			<File
+				RelativePath=".\common.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\common.h"
 				>
 			</File>
@@ -548,6 +668,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\inputmanager.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\inputmanager.h"
 				>
 			</File>
@@ -557,6 +681,10 @@
 			</File>
 			<File
 				RelativePath=".\resourcemanager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\windowmanager.cpp"
 				>
 			</File>
 			<File

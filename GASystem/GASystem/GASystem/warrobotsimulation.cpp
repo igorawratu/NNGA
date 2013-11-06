@@ -81,8 +81,8 @@ double WarRobotSimulation::fitness(){
     dblAcc["EVWeight"] = 1;
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
-    dblAcc["LowerBound"] = mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;
-    dblAcc["UpperBound"] = mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 10;
+    dblAcc["LowerBound"] = mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 3;
+    dblAcc["UpperBound"] = mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;
     dblAcc["Value"] = mVelocityAcc;
     dblAcc["EVWeight"] = 1;
     //finalFitness += finalFitness == 0 ? mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc) : mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;
@@ -131,17 +131,16 @@ bool WarRobotSimulation::initialise(){
     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genxtwo(rngtwox, distxtwo);
     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genztwo(rngtwoz, distztwo);
 
-    //remember: set positions
     for(uint k = 0; k < mGroupOneAgents.size(); ++k){
-        mWorldEntities[mGroupOneAgents[k]] = new WarRobotAgent(10, vector3(10, 0, 10), vector3(-10, 0, -10), 1, 30);
-        if(!mWorldEntities[mGroupOneAgents[k]]->initialise("warrobot.mesh", vector3(1, 1, 1), rotG1, mResourceManager, vector3(genxone(), 0, genzone()), 0.01))
+        mWorldEntities[mGroupOneAgents[k]] = new WarRobotAgent(5, vector3(10, 0, 10), vector3(-10, 0, -10), 2, 30);
+        if(!mWorldEntities[mGroupOneAgents[k]]->initialise("warrobotr.mesh", vector3(1, 1, 1), rotG1, mResourceManager, vector3(genxone(), 0, genzone()), 0.01))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupOneAgents[k]]->getRigidBody());
     }
     
     for(uint k = 0; k < mGroupTwoAgents.size(); ++k){
-        mWorldEntities[mGroupTwoAgents[k]] = new WarRobotAgent(10, vector3(10, 0, 10), vector3(-10, 0, -10), 1, 30);
-        if(!mWorldEntities[mGroupTwoAgents[k]]->initialise("warrobot.mesh", vector3(1, 1, 1), rotG2, mResourceManager, vector3(genxtwo(), 0, genztwo()), 0.01))
+        mWorldEntities[mGroupTwoAgents[k]] = new WarRobotAgent(5, vector3(10, 0, 10), vector3(-10, 0, -10), 1, 30);
+        if(!mWorldEntities[mGroupTwoAgents[k]]->initialise("warrobotb.mesh", vector3(1, 1, 1), rotG2, mResourceManager, vector3(genxtwo(), 0, genztwo()), 0.01))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupTwoAgents[k]]->getRigidBody());
     }
@@ -300,7 +299,7 @@ void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum){
         ray.p1 = getPositionInfo(_agentName);
         ray.p2 = hitposfront;
 
-        if(ray.p1.calcDistance(ray.p2) < 40){
+        if(ray.p1.calcDistance(ray.p2) < 100){
             mRaysShot.push_back(ray);
             mObjectsToRemove.push_back(colliderName);
         }

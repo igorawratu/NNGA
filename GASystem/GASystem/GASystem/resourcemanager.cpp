@@ -177,3 +177,17 @@ btCollisionShape* ResourceManager::getBulletCollisionShape(string _meshName, boo
         }
     }
 }
+
+ModelInfo::ModelInfo(vector3* _vertices, unsigned long* _indices, size_t _vertexCount, size_t _indexCount){
+    vertices = _vertices;
+    indices = _indices;
+    vertexCount = _vertexCount;
+    indexCount = _indexCount;
+}
+
+ModelInfo::~ModelInfo(){
+    delete vertices;
+    vertices = 0;
+    delete indices;
+    indices = 0;
+}

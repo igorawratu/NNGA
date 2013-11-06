@@ -9,10 +9,11 @@
 #include "common.h"
 #include "selection.h"
 
-#include "rankselection.h"
-#include "rankexponentialselection.h"
-#include "rankquadraticselection.h"
+#include "nlrankselection.h"
+#include "lrankselection.h"
+#include "quadraticrankselection.h"
 #include "tournamentselection.h"
+#include "boltzmannselection.h"
 
 using namespace std;
 

@@ -25,19 +25,10 @@ using namespace std;
 
 struct ModelInfo
 {
-    ModelInfo(vector3* _vertices, unsigned long* _indices, size_t _vertexCount, size_t _indexCount){
-        vertices = _vertices;
-        indices = _indices;
-        vertexCount = _vertexCount;
-        indexCount = _indexCount;
-    }
+    ModelInfo(vector3* _vertices, unsigned long* _indices, size_t _vertexCount, size_t _indexCount);
 
-    ~ModelInfo(){
-        delete vertices;
-        vertices = 0;
-        delete indices;
-        indices = 0;
-    }
+    ~ModelInfo();
+
     vector3* vertices;
     unsigned long* indices;
     size_t vertexCount, indexCount;

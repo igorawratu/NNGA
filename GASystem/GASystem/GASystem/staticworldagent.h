@@ -6,41 +6,21 @@
 class StaticWorldAgent : public Agent
 {
 public:
-    StaticWorldAgent(double _restitution, double _friction){
-        mRestitution = _restitution;
-        mFriction = _friction;
-    }
+    StaticWorldAgent(double _restitution, double _friction);
     
-    virtual ~StaticWorldAgent(){
-        delete dynamic_cast<btBvhTriangleMeshShape*>(mRigidBody->getCollisionShape())->getMeshInterface();
-    }
+    virtual ~StaticWorldAgent();
 
-    virtual void update(const vector<double>& _nnOutput){
-        //do not need to update static world objects
-    }
+    virtual void update(const vector<double>& _nnOutput);
 
-    virtual void tick(){
-        //no need to conform anything per tick
-    }
+    virtual void tick();
 
-    virtual vector3 getVelocity(){
-        return vector3();
-    }
+    virtual vector3 getVelocity();
 
 protected:
-    virtual btCollisionShape* getCollisionShape(ResourceManager* _rm){
-        return _rm->getBulletCollisionShape(mModelName, true, true, vector3(0, 0, 0), mScale);
-    }
+    virtual btCollisionShape* getCollisionShape(ResourceManager* _rm);
+    virtual void setRigidbodyProperties();
 
-    virtual void setRigidbodyProperties(){
-        mRigidBody->setRestitution(mRestitution);
-        mRigidBody->setFriction(mFriction);
-        mRigidBody->setSleepingThresholds(0.f, 0.0f);
-    }
-
-    virtual btVector3 calculateInertia(double _mass, btCollisionShape* _shape){
-        return btVector3(0, 0, 0);
-    }
+    virtual btVector3 calculateInertia(double _mass, btCollisionShape* _shape);
 
 private:
     double mRestitution;

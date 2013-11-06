@@ -12,8 +12,6 @@
 
 using namespace std;
 
-const double e = 2.71828182845904523536;
-
 enum ActivationFunction{SIGMOID};
 enum NeuronType{LEAF, NONLEAF, OUTPUT};
 
@@ -28,18 +26,9 @@ struct NeuronInfo
 class Neuron
 {
 public:
-    Neuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, ActivationFunction _activationFunction){
-        mNeuronCache = _neuronCache;
-        mWeights = _weights;
-        mActivationFunction = _activationFunction;
-        mLastOutput = 0;
-        mCurrentCounter = -1;
-    }
-
-    Neuron(const Neuron& _other){}
-    virtual ~Neuron(){
-        mNeuronCache = 0;
-    }
+    Neuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, ActivationFunction _activationFunction);
+    Neuron(const Neuron& _other);
+    virtual ~Neuron();
 
     //gets the output of the neuron
     virtual double evaluate(long _counter)=0;
@@ -50,41 +39,22 @@ public:
 
     virtual bool checkLoop(Neuron* _loopNeuron)=0;
 
-    vector<double> getWeights(){
-        return mWeights;
-    }
+    vector<double> getWeights();
 
-    void setWeights(vector<double> _weights){
-        mWeights = _weights;
-    }
+    void setWeights(vector<double> _weights);
 
-    void setNeuronCache(map<uint, Neuron*> *_neuronCache){
-        mNeuronCache = _neuronCache;
-    }
+    void setNeuronCache(map<uint, Neuron*> *_neuronCache);
 
     virtual Neuron* clone()=0;
 
-    ActivationFunction getActivationFunction(){return mActivationFunction;}
+    ActivationFunction getActivationFunction();
 
     virtual NeuronType getNeuronType()=0;
     virtual set<uint> getPredecessors()=0;
 
 protected:
-    double calculateActivationEnergy(double _netSignal){
-        double output;
-        
-        switch(mActivationFunction){
-            case SIGMOID:
-                output = 1/(1 + pow(e, -_netSignal));
-                break;
-            default:
-                cout << "Error: unable to determine the activation function type" << endl;
-                break;
-        }
-
-        return output;
-    }
-    Neuron(){}
+    double calculateActivationEnergy(double _netSignal);
+    Neuron();
 
 protected:
     map<uint, Neuron*> *mNeuronCache;

@@ -2,16 +2,6 @@
 #define UNDX_H
 
 #include "crossover.h"
-#include "selectionfactory.h"
-#include "chromosome.h"
-#include "common.h"
-
-#include <vector>
-#include <map>
-#include <cmath>
-
-#include <boost/random.hpp>
-#include <boost/generator_iterator.hpp>
 
 class UNDX : public Crossover
 {

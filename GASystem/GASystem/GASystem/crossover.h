@@ -1,11 +1,15 @@
 #ifndef CROSSOVER_H
 #define CROSSOVER_H
 
+#include "selectionfactory.h"
+#include "chromosome.h"
+#include "common.h"
+
 #include <vector>
 #include <map>
 
-#include "common.h"
-#include "chromosome.h"
+#include "boost/random.hpp"
+#include "boost/generator_iterator.hpp"
 
 using namespace std;
 

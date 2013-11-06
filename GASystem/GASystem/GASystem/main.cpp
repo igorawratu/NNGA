@@ -12,7 +12,7 @@
 #include "gaussianmutation.h"
 #include "common.h"
 #include "multipointcrossover.h"
-#include "rankselection.h"
+#include "quadraticrankselection.h"
 #include "selectionfactory.h"
 #include "mutationfactory.h"
 #include "crossoverfactory.h"
@@ -328,7 +328,7 @@ void testRankSelection(){
         selectionPool.push_back(chr);
     }
     vector<Chromosome*> selected;
-    RankSelection rankselection;
+    QuadraticRankSelection rankselection;
     selected = rankselection.execute(selectionPool, 50, selectionPool);
 
     assert(selectionPool.size() == 50);
@@ -356,7 +356,7 @@ void testRankSelection(){
 
 void testFactories(){
     GaussianMutation gMut;
-    RankSelection rSel;
+    QuadraticRankSelection rSel;
     MultipointCrossover mpCross;
 
     Mutation* mut = MutationFactory::instance().create("GaussianMutation");
@@ -414,7 +414,7 @@ void testGA(){
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
     params.crossoverAlgorithm = "MultipointCrossover";
-    params.selectionAlgorithm = "RankSelection";
+    params.selectionAlgorithm = "QuadraticRankSelection";
 
     GeneticAlgorithm* ga = new StandardGA(params);
     Simulation* sim = new DummySimulation(100, 5, 5, NULL);
@@ -478,7 +478,7 @@ void runBridgeCarSim(){
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
     params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "RankQuadraticSelection";
+    params.selectionAlgorithm = "QuadraticRankSelection";
     params.elitismCount = 5;
 
     GeneticAlgorithm* ga = new StandardGA(params);
@@ -525,7 +525,7 @@ void runBridgeMouseSim(){
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
     params.crossoverAlgorithm = "MultipointCrossover";
-    params.selectionAlgorithm = "RankQuadraticSelection";
+    params.selectionAlgorithm = "QuadraticRankSelection";
     params.elitismCount = 5;
 
     GeneticAlgorithm* ga = new StandardGA(params);
@@ -572,7 +572,7 @@ void runCorneringSim(){
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
     params.crossoverAlgorithm = "MultipointCrossover";
-    params.selectionAlgorithm = "RankQuadraticSelection";
+    params.selectionAlgorithm = "QuadraticRankSelection";
     params.elitismCount = 5;
 
     GeneticAlgorithm* ga = new StandardGA(params);
@@ -619,7 +619,7 @@ void runCarCrashSim(){
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
     params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "RankQuadraticSelection";
+    params.selectionAlgorithm = "QuadraticRankSelection";
     params.elitismCount = 5;
 
     GeneticAlgorithm* ga = new StandardGA(params);
@@ -666,7 +666,7 @@ void runCarRaceSim(){
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
     params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "RankQuadraticSelection";
+    params.selectionAlgorithm = "QuadraticRankSelection";
     params.elitismCount = 5;
 
     GeneticAlgorithm* ga = new StandardGA(params);
@@ -695,7 +695,7 @@ void runWarRobotSim(){
     int seed = 110;
     GraphicsEngine engine(NULL);
 
-    WarRobotSimulation* sim = new WarRobotSimulation(1, 900, 5, 30, NULL, engine.getResourceManager(), seed);
+    WarRobotSimulation* sim = new WarRobotSimulation(1, 300, 5, 30, NULL, engine.getResourceManager(), seed);
     sim->initialise();
 
     SimulationContainer cont(sim);
@@ -713,7 +713,7 @@ void runWarRobotSim(){
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
     params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "RankQuadraticSelection";
+    params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = 5;
 
     GeneticAlgorithm* ga = new StandardGA(params);
@@ -739,11 +739,11 @@ void runWarRobotSim(){
 }
 
 int main(){
-    runCarCrashSim();
+    //runCarCrashSim();
     //runBridgeMouseSim();
     //runCarRaceSim();
     //runBridgeCarSim();
-    //runWarRobotSim();
+    runWarRobotSim();
 
     return 0;
 }

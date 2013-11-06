@@ -178,25 +178,25 @@ void PrototypeSimulation::getRayCollisionDistances(map<uint, double>& _collision
     vector3 from(_agentPosition.getX(), _agentPosition.getY(), _agentPosition.getZ());
     if(topRay.hasHit()){
         vector3 to(topRay.m_hitPointWorld.getX(), topRay.m_hitPointWorld.getY(), topRay.m_hitPointWorld.getZ());
-        _collisionDistances[1] = calcEucDistance(from, to);
+        _collisionDistances[1] = from.calcDistance(to);
     }
     else _collisionDistances[1] = 2000;
 
     if(botRay.hasHit()){
         vector3 to(botRay.m_hitPointWorld.getX(), botRay.m_hitPointWorld.getY(), botRay.m_hitPointWorld.getZ());
-        _collisionDistances[1] = calcEucDistance(from, to);
+        _collisionDistances[1] = from.calcDistance(to);
     }
     else _collisionDistances[2] = 2000;
 
     if(leftRay.hasHit()){
         vector3 to(leftRay.m_hitPointWorld.getX(), leftRay.m_hitPointWorld.getY(), leftRay.m_hitPointWorld.getZ());
-        _collisionDistances[3] = calcEucDistance(from, to);
+        _collisionDistances[3] = from.calcDistance(to);
     }
     else _collisionDistances[3] = 2000;
 
     if(rightRay.hasHit()){
         vector3 to(rightRay.m_hitPointWorld.getX(), rightRay.m_hitPointWorld.getY(), rightRay.m_hitPointWorld.getZ());
-        _collisionDistances[4] = calcEucDistance(from, to);
+        _collisionDistances[4] = from.calcDistance(to);
     }
     else _collisionDistances[4] = 2000;
 }

@@ -13,70 +13,21 @@ using namespace std;
 class WindowManager : public Ogre::WindowEventListener
 {
 public:
-    WindowManager(Ogre::Root* _root){
-        mRoot = _root;
+    WindowManager(Ogre::Root* _root);
 
-        //load config
-        if(!(mRoot->restoreConfig() || mRoot->showConfigDialog())){
-            cerr << "Error: unable to set Engine config" << endl;
-            return;
-        }
+    ~WindowManager();
 
-        mWindow = mRoot->initialise(true, "Simulation Render");
-        
-        //get handler name and send to input manager
-        size_t windowHnd = 0;
-        ostringstream sstream;
-        mWindow->getCustomAttribute("WINDOW", &windowHnd);
-        sstream << windowHnd;
-        mInputManager = new InputManager(sstream.str());
-        
-        //update input manager with window size
-        windowResized(mWindow);
+    void addViewport(Ogre::Viewport*& _viewport, Ogre::Camera*& _camera);
 
-        //add this as a window listener
-        Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
-    }
+    virtual void windowResized(Ogre::RenderWindow* _rw);
 
-    ~WindowManager(){
-        Ogre::WindowEventUtilities::removeWindowEventListener(mWindow, this);
-        windowClosed(mWindow);
-    }
+    virtual void windowClosed(Ogre::RenderWindow* _rw);
 
-    void addViewport(Ogre::Viewport*& _viewport, Ogre::Camera*& _camera){
-        _viewport = mWindow->addViewport(_camera);
-        _viewport->setBackgroundColour(Ogre::ColourValue(0, 0, 0));
-        _camera->setAspectRatio(Ogre::Real(_viewport->getActualWidth()) / Ogre::Real(_viewport->getActualHeight()));
-    }
+    void setCameraNode(Ogre::SceneNode* _camNode);
 
-    virtual void windowResized(Ogre::RenderWindow* _rw){
-        uint w, h, d;
-        int l, t;
+    bool isWindowClosed();
 
-        _rw->getMetrics(w, h, d, l, t);
-        mInputManager->updateWindowDim(w, h);
-    }
-
-    virtual void windowClosed(Ogre::RenderWindow* _rw){
-        if(_rw == mWindow){
-            if(mInputManager){
-                delete mInputManager;
-                mInputManager = 0;
-            }
-        }
-    }
-
-    void setCameraNode(Ogre::SceneNode* _camNode){
-        mInputManager->setCameraNode(_camNode);
-    }
-
-    bool isWindowClosed(){
-        return mWindow->isClosed();
-    }
-
-    InputManager* getInputManager(){
-        return mInputManager;
-    }
+    InputManager* getInputManager();
 
 private:
     Ogre::RenderWindow* mWindow;
@@ -85,7 +36,7 @@ private:
     string mWindowName;
 
 private:
-    WindowManager(){}
+    WindowManager();
 };
 
 #endif

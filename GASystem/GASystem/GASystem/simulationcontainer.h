@@ -9,65 +9,30 @@ class SimulationContainer
 {
 public:
     //the sim container does NOT delete the pointers passed here, whoever created these must delete them
-    SimulationContainer(Simulation* _sim){
-        mSim = _sim;
-    }
-    ~SimulationContainer(){
-        if(mSim){
-            delete mSim;
-            mSim = 0;
-        }
-    }
+    SimulationContainer(Simulation* _sim);
+    ~SimulationContainer();
 
-    void resetSimulation(){
-        Simulation* temp = mSim->getNewCopy();
-        delete mSim;
-        mSim = temp;
-    }
+    void resetSimulation();
 
-    void setSolution(Solution* _solution){
-        mSim->setSolution(_solution);
-    }
+    void setSolution(Solution* _solution);
 
-    void runFullSimulation(Solution* _solution){
-        mSim->setSolution(_solution);
-        mSim->runFullSimulation();
-        _solution->fitness() = mSim->fitness();
-        _solution->realFitness() = mSim->realFitness();
-    }
+    void runFullSimulation(Solution* _solution);
 
-    void iterate(){
-        mSim->iterate();
-    }
+    void iterate();
 
-    bool initialise(ResourceManager* _rm){
-        return mSim->initialise();
-    }
+    bool initialise(ResourceManager* _rm);
 
-    bool isInitialised(){
-        return mSim->isInitialised();
-    }
+    bool isInitialised();
 
-    const map<string, Agent*>& getSimulationState(){
-        return mSim->getSimulationState();
-    }
+    const map<string, Agent*>& getSimulationState();
 
-    uint getCyclesPerSecond(){
-        return mSim->getCyclesPerSecond();
-    }
+    uint getCyclesPerSecond();
 
-    SimulationContainer* clone(){
-        Simulation* temp = mSim->getNewCopy();
-        return new SimulationContainer(temp);
-    }
+    SimulationContainer* clone();
 
-    vector<string> getRemoveList(){
-        return mSim->getRemoveList();
-    }
+    vector<string> getRemoveList();
 
-    vector<Line> getLines(){
-        return mSim->getLines();
-    }
+    vector<Line> getLines();
 
 protected:
     Simulation* mSim;

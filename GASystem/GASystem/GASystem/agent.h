@@ -15,50 +15,19 @@ using namespace std;
 class Agent
 {
 public:
-    Agent(){}
+    Agent();
 
-    bool initialise(const string& _modelName, const vector3& _scale, const btQuaternion& _rotation, ResourceManager* _rm, const vector3& _position, const double& _mass){
-        mModelName = _modelName;
-        mScale = _scale;
+    bool initialise(const string& _modelName, const vector3& _scale, const btQuaternion& _rotation, ResourceManager* _rm, const vector3& _position, const double& _mass);
 
-        btCollisionShape* shape = getCollisionShape(_rm);
-        if(!shape){
-            cerr << "Error: unable to get collision shape for model " << _modelName << endl;
-            return false;
-        }
-
-        btMotionState* ms = new btDefaultMotionState(btTransform(_rotation, btVector3(_position.x, _position.y, _position.z)));
-
-        btVector3 inertia = calculateInertia(_mass, shape);
-        
-        btRigidBody::btRigidBodyConstructionInfo constructionInfo(_mass, ms, shape, inertia);
-
-        mRigidBody = new btRigidBody(constructionInfo);
-
-        setRigidbodyProperties();
-
-        return true;
-    }
-
-    virtual ~Agent(){
-        delete mRigidBody->getCollisionShape();
-        delete mRigidBody->getMotionState();
-        delete mRigidBody;
-    }
+    virtual ~Agent();
 
     virtual void update(const vector<double>& _nnOutput)=0;
 
-    btRigidBody* getRigidBody(){
-        return mRigidBody;
-    }
+    btRigidBody* getRigidBody();
 
-    string getModelName(){
-        return mModelName;
-    }
+    string getModelName();
 
-    vector3 getScale(){
-        return mScale;
-    }
+    vector3 getScale();
 
     virtual vector3 getVelocity()=0;
 

@@ -17,10 +17,11 @@ Selection* SelectionFactory::create(string _algorithmName){
 void SelectionFactory::startup(){
     initialized = true;
 
-    selectionFactory.mFactory.registerCreator("RankSelection", RankSelection::createRankSelection);
-    selectionFactory.mFactory.registerCreator("RankExponentialSelection", RankExponentialSelection::createRankExponentialSelection);
     selectionFactory.mFactory.registerCreator("TournamentSelection", TournamentSelection::createTournamentSelection);
-    selectionFactory.mFactory.registerCreator("RankQuadraticSelection", RankQuadraticSelection::createRankQuadraticSelection);
+    selectionFactory.mFactory.registerCreator("QuadraticRankSelection", QuadraticRankSelection::createQuadraticRankSelection);
+    selectionFactory.mFactory.registerCreator("LRankSelection", LRankSelection::createLRankSelection);
+    selectionFactory.mFactory.registerCreator("NLRankSelection", NLRankSelection::createNLRankSelection);
+    selectionFactory.mFactory.registerCreator("BoltzmannSelection", BoltzmannSelection::createBoltzmannSelection);
 }
 
 void SelectionFactory::shutdown(){
