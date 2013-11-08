@@ -18,6 +18,8 @@ void MutationFactory::startup(){
     initialized = true;
 
     mutationFactory.mFactory.registerCreator("GaussianMutation", GaussianMutation::createGaussianMutation);
+    mutationFactory.mFactory.registerCreator("CauchyLorentzMutation", CauchyLorentzMutation::createCauchyLorentzMutation);
+    mutationFactory.mFactory.registerCreator("UniformMutation", UniformMutation::createUniformMutation);
 }
 
 void MutationFactory::shutdown(){

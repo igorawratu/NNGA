@@ -230,3 +230,10 @@ void BridgeSimulation::applyUpdateRules(string _agentName){
         }
     }
 }
+
+vector<Line> BridgeSimulation::getLines(){
+    vector<Line> lines;
+    lines.push_back(mFinishLine);
+
+    return lines;
+}

@@ -10,6 +10,8 @@
 #include "mutation.h"
 
 #include "gaussianmutation.h"
+#include "cauchylorentzmutation.h"
+#include "uniformmutation.h"
 
 using namespace std;
 

@@ -1,9 +1,10 @@
-#include "gaussianmutation.h"
+#include "cauchylorentzmutation.h"
 
-GaussianMutation::GaussianMutation(){}
-GaussianMutation::~GaussianMutation(){}
 
-void GaussianMutation::execute(vector<double>& _weights, map<string, double>& _parameters){
+CauchyLorentzMutation::CauchyLorentzMutation(){}
+CauchyLorentzMutation::~CauchyLorentzMutation(){}
+
+void CauchyLorentzMutation::execute(vector<double>& _weights, map<string, double>& _parameters){
     double mutationProbability, deviation, maxConstraint, minConstraint;
 
     if(!getParameter<double>(_parameters, mutationProbability, "MutationProbability"))
@@ -22,10 +23,10 @@ void GaussianMutation::execute(vector<double>& _weights, map<string, double>& _p
     boost::mt19937 mRNGMutationProb(rand()), mRNGMutation(rand());
 
     boost::uniform_real<double> mutationProbDist(0, 1);
-    boost::normal_distribution<> mutationDist(0, deviation);
+    boost::cauchy_distribution<> mutationDist(0, deviation);
 
     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genMutationProb(mRNGMutationProb, mutationProbDist);
-    boost::variate_generator<boost::mt19937, boost::normal_distribution<> > genMutation(mRNGMutation, mutationDist);
+    boost::variate_generator<boost::mt19937, boost::cauchy_distribution<> > genMutation(mRNGMutation, mutationDist);
 
     for(uint k = 0; k < _weights.size(); k++){
         if(genMutationProb() < mutationProbability)

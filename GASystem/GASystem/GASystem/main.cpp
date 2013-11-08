@@ -473,7 +473,7 @@ void runBridgeCarSim(){
     params.stagnationThreshold = 0;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.1;
+    params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.2;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
@@ -739,11 +739,11 @@ void runWarRobotSim(){
 }
 
 int main(){
-    //runCarCrashSim();
     //runBridgeMouseSim();
+    runBridgeCarSim();
+    //runCarCrashSim();
     //runCarRaceSim();
-    //runBridgeCarSim();
-    runWarRobotSim();
+    //runWarRobotSim();
 
     return 0;
 }

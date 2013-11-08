@@ -416,6 +416,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\undx.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\undx.h"
 				>
 			</File>
@@ -548,6 +552,14 @@
 			Name="Mutation"
 			>
 			<File
+				RelativePath=".\cauchylorentzmutation.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\cauchylorentzmutation.h"
+				>
+			</File>
+			<File
 				RelativePath=".\gaussianmutation.cpp"
 				>
 			</File>
@@ -565,6 +577,14 @@
 			</File>
 			<File
 				RelativePath=".\mutationfactory.h"
+				>
+			</File>
+			<File
+				RelativePath=".\uniformmutation.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\uniformmutation.h"
 				>
 			</File>
 		</Filter>

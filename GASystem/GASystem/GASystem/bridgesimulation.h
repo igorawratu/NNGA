@@ -35,6 +35,7 @@ public:
         BridgeSimulation* sim = (BridgeSimulation*)world->getWorldUserInfo();
         sim->tick();
     }
+    virtual vector<Line> getLines();
 
 private:
     double calcCrossVal(vector3 a, vector3 b, vector3 c){
