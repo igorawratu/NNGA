@@ -33,9 +33,7 @@ void UniformMutation::execute(vector<double>& _weights, map<string, double>& _pa
     for(uint k = 0; k < _weights.size(); k++){
         if(genMutationProb() < mutationProbability)
             _weights[k] += genMutation();
-        if(_weights[k] > maxConstraint)
-            _weights[k] = maxConstraint;
-        if(_weights[k] < minConstraint)
-            _weights[k] = minConstraint;
     }
+
+    conformWeights(_weights, maxConstraint, minConstraint);
 }

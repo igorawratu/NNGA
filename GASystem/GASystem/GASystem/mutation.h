@@ -14,6 +14,9 @@ public:
     virtual ~Mutation(){}
 
     virtual void execute(vector<double>& _weights, map<string, double>& _parameters)=0;
+
+protected:
+    void conformWeights(vector<double>& weights, double _maxConstraint, double _minConstraint);
 };
 
 #endif

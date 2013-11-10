@@ -1,10 +1,9 @@
-#include "undx.h"
+#include "pcx.h"
 
+PCX::PCX(){}
+PCX::~PCX(){}
 
-UNDX::UNDX(){}
-UNDX::~UNDX(){}
-
-void UNDX::calculateDMParents(const vector<Chromosome*>& _parents, vector<double>& _d, vector<double>& _m, vector<double>& _p1, vector<double>& _p2, vector<double>& _p3){
+void PCX::calculateDGParents(const vector<Chromosome*>& _parents, vector<double>& _d, vector<double>& _g, vector<double>& _p1, vector<double>& _p2, vector<double>& _p3){
     vector<map<uint, vector<double>>> p1Weights, p2Weights, p3Weights;
     p1Weights = _parents[0]->getWeightData(); p2Weights = _parents[1]->getWeightData(); p3Weights = _parents[2]->getWeightData();
         
@@ -12,8 +11,8 @@ void UNDX::calculateDMParents(const vector<Chromosome*>& _parents, vector<double
     for(uint k = 0; k < p1Weights.size(); ++k){
         for(map<uint, vector<double>>::iterator iter = p1Weights[k].begin(); iter != p1Weights[k].end(); iter++){
             for(uint i = 0; i < iter->second.size(); i++){
-                _d.push_back(p2Weights[k][iter->first][i] - p1Weights[k][iter->first][i]);
-                _m.push_back((p1Weights[k][iter->first][i] + p2Weights[k][iter->first][i]) / 2);
+                _g.push_back(p1Weights[k][iter->first][i] + p2Weights[k][iter->first][i] + p3Weights[k][iter->first][i]) / 3);
+                _d.push_back(p1Weights[k][iter->first][i] - g[k]);
                 _p1.push_back(p1Weights[k][iter->first][i]);
                 _p2.push_back(p2Weights[k][iter->first][i]);
                 _p3.push_back(p3Weights[k][iter->first][i]);
@@ -22,7 +21,7 @@ void UNDX::calculateDMParents(const vector<Chromosome*>& _parents, vector<double
     }
 }
 
-double UNDX::calculateP3DDistance(const vector<double>& _dvec, const vector<double>& _p1vec, const vector<double>& _p3vec){
+double PCX::calculateP3DDistance(const vector<double>& _dvec, const vector<double>& _g, const vector<double>& _p2vec, const vector<double>& _p3vec){
     //calculate projection of p3 onto line d, and then calc the distance between the projection and p3
     double dottop = 0, dotbot = 0, dp3distance = 0;
         
@@ -90,7 +89,8 @@ void UNDX::calculateOrthogonalBasis(double _spanvecdim, double _spansize, double
     }
 }
 
-vector<Chromosome*> UNDX::execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters){
+
+vector<Chromosome*> PCX::execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters){
     Selection* selectionAlgorithm = SelectionFactory::instance().create("QuadraticRankSelection");
     if(!selectionAlgorithm)
         return _population;

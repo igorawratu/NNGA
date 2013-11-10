@@ -1,19 +1,19 @@
-#ifndef UNDX_H
-#define UNDX_H
+#ifndef PCX_H
+#define PCX_H
 
 #include "crossover.h"
 #include <math.h>
 
-class UNDX : public Crossover
+class PCX : public Crossover
 {
 public:
-    UNDX();
-    virtual ~UNDX();
+    PCX();
+    virtual ~PCX();
 
     virtual vector<Chromosome*> execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters);
 
-    static Crossover* createUNDX(){
-        return new UNDX();
+    static Crossover* createPCX(){
+        return new PCX();
     }
 
 private:

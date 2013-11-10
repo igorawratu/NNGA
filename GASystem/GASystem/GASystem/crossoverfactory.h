@@ -12,6 +12,7 @@
 #include "multipointcrossover.h"
 #include "spx.h"
 #include "blx.h"
+#include "undx.h"
 
 using namespace std;
 

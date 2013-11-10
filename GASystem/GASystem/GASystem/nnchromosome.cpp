@@ -41,6 +41,8 @@ void NNChromosome::mutate(string _mutationType, map<string, double>& _parameters
 
         mNets[k].setWeights(currNetWeights);
     }
+
+    delete mutationAlgorithm;
 }
 
 vector<map<uint, vector<double>>> NNChromosome::getWeightData(){

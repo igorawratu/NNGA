@@ -469,7 +469,7 @@ void runBridgeCarSim(){
     StandardGAParameters params;
     params.populationSize = 100;
     params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input6h.xml";
+    params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input0h.xml";
     params.stagnationThreshold = 0;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
@@ -477,7 +477,7 @@ void runBridgeCarSim(){
     params.mutationParameters["Deviation"] = 0.2;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
+    params.crossoverAlgorithm = "UNDX";
     params.selectionAlgorithm = "QuadraticRankSelection";
     params.elitismCount = 5;
 
@@ -618,7 +618,7 @@ void runCarCrashSim(){
     params.mutationParameters["Deviation"] = 0.2;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
+    params.crossoverAlgorithm = "UNDX";
     params.selectionAlgorithm = "QuadraticRankSelection";
     params.elitismCount = 5;
 

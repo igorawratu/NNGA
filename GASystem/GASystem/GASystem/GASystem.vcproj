@@ -408,6 +408,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\pcx.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\pcx.h"
+				>
+			</File>
+			<File
 				RelativePath=".\spx.cpp"
 				>
 			</File>
@@ -565,6 +573,10 @@
 			</File>
 			<File
 				RelativePath=".\gaussianmutation.h"
+				>
+			</File>
+			<File
+				RelativePath=".\mutation.cpp"
 				>
 			</File>
 			<File
