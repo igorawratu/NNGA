@@ -16,6 +16,8 @@ public:
 
     virtual vector3 getVelocity();
 
+    virtual void avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world);
+
 protected:
     virtual btCollisionShape* getCollisionShape(ResourceManager* _rm);
     virtual void setRigidbodyProperties();

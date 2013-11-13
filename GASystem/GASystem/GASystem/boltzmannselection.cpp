@@ -7,6 +7,11 @@ BoltzmannSelection::BoltzmannSelection(){
 
 BoltzmannSelection::~BoltzmannSelection(){}
 
+void BoltzmannSelection::tick(){
+    if(mTemperature > mInitTemp / mMaxGenerations)
+        mTemperature -= mInitTemp / mMaxGenerations;
+}
+
 vector<Chromosome*> BoltzmannSelection::execute(vector<Chromosome*> _selectionPool, uint _selectionCount, vector<Chromosome*>& _unselected){
     assert(_selectionPool.size() >= _selectionCount);
 
@@ -22,9 +27,6 @@ vector<Chromosome*> BoltzmannSelection::execute(vector<Chromosome*> _selectionPo
         output.push_back(selectChromosome(_selectionPool));
 
     _unselected = _selectionPool;
-
-    if(mTemperature > mInitTemp / mMaxGenerations)
-        mTemperature -= mInitTemp / mMaxGenerations;
 
     return output;        
 }

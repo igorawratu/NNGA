@@ -3,6 +3,7 @@
 #include <string>
 #include <typeinfo>
 #include <vector>
+#include <fstream>
 
 #include "common.h"
 #include "neuralnetwork.h"
@@ -32,7 +33,7 @@
 #include "carracesimulation.h"
 #include "warrobotsimulation.h"
 
-#define TRAIN
+//#define TRAIN
 
 using namespace std;
 
@@ -393,7 +394,7 @@ void testMultipointCrossover(){
     dynamic_cast<NNChromosome*>(population[0])->initialize(&root);
     dynamic_cast<NNChromosome*>(population[1])->initialize(&root);
     
-    vector<Chromosome*> offspring = mpco.execute(population, 1, map<string, double>());
+    vector<Chromosome*> offspring = mpco.execute(population, 1, map<string, double>(), SelectionFactory::instance().create("RankSelection"));
     Solution p1(dynamic_cast<NNChromosome*>(population[0])->getNeuralNets()), p2(dynamic_cast<NNChromosome*>(population[1])->getNeuralNets()), off(dynamic_cast<NNChromosome*>(offspring[0])->getNeuralNets());
     p1.printToFile("neuralxmls\\nnchromosome\\p1.xml");
     p2.printToFile("neuralxmls\\nnchromosome\\p2.xml");
@@ -469,7 +470,7 @@ void runBridgeCarSim(){
     StandardGAParameters params;
     params.populationSize = 100;
     params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input0h.xml";
+    params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input6h.xml";
     params.stagnationThreshold = 0;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
@@ -477,7 +478,7 @@ void runBridgeCarSim(){
     params.mutationParameters["Deviation"] = 0.2;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "UNDX";
+    params.crossoverAlgorithm = "BLX";
     params.selectionAlgorithm = "QuadraticRankSelection";
     params.elitismCount = 5;
 
@@ -738,12 +739,67 @@ void runWarRobotSim(){
     engine.renderSimulation();
 }
 
+void testCrossoverOp(){
+    srand(time(0));
+    Crossover* crossoverAlgorithm = CrossoverFactory::instance().create("UNDX");
+    vector<Chromosome*> parents;
+
+    //p1
+    xmldoc p1doc;
+    p1doc.load_file("neuralxmls/crossovertest/p1.xml");
+    pugi::xml_node root = p1doc.first_child();
+
+    NNChromosome* p1 = new NNChromosome();
+    p1->initialize(&root);
+
+    //p2
+    xmldoc p2doc;
+    p2doc.load_file("neuralxmls/crossovertest/p2.xml");
+    root = p2doc.first_child();
+
+    NNChromosome* p2 = new NNChromosome();
+    p2->initialize(&root);
+    
+    //p3
+    xmldoc p3doc;
+    p3doc.load_file("neuralxmls/crossovertest/p3.xml");
+    root = p3doc.first_child();
+
+    NNChromosome* p3 = new NNChromosome();
+    p3->initialize(&root);
+
+    parents.push_back(p3);
+    parents.push_back(p2);
+    parents.push_back(p1);
+    
+    vector<Chromosome*> offspring = crossoverAlgorithm->execute(parents, 2000, map<string, double>(), SelectionFactory::instance().create("RandomSelection"));
+
+    ofstream outputFile, y;
+    outputFile.open("neuralxmls/crossovertest/offspring.txt");
+    y.open("neuralxmls/crossovertest/y.txt");
+
+    for(uint k = 0; k < offspring.size(); ++k){
+        vector<map<uint, vector<double>>> childWeights = offspring[k]->getWeightData();
+        for(uint k = 0; k < childWeights.size(); k++){
+            for(map<uint, vector<double>>::iterator iter = childWeights[k].begin(); iter != childWeights[k].end(); iter++){
+                outputFile << iter->second[0] << endl;       
+                y << iter->second[1] << endl; 
+            }
+        }
+    }
+    outputFile.close();
+    y.close();
+
+}
+
 int main(){
-    //runBridgeMouseSim();
-    runBridgeCarSim();
+    runBridgeMouseSim();
+    //runBridgeCarSim();
     //runCarCrashSim();
     //runCarRaceSim();
     //runWarRobotSim();
+
+    //testCrossoverOp();
 
     return 0;
 }

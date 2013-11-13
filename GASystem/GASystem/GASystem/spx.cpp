@@ -3,16 +3,13 @@
 SPX::SPX(){}
 SPX::~SPX(){}
 
-vector<Chromosome*> SPX::execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters){
+vector<Chromosome*> SPX::execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters, Selection* _selectionAlgorithm){
     assert(_population.size() >= 4);
-
-    Selection* selectionAlgorithm = SelectionFactory::instance().create("QuadraticRankSelection");
-    assert(selectionAlgorithm);
     
     vector<Chromosome*> offspring;
 
     while(offspring.size() < numOffspring){
-        vector<Chromosome*> parents = selectionAlgorithm->execute(_population, 3, vector<Chromosome*>());
+        vector<Chromosome*> parents = _selectionAlgorithm->execute(_population, 3, vector<Chromosome*>());
         quicksort(parents, 0, parents.size() - 1);
 
         vector<map<uint, vector<double>>> centerOfMass, pFirstWeights, pLastWeights, childWeights;
@@ -52,8 +49,6 @@ vector<Chromosome*> SPX::execute(vector<Chromosome*> _population, uint numOffspr
         child->setWeights(childWeights);
         offspring.push_back(child);
     }
-
-    delete selectionAlgorithm;
 
     return offspring;
 }

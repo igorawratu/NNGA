@@ -45,13 +45,13 @@ bool SFTurnbackSimulation::initialise(){
     for(uint k = 0; k < mAgents.size(); k++){
         mWorldEntities[mAgents[k]] = new StarFighterAgent(10, 0.5);
         vector3 pos(genx(), geny(), genz());
-        if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, pos, 0.01))
+        if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, pos, 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());
     }
     
-    mWorldEntities["goalpoint"] = new StaticWorldAgent(0.5, 0.1);
-    if(!mWorldEntities["goalpoint"]->initialise("newbridgewall.mesh", vector3(mGoalRadius, mGoalRadius, mGoalRadius), btQuaternion(0, 0, 0, 1), mResourceManager, mGoalpoint, 0))
+    mWorldEntities["environment"] = new StaticWorldAgent(0.5, 0.1);
+    if(!mWorldEntities["environment"]->initialise("sphere.mesh", vector3(mGoalRadius, mGoalRadius, mGoalRadius), btQuaternion(0, 0, 0, 1), mResourceManager, mGoalpoint, 0, mSeed))
         return false;
 
     mInitialised = true;

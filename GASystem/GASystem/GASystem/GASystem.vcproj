@@ -220,6 +220,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\randomselection.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\randomselection.h"
+				>
+			</File>
+			<File
 				RelativePath=".\rankselection.cpp"
 				>
 			</File>

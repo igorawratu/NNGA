@@ -7,6 +7,11 @@ CubeAgent::CubeAgent(vector3 _maxVel, vector3 _minVel){
 
 CubeAgent::~CubeAgent(){}
 
+void CubeAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world){
+    cout << "Error: Collision avoidance not enabled on cube agents" << endl;
+}
+
+
 void CubeAgent::update(const vector<double>& _nnOutput){
     assert(_nnOutput.size() >= 2);
 

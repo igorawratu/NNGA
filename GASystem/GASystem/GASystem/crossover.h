@@ -19,7 +19,7 @@ public:
     Crossover(){}
     virtual ~Crossover(){}
 
-    virtual vector<Chromosome*> execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters)=0;
+    virtual vector<Chromosome*> execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters, Selection* _selectionAlgorithm)=0;
 };
 
 #endif

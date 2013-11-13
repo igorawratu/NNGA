@@ -11,8 +11,8 @@ void PCX::calculateDGParents(const vector<Chromosome*>& _parents, vector<double>
     for(uint k = 0; k < p1Weights.size(); ++k){
         for(map<uint, vector<double>>::iterator iter = p1Weights[k].begin(); iter != p1Weights[k].end(); iter++){
             for(uint i = 0; i < iter->second.size(); i++){
-                _g.push_back(p1Weights[k][iter->first][i] + p2Weights[k][iter->first][i] + p3Weights[k][iter->first][i]) / 3);
-                _d.push_back(p1Weights[k][iter->first][i] - g[k]);
+                _g.push_back((p1Weights[k][iter->first][i] + p2Weights[k][iter->first][i] + p3Weights[k][iter->first][i]) / 3);
+                _d.push_back(p1Weights[k][iter->first][i] - _g[k]);
                 _p1.push_back(p1Weights[k][iter->first][i]);
                 _p2.push_back(p2Weights[k][iter->first][i]);
                 _p3.push_back(p3Weights[k][iter->first][i]);
@@ -21,25 +21,34 @@ void PCX::calculateDGParents(const vector<Chromosome*>& _parents, vector<double>
     }
 }
 
-double PCX::calculateP3DDistance(const vector<double>& _dvec, const vector<double>& _g, const vector<double>& _p2vec, const vector<double>& _p3vec){
+double PCX::calculateMeanDistanceD(const vector<double>& _dvec, const vector<double>& _g, const vector<double>& _p2vec, const vector<double>& _p3vec){
     //calculate projection of p3 onto line d, and then calc the distance between the projection and p3
-    double dottop = 0, dotbot = 0, dp3distance = 0;
+    double dottopp3 = 0, dottopp2 = 0, dotbot = 0, distance = 0;
         
     for(uint k = 0; k < _dvec.size(); ++k){
         dotbot += _dvec[k] * _dvec[k];
-        dottop += (_p3vec[k] - _p1vec[k]) * _dvec[k];
+        dottopp3 += (_p3vec[k] - _g[k]) * _dvec[k];
+        dottopp2 += (_p2vec[k] - _g[k]) * _dvec[k];
     }
     
+    double p1distance, p2distance = 0;
     for(uint k = 0; k < _dvec.size(); ++k){
-        double temp = (_dvec[k] * dottop/dotbot) - (_p3vec[k] - _p1vec[k]);
-        dp3distance += temp * temp;
+        double temp = (_dvec[k] * dottopp3/dotbot) - (_p3vec[k] - _g[k]);
+        p1distance += temp * temp;
     }
-    dp3distance = sqrt(dp3distance);
+    distance += sqrt(p1distance);
+
+    for(uint k = 0; k < _dvec.size(); ++k){
+        double temp = (_dvec[k] * dottopp2/dotbot) - (_p2vec[k] - _g[k]);
+        p2distance += temp * temp;
+    }
+    distance += sqrt(p2distance);
+    distance /= 2;
     
-    return dp3distance;
+    return distance;
 }
 
-void UNDX::calculateOrthogonalBasis(double _spanvecdim, double _spansize, double** _initialspan, double** _orthbasisvectors, const vector<double>& _dvec){
+void PCX::calculateOrthogonalBasis(double _spanvecdim, double _spansize, double** _initialspan, double** _orthbasisvectors, const vector<double>& _dvec){
     //initialise span and orthobasis matrices
     for(uint k = 0; k < _spansize; ++k){
         for(uint i = 0; i < _spanvecdim; ++i){
@@ -90,23 +99,19 @@ void UNDX::calculateOrthogonalBasis(double _spanvecdim, double _spansize, double
 }
 
 
-vector<Chromosome*> PCX::execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters){
-    Selection* selectionAlgorithm = SelectionFactory::instance().create("QuadraticRankSelection");
-    if(!selectionAlgorithm)
-        return _population;
-
+vector<Chromosome*> PCX::execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters, Selection* _selectionAlgorithm){
     vector<Chromosome*> offspring;
 
     while(offspring.size() < numOffspring){
-        vector<map<uint, vector<double>>> p1Weights, childWeights, child2Weights;
-        vector<double> mvec, dvec, p1vec, p2vec, p3vec;
+        vector<map<uint, vector<double>>> p1Weights, childWeights;
+        vector<double> gvec, dvec, p1vec, p2vec, p3vec;
 
-        vector<Chromosome*> parents = selectionAlgorithm->execute(_population, 3, vector<Chromosome*>());
+        vector<Chromosome*> parents = _selectionAlgorithm->execute(_population, 3, vector<Chromosome*>());
         p1Weights = parents[0]->getWeightData();
 
-        calculateDMParents(parents, dvec, mvec, p1vec, p2vec, p3vec);
+        calculateDGParents(parents, dvec, gvec, p1vec, p2vec, p3vec);
 
-        double dp3distance = calculateP3DDistance(dvec, p1vec, p3vec);
+        double distance = calculateMeanDistanceD(dvec, gvec, p2vec, p3vec);
 
         
         const int spansize = dvec.size() - 1;
@@ -123,8 +128,8 @@ vector<Chromosome*> PCX::execute(vector<Chromosome*> _population, uint numOffspr
         calculateOrthogonalBasis(spanvecdim, spansize, initialspan, orthbasisvectors, dvec);
 
         //rngs
-        double sigone = 0.35/sqrt((double)dvec.size()) * 0.35/sqrt((double)dvec.size());
-        double sigtwo = 0.25;
+        double sigone = (0.5 * 0.5)/(double)dvec.size();
+        double sigtwo = 0.5;
 
         boost::mt19937 rng(rand());
         boost::normal_distribution<> dist(0, sigone);
@@ -138,44 +143,34 @@ vector<Chromosome*> PCX::execute(vector<Chromosome*> _population, uint numOffspr
         for(uint k = 0; k < spanvecdim; ++k)
             sum[k] = 0;
 
-        for(uint k = 0; k < spansize; ++k){
-            double rval = n2();
+        for(uint k = 0; k < spanvecdim; ++k){
+            double rval = n1();
 
-            for(uint i = 0; i < spanvecdim; ++i)
-                sum[k] += orthbasisvectors[k][i] * rval;
+            for(uint i = 0; i < spansize; ++i)
+                sum[k] += orthbasisvectors[i][k] * rval;
         }
 
 
         //run the actual undx equation
         for(uint k = 0; k < p1Weights.size(); k++){
             map<uint, vector<double>> currentNetworkWeights;
-            map<uint, vector<double>> currentNetworkWeights2;
             uint mapPos = 0;
             for(map<uint, vector<double>>::iterator iter = p1Weights[k].begin(); iter != p1Weights[k].end(); iter++){
                 vector<double> weights;
-                vector<double> weights2;
                 for(uint i = 0; i < iter->second.size(); i++){
                     uint currWeightPos = k+mapPos+i;
-                    double rngval = n1();
-                    double weightVal = mvec[currWeightPos] + dvec[currWeightPos] * rngval + dp3distance * sum[currWeightPos];
-                    double weightVal2 = mvec[currWeightPos] + dvec[currWeightPos] * rngval - dp3distance * sum[currWeightPos];
+                    double weightVal = p1vec[currWeightPos] + dvec[currWeightPos] * n2() + distance * sum[currWeightPos];
+                    //cout << weightVal << " " << p1vec[currWeightPos] << " " << dvec[currWeightPos] << " " << distance << " " << sum[currWeightPos] << endl;
                     weights.push_back(weightVal);
-                    weights2.push_back(weightVal2);
                 }
                 currentNetworkWeights[iter->first] = weights;
-                currentNetworkWeights2[iter->first] = weights2;
                 mapPos++;
             }
             childWeights.push_back(currentNetworkWeights);
-            child2Weights.push_back(currentNetworkWeights2);
         }
         Chromosome* child = parents[0]->clone();
         child->setWeights(childWeights);
         offspring.push_back(child);
-
-        Chromosome* child2 = parents[0]->clone();
-        child->setWeights(child2Weights);
-        offspring.push_back(child2);
 
         for(uint k = 0; k < spansize; ++k){
             delete [] initialspan[k];
@@ -185,8 +180,6 @@ vector<Chromosome*> PCX::execute(vector<Chromosome*> _population, uint numOffspr
         delete [] orthbasisvectors;
         delete [] sum;
     }
-
-    delete selectionAlgorithm;
 
     //possibility of creating more offspring than asked for, remove until the amount is correct
     while(offspring.size() > numOffspring){

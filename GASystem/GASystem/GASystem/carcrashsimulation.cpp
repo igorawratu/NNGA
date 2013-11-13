@@ -156,22 +156,22 @@ bool CarCrashSimulation::initialise(){
 
     for(uint k = 0; k < mGroupOneAgents.size(); k++){
         mWorldEntities[mGroupOneAgents[k]] = new CarAgent(10, 0.5);
-        if(!mWorldEntities[mGroupOneAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rotGroupOne, mResourceManager, vector3(genxone(), 0, genzone()), 0.01))
+        if(!mWorldEntities[mGroupOneAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rotGroupOne, mResourceManager, vector3(genxone(), 0, genzone()), 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupOneAgents[k]]->getRigidBody());
     }
 
     for(uint k = 0; k < mGroupTwoAgents.size(); k++){
         mWorldEntities[mGroupTwoAgents[k]] = new CarAgent(10, 0.5);
-        if(!mWorldEntities[mGroupTwoAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rotGroupTwo, mResourceManager, vector3(genxtwo(), 0, genztwo()), 0.01))
+        if(!mWorldEntities[mGroupTwoAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rotGroupTwo, mResourceManager, vector3(genxtwo(), 0, genztwo()), 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupTwoAgents[k]]->getRigidBody());
     }
     
-    mWorldEntities["corridor"] = new StaticWorldAgent(0.5, 0.1);
-    if(!mWorldEntities["corridor"]->initialise("corridor.mesh", vector3(20, 20, 20), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(-2, 2, 0), 0))
+    mWorldEntities["environment"] = new StaticWorldAgent(0.5, 0.1);
+    if(!mWorldEntities["environment"]->initialise("corridor.mesh", vector3(20, 20, 20), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(-2, 2, 0), 0, mSeed))
         return false;
-    mWorld->addRigidBody(mWorldEntities["corridor"]->getRigidBody());
+    mWorldEnv->addRigidBody(mWorldEntities["environment"]->getRigidBody());
 
     mInitialised = true;
 
@@ -192,14 +192,14 @@ void CarCrashSimulation::applyUpdateRules(string _agentName, uint _groupNum){
 
     map<uint, double> input;
     //rangefinders
-    input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 0)) / 50;
-    input[2] = getRayCollisionDistance(_agentName, btVector3(-100, 0, 0)) / 50;
-    input[3] = getRayCollisionDistance(_agentName, btVector3(0, 0, 100)) / 50;
-    input[4] = getRayCollisionDistance(_agentName, btVector3(0, 0, 100)) / 50;
-    input[5] = getRayCollisionDistance(_agentName, btVector3(100, 0, -100)) / 50;
-    input[6] = getRayCollisionDistance(_agentName, btVector3(-100, 0, 100)) / 50;
-    input[7] = getRayCollisionDistance(_agentName, btVector3(-100, 0, -100)) / 50;
-    input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0, 100)) / 50;
+    input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), AGENT) / 50;
+    input[2] = getRayCollisionDistance(_agentName, btVector3(-100, 0, 0), AGENT) / 50;
+    input[3] = getRayCollisionDistance(_agentName, btVector3(0, 0, 100), AGENT) / 50;
+    input[4] = getRayCollisionDistance(_agentName, btVector3(0, 0, 100), AGENT) / 50;
+    input[5] = getRayCollisionDistance(_agentName, btVector3(100, 0, -100), AGENT) / 50;
+    input[6] = getRayCollisionDistance(_agentName, btVector3(-100, 0, 100), AGENT) / 50;
+    input[7] = getRayCollisionDistance(_agentName, btVector3(-100, 0, -100), AGENT) / 50;
+    input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0, 100), AGENT) / 50;
 
     //agent position
     input[9] = trans.getOrigin().getX() / 50;

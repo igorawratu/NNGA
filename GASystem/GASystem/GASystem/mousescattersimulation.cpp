@@ -144,15 +144,15 @@ bool MouseScatterSimulation::initialise(){
         rot.setEuler(acos(c), 0, 0);
 
         mWorldEntities[mAgents[k]] = new MouseAgent(10, 1);
-        if(!mWorldEntities[mAgents[k]]->initialise("mouse.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(genx(), 0, genz()), 0.01))
+        if(!mWorldEntities[mAgents[k]]->initialise("mouse.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(genx(), 0, genz()), 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());
     }
     
-    mWorldEntities["stadium"] = new StaticWorldAgent(0.5, 0.1);
-    if(!mWorldEntities["stadium"]->initialise("stadium.mesh", vector3(50, 50, 50), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 0, 0), 0))
+    mWorldEntities["environment"] = new StaticWorldAgent(0.5, 0.1);
+    if(!mWorldEntities["environment"]->initialise("stadium.mesh", vector3(50, 50, 50), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 0, 0), 0, mSeed))
         return false;
-    mWorld->addRigidBody(mWorldEntities["stadium"]->getRigidBody());
+    mWorldEnv->addRigidBody(mWorldEntities["environment"]->getRigidBody());
 
     mInitialised = true;
     
@@ -166,15 +166,15 @@ void MouseScatterSimulation::applyUpdateRules(string _agentName){
 
     map<uint, double> input;
     //rangefinders
-    input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 105)) / 50;
-    input[2] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 75)) / 50;
-    input[3] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 45)) / 50;
-    input[4] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 15)) / 50;
-    input[5] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -15)) / 50;
-    input[6] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -45)) / 50;
-    input[7] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -75)) / 50;
-    input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -105)) / 50;
-    frontVal = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 0)) > 3 ? 1 : 0;
+    input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 105), AGENT) / 50;
+    input[2] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 75), AGENT) / 50;
+    input[3] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 45), AGENT) / 50;
+    input[4] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 15), AGENT) / 50;
+    input[5] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -15), AGENT) / 50;
+    input[6] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -45), AGENT) / 50;
+    input[7] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -75), AGENT) / 50;
+    input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -105), AGENT) / 50;
+    frontVal = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 0), AGENT) > 3 ? 1 : 0;
 
     //agent position
     input[9] = trans.getOrigin().getX() / 50;

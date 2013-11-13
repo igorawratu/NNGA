@@ -90,22 +90,22 @@ bool PrototypeSimulation::initialise(){
 
     //agents
     mWorldEntities["Agent0"] = new CubeAgent(vector3(10, 10, 10), vector3(-10, -10, -10));
-    if(!mWorldEntities["Agent0"]->initialise("car.mesh", vector3(1, 1, 1), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(60, -2, 54), 0.01))
+    if(!mWorldEntities["Agent0"]->initialise("car.mesh", vector3(1, 1, 1), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(60, -2, 54), 0.01, 0))
         return false;
     mWorld->addRigidBody(mWorldEntities["agent0"]->getRigidBody());
     
     mWorldEntities["Agent1"] = new CubeAgent(vector3(10, 10, 10), vector3(-10, -10, -10));
-    if(!mWorldEntities["Agent1"]->initialise("cube.mesh", vector3(1, 1, 1), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(60, -2, 50), 0.01))
+    if(!mWorldEntities["Agent1"]->initialise("cube.mesh", vector3(1, 1, 1), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(60, -2, 50), 0.01, 0))
         return false;
     mWorld->addRigidBody(mWorldEntities["agent1"]->getRigidBody());
 
     mWaypointTracker["Agent0"] = mWaypointTracker["Agent1"] = 0;
     
     //maze
-    mWorldEntities["maze"] = new StaticWorldAgent(0.5, 0.1);
-    if(!mWorldEntities["maze"]->initialise("maze.mesh", vector3(10, 10, 10), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 0, 0), 0))
+    mWorldEntities["environment"] = new StaticWorldAgent(0.5, 0.1);
+    if(!mWorldEntities["environment"]->initialise("maze.mesh", vector3(10, 10, 10), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 0, 0), 0, 0))
         return false;
-    mWorld->addRigidBody(mWorldEntities["maze"]->getRigidBody());
+    mWorld->addRigidBody(mWorldEntities["environment"]->getRigidBody());
 
     mInitialised = true;
     

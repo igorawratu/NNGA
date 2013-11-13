@@ -114,7 +114,7 @@ void SFSimulation::applyUpdateRules(string _agentName){
 
     for(int k = -100; k <= 100; k += 50){
         for(int i = -100; i <= 100; i+= 50){
-            input[inputIndex] = getRayCollisionDistance(_agentName, btVector3(k, i, 5));
+            input[inputIndex] = getRayCollisionDistance(_agentName, btVector3(k, i, 5), AGENT);
             inputIndex++;
         }
     }

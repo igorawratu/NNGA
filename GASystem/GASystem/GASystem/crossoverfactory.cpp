@@ -21,6 +21,7 @@ void CrossoverFactory::startup(){
     crossoverFactory.mFactory.registerCreator("SPX", SPX::createSPX);
     crossoverFactory.mFactory.registerCreator("BLX", BLX::createBLX);
     crossoverFactory.mFactory.registerCreator("UNDX", UNDX::createUNDX);
+    crossoverFactory.mFactory.registerCreator("PCX", PCX::createPCX);
 }
 
 void CrossoverFactory::shutdown(){

@@ -65,7 +65,7 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
         cout << "Creating offspring..." << endl;
 
         //create offspring
-        vector<Chromosome*> offspring = crossoverAlgorithm->execute(population, population.size(), mParameters.crossoverParameters);
+        vector<Chromosome*> offspring = crossoverAlgorithm->execute(population, population.size(), mParameters.crossoverParameters, selectionAlgorithm);
         
         cout << "Mutating offspring..." << endl;
         //mutate offspring
@@ -98,7 +98,7 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
         //checks if the fitness of the solution is below the epsilon threshold, if it is, stop training
         for(uint i = 0; i < population.size(); ++i){
             if(population[i]->realFitness() <= mParameters.fitnessEpsilonThreshold){
-                Solution finalSolution(dynamic_cast<NNChromosome*>(population[0])->getNeuralNets());
+                Solution finalSolution(dynamic_cast<NNChromosome*>(population[i])->getNeuralNets());
                 finalSolution.fitness() = population[i]->fitness();
 
                 for(uint j = 0; j < population.size(); ++j)
@@ -131,12 +131,10 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
 
         quicksort(population, 0, population.size() - 1);
         
-        
         cout << "Current population fitnesses..." << endl;
         for(uint i = 0; i < population.size(); i++)
             cout << population[i]->fitness() << " | ";
         cout << endl;
-
 
         cout << "Checking termination conditions..." << endl;
         //calculates standard deviation, if it has been below the threshold for 10(arb, can make this var) generations, then stagnation
@@ -170,6 +168,8 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
             return finalSolution;
         }
         cout << "Time taken for this generation : " << time(0) - t << endl;
+
+        selectionAlgorithm->tick();
     }
     quicksort(population, 0, population.size() - 1);
 

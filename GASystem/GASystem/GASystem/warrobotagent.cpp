@@ -10,6 +10,48 @@ WarRobotAgent::WarRobotAgent(double _maxLinearVel, vector3 _maxVel, vector3 _min
     mMaxLinearVel = _maxLinearVel;
 }
 
+void WarRobotAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world){
+    double left = getRayCollisionDistance(btVector3(100, 0, -100), _world);
+    double right = getRayCollisionDistance(btVector3(100, 0, 100), _world);
+
+    //calculate rotation
+    if(left < _frontRayDistance && right < _frontRayDistance){
+        //account for special case
+    }
+    else{
+        btVector3 torque;
+
+        if(right > left)
+            torque = btVector3(0, 0.25, 0);
+        else if(left > right)
+            torque = btVector3(0, -0.25, 0);
+        else if(left == right){
+            int choose = generateRandInt();
+
+            if(choose % 2 == 0)
+                torque = btVector3(0, 0.25, 0);
+            else torque = btVector3(0, -0.25, 0);
+        }
+        
+        btVector3 correctedTorque = mRigidBody->getWorldTransform().getBasis() * torque;
+        mRigidBody->applyTorque(correctedTorque);
+    }
+
+    //calculate velocity
+    double decisionsPerSecond = _cyclesPerSecond / _cyclesPerDecision;
+    double deceleration = ((mCurrVel * mCurrVel) / (2*_frontRayDistance)) / decisionsPerSecond;
+
+    mCurrVel += deceleration;
+
+    btVector3 relativeVel = btVector3(mCurrVel, 0, 0);
+
+    btMatrix3x3& rot = mRigidBody->getWorldTransform().getBasis();
+    btVector3 correctedVel = rot * relativeVel;
+    correctedVel.setY(0);
+
+    mRigidBody->setLinearVelocity(correctedVel);
+}
+
 void WarRobotAgent::update(const vector<double>& _nnOutput){
     assert(_nnOutput.size() >= 3);
 
@@ -34,11 +76,11 @@ void WarRobotAgent::update(const vector<double>& _nnOutput){
 
     mRigidBody->setLinearVelocity(correctedVel);
 
-    if(mCurrVel <= 1)
+    /*if(mCurrVel <= 1)
         mRigidBody->applyTorque(btVector3(0, (_nnOutput[0] - 0.5)/2, 0));
     else{
         mRigidBody->setAngularVelocity(btVector3(0, 0, 0));
-    }
+    }*/
 }
 
 bool WarRobotAgent::shootRay(){

@@ -15,6 +15,7 @@ public:
     virtual ~Selection(){}
 
     virtual vector<Chromosome*> execute(vector<Chromosome*> _selectionPool, uint _selectionCount, vector<Chromosome*>& _unselected)=0;
+    virtual void tick(){}
 };
 
 #endif

@@ -133,23 +133,23 @@ bool WarRobotSimulation::initialise(){
 
     for(uint k = 0; k < mGroupOneAgents.size(); ++k){
         mWorldEntities[mGroupOneAgents[k]] = new WarRobotAgent(5, vector3(10, 0, 10), vector3(-10, 0, -10), 2, 30);
-        if(!mWorldEntities[mGroupOneAgents[k]]->initialise("warrobotr.mesh", vector3(1, 1, 1), rotG1, mResourceManager, vector3(genxone(), 0, genzone()), 0.01))
+        if(!mWorldEntities[mGroupOneAgents[k]]->initialise("warrobotr.mesh", vector3(1, 1, 1), rotG1, mResourceManager, vector3(genxone(), 0, genzone()), 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupOneAgents[k]]->getRigidBody());
     }
     
     for(uint k = 0; k < mGroupTwoAgents.size(); ++k){
         mWorldEntities[mGroupTwoAgents[k]] = new WarRobotAgent(5, vector3(10, 0, 10), vector3(-10, 0, -10), 1, 30);
-        if(!mWorldEntities[mGroupTwoAgents[k]]->initialise("warrobotb.mesh", vector3(1, 1, 1), rotG2, mResourceManager, vector3(genxtwo(), 0, genztwo()), 0.01))
+        if(!mWorldEntities[mGroupTwoAgents[k]]->initialise("warrobotb.mesh", vector3(1, 1, 1), rotG2, mResourceManager, vector3(genxtwo(), 0, genztwo()), 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupTwoAgents[k]]->getRigidBody());
     }
     
     
-    mWorldEntities["city"] = new StaticWorldAgent(0.5, 0.1);
-    if(!mWorldEntities["city"]->initialise("city.mesh", vector3(100, 100, 100), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 0, 0), 0))
+    mWorldEntities["environment"] = new StaticWorldAgent(0.5, 0.1);
+    if(!mWorldEntities["environment"]->initialise("city.mesh", vector3(100, 100, 100), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 0, 0), 0, mSeed))
         return false;
-    mWorld->addRigidBody(mWorldEntities["city"]->getRigidBody());
+    mWorld->addRigidBody(mWorldEntities["environment"]->getRigidBody());
 
     mInitialised = true;
 
@@ -199,7 +199,7 @@ double WarRobotSimulation::realFitness(){
 double WarRobotSimulation::getRayCollisionDistance(string _agentName, const btVector3& _ray, const btCollisionObject*& _collidedObject, vector3& _hitpos){
     double dist = 200;
 
-    btCollisionWorld::ClosestRayResultCallback ray = calculateRay(_agentName, _ray);
+    btCollisionWorld::ClosestRayResultCallback ray = calculateRay(_agentName, _ray, ENVIRONMENT);
 
     vector3 from = getPositionInfo(_agentName);
     if(ray.hasHit()){

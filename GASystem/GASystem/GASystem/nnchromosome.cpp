@@ -1,7 +1,5 @@
 #include "nnchromosome.h"
 
-vector<NeuralNetwork> mNets;
-
 NNChromosome::NNChromosome(){
 
 }

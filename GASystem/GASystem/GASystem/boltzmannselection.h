@@ -23,6 +23,8 @@ public:
 
     virtual vector<Chromosome*> execute(vector<Chromosome*> _selectionPool, uint _selectionCount, vector<Chromosome*>& _unselected);
 
+    virtual void tick();
+
 private:
     Chromosome* selectChromosome(vector<Chromosome*>& _population);
 

@@ -4,12 +4,8 @@ BLX::BLX(){}
 
 BLX::~BLX(){}
 
-vector<Chromosome*> BLX::execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters){
+vector<Chromosome*> BLX::execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters, Selection* _selectionAlgorithm){
     assert(_population.size() >= 2);
-
-    Selection* selectionAlgorithm = SelectionFactory::instance().create("QuadraticRankSelection");
-    if(!selectionAlgorithm)
-        return _population;
     
     vector<Chromosome*> offspring;
 
@@ -18,7 +14,7 @@ vector<Chromosome*> BLX::execute(vector<Chromosome*> _population, uint numOffspr
     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> gen(rng, dist);
 
     while(offspring.size() < numOffspring){
-        vector<Chromosome*> parents = selectionAlgorithm->execute(_population, 2, vector<Chromosome*>());
+        vector<Chromosome*> parents = _selectionAlgorithm->execute(_population, 2, vector<Chromosome*>());
 
         vector<map<uint, vector<double>>> p1Weights, p2Weights, childWeights;
         p1Weights = parents[0]->getWeightData(); p2Weights = parents[1]->getWeightData();
@@ -44,8 +40,6 @@ vector<Chromosome*> BLX::execute(vector<Chromosome*> _population, uint numOffspr
         child->setWeights(childWeights);
         offspring.push_back(child);
     }
-
-    delete selectionAlgorithm;
 
     return offspring;
 }

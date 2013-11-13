@@ -22,6 +22,7 @@ void SelectionFactory::startup(){
     selectionFactory.mFactory.registerCreator("LRankSelection", LRankSelection::createLRankSelection);
     selectionFactory.mFactory.registerCreator("NLRankSelection", NLRankSelection::createNLRankSelection);
     selectionFactory.mFactory.registerCreator("BoltzmannSelection", BoltzmannSelection::createBoltzmannSelection);
+    selectionFactory.mFactory.registerCreator("RandomSelection", RandomSelection::createRandomSelection);
 }
 
 void SelectionFactory::shutdown(){

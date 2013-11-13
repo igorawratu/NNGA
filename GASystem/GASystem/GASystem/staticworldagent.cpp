@@ -9,6 +9,11 @@ StaticWorldAgent::~StaticWorldAgent(){
     delete dynamic_cast<btBvhTriangleMeshShape*>(mRigidBody->getCollisionShape())->getMeshInterface();
 }
 
+void StaticWorldAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world){
+    cout << "Error: Static objects do not have Collision avoidance" << endl;
+}
+
+
 void StaticWorldAgent::update(const vector<double>& _nnOutput){
     //do not need to update static world objects
 }

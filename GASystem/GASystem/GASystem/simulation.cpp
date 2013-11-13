@@ -11,19 +11,26 @@ Simulation::Simulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPer
 
     mBroadphase = new btDbvtBroadphase();
     mCollisionConfig = new btDefaultCollisionConfiguration();
-
-    
-
     mDispatcher = new btCollisionDispatcher(mCollisionConfig);
     mSolver = new btSequentialImpulseConstraintSolver();
+
+    mBroadphaseEnv = new btDbvtBroadphase();
+    mCollisionConfigEnv = new btDefaultCollisionConfiguration();
+    mDispatcherEnv = new btCollisionDispatcher(mCollisionConfig);
+    mSolverEnv = new btSequentialImpulseConstraintSolver();
+
     mWorld = new btDiscreteDynamicsWorld(mDispatcher, mBroadphase, mSolver, mCollisionConfig);
+    mWorldEnv = new btDiscreteDynamicsWorld(mDispatcherEnv, mBroadphaseEnv, mSolverEnv, mCollisionConfigEnv);
 }
 
 Simulation::Simulation(const Simulation& other){}
 
 Simulation::~Simulation(){
     for(map<string, Agent*>::const_iterator iter = mWorldEntities.begin(); iter != mWorldEntities.end(); iter++){
-        mWorld->removeRigidBody(iter->second->getRigidBody());
+        if(iter->first == "environment")
+            mWorldEnv->removeRigidBody(iter->second->getRigidBody());
+        else mWorld->removeRigidBody(iter->second->getRigidBody());
+
         delete iter->second;
     }
 
@@ -31,34 +38,54 @@ Simulation::~Simulation(){
         delete mFitnessFunctions[k];
     mFitnessFunctions.clear();
 
-    if(mWorld)
-    {
+    if(mWorld){
         delete mWorld;
         mWorld = 0;
     }
+
+    if(mWorldEnv){
+        delete mWorldEnv;
+        mWorldEnv = 0;
+    }
     
-    if(mSolver)
-    {
+    if(mSolver){
         delete mSolver;
         mSolver = 0;
     }
+
+    if(mSolverEnv){
+        delete mSolverEnv;
+        mSolverEnv = 0;
+    }
     
-    if(mDispatcher)
-    {
+    if(mDispatcher){
         delete mDispatcher;
         mDispatcher = 0;
     }
+
+    if(mDispatcherEnv){
+        delete mDispatcherEnv;
+        mDispatcherEnv = 0;
+    }
     
-    if(mCollisionConfig)
-    {
+    if(mCollisionConfig){
         delete mCollisionConfig;
         mCollisionConfig = 0;
     }
+
+    if(mCollisionConfigEnv){
+        delete mCollisionConfigEnv;
+        mCollisionConfigEnv = 0;
+    }
     
-    if(mBroadphase)
-    {
+    if(mBroadphase){
         delete mBroadphase;
         mBroadphase = 0;
+    }
+
+    if(mBroadphaseEnv){
+        delete mBroadphaseEnv;
+        mBroadphaseEnv = 0;
     }
 
 }
@@ -101,10 +128,10 @@ vector3 Simulation::getPositionInfo(string _entityName){
 }
 
 
-double Simulation::getRayCollisionDistance(string _agentName, const btVector3& _ray){
+double Simulation::getRayCollisionDistance(string _agentName, const btVector3& _ray, RaycastLevel _rclevel){
     double dist = 100;
 
-    btCollisionWorld::ClosestRayResultCallback ray = calculateRay(_agentName, _ray);
+    btCollisionWorld::ClosestRayResultCallback ray = calculateRay(_agentName, _ray, _rclevel);
 
     vector3 from = getPositionInfo(_agentName);
     if(ray.hasHit())
@@ -113,7 +140,7 @@ double Simulation::getRayCollisionDistance(string _agentName, const btVector3& _
     return dist;
 }
 
-btCollisionWorld::ClosestRayResultCallback Simulation::calculateRay(string _agentName, const btVector3& _ray){
+btCollisionWorld::ClosestRayResultCallback Simulation::calculateRay(string _agentName, const btVector3& _ray, RaycastLevel _rclevel){
     btVector3 correctedRot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * _ray;
 
     btTransform trans;
@@ -125,7 +152,9 @@ btCollisionWorld::ClosestRayResultCallback Simulation::calculateRay(string _agen
 
     btCollisionWorld::ClosestRayResultCallback ray(agentPosition, correctedRay);
 
-    mWorld->rayTest(agentPosition, correctedRay, ray);
+    if(_rclevel == ENVIRONMENT)
+        mWorldEnv->rayTest(agentPosition, correctedRay, ray);
+    else mWorld->rayTest(agentPosition, correctedRay, ray);
 
     return ray;
 }

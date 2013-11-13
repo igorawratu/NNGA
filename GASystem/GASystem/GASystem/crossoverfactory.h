@@ -13,6 +13,7 @@
 #include "spx.h"
 #include "blx.h"
 #include "undx.h"
+#include "pcx.h"
 
 using namespace std;
 

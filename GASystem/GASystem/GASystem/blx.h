@@ -9,7 +9,7 @@ public:
     BLX();
     virtual ~BLX();
 
-    virtual vector<Chromosome*> execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters);
+    virtual vector<Chromosome*> execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters, Selection* _selectionAlgorithm);
     static Crossover* createBLX(){
         return new BLX();
     }

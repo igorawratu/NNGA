@@ -20,12 +20,14 @@ typedef boost::tuples::tuple<btRigidBody*, string, vector3> ObjectInfo;
 
 using namespace std;
 
+enum RaycastLevel{AGENT, ENVIRONMENT};
+
 class Simulation
 {
 public:
     Simulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager);
     Simulation(const Simulation& other);
-
+    
     virtual ~Simulation();
 
     uint getCyclesPerSecond();
@@ -49,10 +51,8 @@ public:
     virtual vector<Line> getLines();
 protected:
     vector3 getPositionInfo(string _entityName);
-
-
-    double getRayCollisionDistance(string _agentName, const btVector3& _ray);
-    btCollisionWorld::ClosestRayResultCallback calculateRay(string _agentName, const btVector3& _ray);
+    double getRayCollisionDistance(string _agentName, const btVector3& _ray, RaycastLevel _rclevel);
+    btCollisionWorld::ClosestRayResultCallback calculateRay(string _agentName, const btVector3& _ray, RaycastLevel _rclevel);
 
     
 protected:
@@ -63,11 +63,11 @@ protected:
     uint mCyclesPerSecond;
     map<string, Agent*> mWorldEntities;
 
-    btBroadphaseInterface* mBroadphase;
-    btDefaultCollisionConfiguration* mCollisionConfig;
-    btCollisionDispatcher* mDispatcher;
-    btSequentialImpulseConstraintSolver* mSolver;
-    btDiscreteDynamicsWorld* mWorld;
+    btBroadphaseInterface *mBroadphase, *mBroadphaseEnv;
+    btDefaultCollisionConfiguration *mCollisionConfig, *mCollisionConfigEnv;
+    btCollisionDispatcher *mDispatcher, *mDispatcherEnv;
+    btSequentialImpulseConstraintSolver *mSolver, *mSolverEnv;
+    btDiscreteDynamicsWorld *mWorld, *mWorldEnv;
     Solution* mSolution;
     ResourceManager* mResourceManager;
 

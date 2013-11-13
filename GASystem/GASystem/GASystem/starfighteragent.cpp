@@ -6,6 +6,11 @@ StarFighterAgent::StarFighterAgent(double _maxLinearVel, double _maxAngularVel){
     mCurrVel = 0;
 }
 
+void StarFighterAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world){
+    cout << "Error: Starfighter agent CA not implemented yet" << endl;
+}
+
+
 void StarFighterAgent::update(const vector<double>& _nnOutput){
     assert(_nnOutput.size() >= 4);
 

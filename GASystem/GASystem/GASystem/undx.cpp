@@ -54,7 +54,7 @@ void UNDX::calculateOrthogonalBasis(double _spanvecdim, double _spansize, double
         if(!k)
             continue;
 
-        _initialspan[k - 1][0] = _dvec[k] / (-_dvec[0] == 0 ? 0.0001 : -_dvec[0]);
+        _initialspan[k - 1][0] = _dvec[k] / (_dvec[0] == 0 ? 0.00001 : -_dvec[0]);
         _initialspan[k - 1][k] = 1;
     }
 
@@ -85,23 +85,20 @@ void UNDX::calculateOrthogonalBasis(double _spanvecdim, double _spansize, double
 
         distance = sqrt(distance);
 
-        for(uint i = 0; i < _spanvecdim; ++i)
+        for(uint i = 0; i < _spanvecdim; ++i){
             _orthbasisvectors[k][i] /= distance;
+        }
     }
 }
 
-vector<Chromosome*> UNDX::execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters){
-    Selection* selectionAlgorithm = SelectionFactory::instance().create("QuadraticRankSelection");
-    if(!selectionAlgorithm)
-        return _population;
-
+vector<Chromosome*> UNDX::execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters, Selection* _selectionAlgorithm){;
     vector<Chromosome*> offspring;
 
     while(offspring.size() < numOffspring){
         vector<map<uint, vector<double>>> p1Weights, childWeights, child2Weights;
         vector<double> mvec, dvec, p1vec, p2vec, p3vec;
 
-        vector<Chromosome*> parents = selectionAlgorithm->execute(_population, 3, vector<Chromosome*>());
+        vector<Chromosome*> parents = _selectionAlgorithm->execute(_population, 3, vector<Chromosome*>());
         p1Weights = parents[0]->getWeightData();
 
         calculateDMParents(parents, dvec, mvec, p1vec, p2vec, p3vec);
@@ -123,7 +120,7 @@ vector<Chromosome*> UNDX::execute(vector<Chromosome*> _population, uint numOffsp
         calculateOrthogonalBasis(spanvecdim, spansize, initialspan, orthbasisvectors, dvec);
 
         //rngs
-        double sigone = 0.35/sqrt((double)dvec.size()) * 0.35/sqrt((double)dvec.size());
+        double sigone = (0.35 * 0.35)/(double)dvec.size();
         double sigtwo = 0.25;
 
         boost::mt19937 rng(rand());
@@ -138,11 +135,12 @@ vector<Chromosome*> UNDX::execute(vector<Chromosome*> _population, uint numOffsp
         for(uint k = 0; k < spanvecdim; ++k)
             sum[k] = 0;
 
-        for(uint k = 0; k < spansize; ++k){
-            double rval = n2();
+        for(uint k = 0; k < spanvecdim; ++k){
+            double rval = n1();
 
-            for(uint i = 0; i < spanvecdim; ++i)
-                sum[k] += orthbasisvectors[k][i] * rval;
+            for(uint i = 0; i < spansize; ++i){
+                sum[k] += orthbasisvectors[i][k] * rval;
+            }
         }
 
 
@@ -156,7 +154,7 @@ vector<Chromosome*> UNDX::execute(vector<Chromosome*> _population, uint numOffsp
                 vector<double> weights2;
                 for(uint i = 0; i < iter->second.size(); i++){
                     uint currWeightPos = k+mapPos+i;
-                    double rngval = n1();
+                    double rngval = n2();
                     double weightVal = mvec[currWeightPos] + dvec[currWeightPos] * rngval + dp3distance * sum[currWeightPos];
                     double weightVal2 = mvec[currWeightPos] + dvec[currWeightPos] * rngval - dp3distance * sum[currWeightPos];
                     weights.push_back(weightVal);
@@ -174,7 +172,7 @@ vector<Chromosome*> UNDX::execute(vector<Chromosome*> _population, uint numOffsp
         offspring.push_back(child);
 
         Chromosome* child2 = parents[0]->clone();
-        child->setWeights(child2Weights);
+        child2->setWeights(child2Weights);
         offspring.push_back(child2);
 
         for(uint k = 0; k < spansize; ++k){
@@ -185,8 +183,6 @@ vector<Chromosome*> UNDX::execute(vector<Chromosome*> _population, uint numOffsp
         delete [] orthbasisvectors;
         delete [] sum;
     }
-
-    delete selectionAlgorithm;
 
     //possibility of creating more offspring than asked for, remove until the amount is correct
     while(offspring.size() > numOffspring){

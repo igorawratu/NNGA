@@ -14,6 +14,7 @@
 #include "quadraticrankselection.h"
 #include "tournamentselection.h"
 #include "boltzmannselection.h"
+#include "randomselection.h"
 
 using namespace std;
 

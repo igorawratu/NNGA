@@ -128,7 +128,7 @@ bool BridgeSimulation::initialise(){
         for(uint k = 0; k < mAgents.size(); k++){
             mWorldEntities[mAgents[k]] = new CarAgent(10, 0.5);
             vector3 pos(genx(), geny(), genz());
-            if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, pos, 0.01))
+            if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, pos, 0.01, mSeed))
                 return false;
             mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());
         }
@@ -136,7 +136,7 @@ bool BridgeSimulation::initialise(){
     else if(mAgentType == MOUSE){
         for(uint k = 0; k < mAgents.size(); k++){
             mWorldEntities[mAgents[k]] = new MouseAgent(10, 1);
-            if(!mWorldEntities[mAgents[k]]->initialise("mouse.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(genx(), geny(), genz()), 0.01))
+            if(!mWorldEntities[mAgents[k]]->initialise("mouse.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(genx(), geny(), genz()), 0.01, mSeed))
                 return false;
             mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());
         }
@@ -146,10 +146,10 @@ bool BridgeSimulation::initialise(){
         return false;
     }
     
-    mWorldEntities["bridgewall"] = new StaticWorldAgent(0.5, 0.1);
-    if(!mWorldEntities["bridgewall"]->initialise("newbridgewall.mesh", vector3(50, 50, 50), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 0, 0), 0))
+    mWorldEntities["environment"] = new StaticWorldAgent(0.5, 0.1);
+    if(!mWorldEntities["environment"]->initialise("newbridgewall.mesh", vector3(50, 50, 50), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, -1, 0), 0, mSeed))
         return false;
-    mWorld->addRigidBody(mWorldEntities["bridgewall"]->getRigidBody());
+    mWorldEnv->addRigidBody(mWorldEntities["environment"]->getRigidBody());
 
     mInitialised = true;
     
@@ -157,62 +157,70 @@ bool BridgeSimulation::initialise(){
 }
 
 void BridgeSimulation::applyUpdateRules(string _agentName){
+    map<uint, double> input;
     btTransform trans;
     mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
     double frontVal = -1;
 
-    map<uint, double> input;
-    //rangefinders
-    if(mAgentType == CAR){
-        input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 0)) / 50;
-        input[2] = getRayCollisionDistance(_agentName, btVector3(-100, 0.1, 0)) / 50;
-        input[3] = getRayCollisionDistance(_agentName, btVector3(0, 0.1, 100)) / 50;
-        input[4] = getRayCollisionDistance(_agentName, btVector3(0, 0.1, -100)) / 50;
-        input[5] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -100)) / 50;
-        input[6] = getRayCollisionDistance(_agentName, btVector3(-100, 0.1, 100)) / 50;
-        input[7] = getRayCollisionDistance(_agentName, btVector3(-100, 0.1, -100)) / 50;
-        input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 100)) / 50;
-        frontVal = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 0));
-    }
-    else if (mAgentType == MOUSE){
-        input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 105)) / 50;
-        input[2] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 75)) / 50;
-        input[3] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 45)) / 50;
-        input[4] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 15)) / 50;
-        input[5] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -15)) / 50;
-        input[6] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -45)) / 50;
-        input[7] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -75)) / 50;
-        input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -105)) / 50;
-        frontVal = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 0)) > 5 ? 1 : 0;
-    }
+    double frontDist = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT);
+    if(frontDist < 6)
+        mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorldEnv);
     else{
-        cerr << "Error: unidentified agent type" << endl;
-        return;
+        //rangefinders
+        if(mAgentType == CAR){
+            input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 0), AGENT) / 50;
+            input[2] = getRayCollisionDistance(_agentName, btVector3(-100, 0.1, 0), AGENT) / 50;
+            input[3] = getRayCollisionDistance(_agentName, btVector3(0, 0.1, 100), AGENT) / 50;
+            input[4] = getRayCollisionDistance(_agentName, btVector3(0, 0.1, -100), AGENT) / 50;
+            input[5] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -100), AGENT) / 50;
+            input[6] = getRayCollisionDistance(_agentName, btVector3(-100, 0.1, 100), AGENT) / 50;
+            input[7] = getRayCollisionDistance(_agentName, btVector3(-100, 0.1, -100), AGENT) / 50;
+            input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 100), AGENT) / 50;
+            frontVal = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 0), AGENT);
+        }
+        else if (mAgentType == MOUSE){
+            input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 105), AGENT) / 50;
+            input[2] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 75), AGENT) / 50;
+            input[3] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 45), AGENT) / 50;
+            input[4] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 15), AGENT) / 50;
+            input[5] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -15), AGENT) / 50;
+            input[6] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -45), AGENT) / 50;
+            input[7] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -75), AGENT) / 50;
+            input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -105), AGENT) / 50;
+            frontVal = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 0), AGENT) > 5 ? 1 : 0;
+        }
+        else{
+            cerr << "Error: unidentified agent type" << endl;
+            return;
+        }
+
+        //agent position
+        input[9] = trans.getOrigin().getX() / 50;
+        input[10] = trans.getOrigin().getZ() / 50;
+        
+        //goal line
+        input[11] = mFinishLine.p1.x / 50;
+        input[12] = mFinishLine.p1.z / 50;
+        input[13] = mFinishLine.p2.x / 50;
+        input[14] = mFinishLine.p2.z / 50;
+
+        vector3 agentVel = mWorldEntities[_agentName]->getVelocity();
+        input[15] = agentVel.x;
+        input[16] = agentVel.z;
+
+        vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
+        output.push_back(frontVal);
+
+        mWorldEntities[_agentName]->update(output);
     }
 
-    //agent position
-    input[9] = trans.getOrigin().getX() / 50;
-    input[10] = trans.getOrigin().getZ() / 50;
-    
-    //goal line
-    input[11] = mFinishLine.p1.x / 50;
-    input[12] = mFinishLine.p1.z / 50;
-    input[13] = mFinishLine.p2.x / 50;
-    input[14] = mFinishLine.p2.z / 50;
-
-    vector3 agentVel = mWorldEntities[_agentName]->getVelocity();
-    input[15] = agentVel.x;
-    input[16] = agentVel.z;
-
-    vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
-    output.push_back(frontVal);
-
-    mWorldEntities[_agentName]->update(output);
 
     if(calcCrossVal(mFinishLine.p1, mFinishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0){
-        for(uint k = 1; k <= 8; k++)
-            if(input[k] * 50 < mRangefinderRadius)
-                mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;
+        if(frontDist >= 5){
+            for(uint k = 1; k <= 8; k++)
+                if(input[k] * 50 < mRangefinderRadius)
+                    mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;
+        }
         
         //gets collision data
         int numManifolds = mWorld->getDispatcher()->getNumManifolds();
@@ -225,8 +233,10 @@ void BridgeSimulation::applyUpdateRules(string _agentName){
 		    const btCollisionObject* obA = contactManifold->getBody0();
 		    const btCollisionObject* obB = contactManifold->getBody1();
             
-            if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB))
+            if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB)){
                 mCollisions++;
+                //cout << mCollisions << endl;
+            }
         }
     }
 }
