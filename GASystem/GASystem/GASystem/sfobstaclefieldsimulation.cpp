@@ -56,7 +56,7 @@ bool SFObstaclefieldSimulation::initialise(){
     mWorldEntities["environment"] = new StaticWorldAgent(0.5, 0.1);
     if(!mWorldEntities["environment"]->initialise("sfobstaclefield.mesh", vector3(20, 20, 20), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 0, 0), 0, mSeed))
         return false;
-    mWorldEnv->addRigidBody(mWorldEntities["environment"]->getRigidBody());
+    mWorld->addRigidBody(mWorldEntities["environment"]->getRigidBody());
 
     mInitialised = true;
     

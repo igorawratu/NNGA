@@ -119,7 +119,7 @@ bool CarRaceSimulation::initialise(){
     mWorldEntities["environment"] = new StaticWorldAgent(0.5, 0.1);
     if(!mWorldEntities["environment"]->initialise("racetrack.mesh", vector3(50, 50, 50), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 3, 0), 0, mSeed))
         return false;
-    mWorldEnv->addRigidBody(mWorldEntities["environment"]->getRigidBody());
+    mWorld->addRigidBody(mWorldEntities["environment"]->getRigidBody());
 
     mInitialised = true;
 
@@ -165,6 +165,17 @@ void CarRaceSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     btTransform trans;
     mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
 
+    btBoxShape* agentBox = dynamic_cast<btBoxShape*>(mWorldEntities[_agentName]->getRigidBody()->getCollisionShape());
+    if(agentBox == 0){
+        cout << "Error: unable to get box to agent, will not apply update" << endl;
+        return;
+    }
+
+    double d1 = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, 0, agentBox->getHalfExtentsWithMargin().getZ()));
+    double d2 = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, 0, -agentBox->getHalfExtentsWithMargin().getZ()));
+
+    double frontDist = d1 > d2 ? d2 : d1;
+
     map<uint, double> input;
     //rangefinders
     input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), AGENT) / 50;
@@ -202,9 +213,12 @@ void CarRaceSimulation::applyUpdateRules(string _agentName, uint _groupNum){
 
 
 
-    vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
-
-    mWorldEntities[_agentName]->update(output);
+    if(frontDist < 10)
+        mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld);
+    else{
+        vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
+        mWorldEntities[_agentName]->update(output);
+    }
 
     bool checkCollisions = calcCrossVal(mFinishLine.p1, mFinishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0;
 

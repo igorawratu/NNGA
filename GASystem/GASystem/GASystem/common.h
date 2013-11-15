@@ -12,6 +12,8 @@ using namespace std;
 const double PI = 3.141592653589793238462;
 const double e = 2.718281828459045;
 
+#define BIT(x) (1<<(x))
+
 typedef unsigned int uint;
 typedef pugi::xml_document xmldoc;
 typedef pugi::xml_node xmlnode;

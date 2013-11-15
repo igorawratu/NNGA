@@ -144,7 +144,7 @@ bool CorneringSim::initialise(){
     mWorldEntities["environment"] = new StaticWorldAgent(0.5, 0.1);
     if(!mWorldEntities["environment"]->initialise("corneringtrack.mesh", vector3(50, 50, 50), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 6.5, 0), 0, mSeed))
         return false;
-    mWorldEnv->addRigidBody(mWorldEntities["environment"]->getRigidBody());
+    mWorld->addRigidBody(mWorldEntities["environment"]->getRigidBody());
 
     /*for(uint k = 0; k < mWaypoints.size(); k++){
         mWorldEntities["waypoint" + boost::lexical_cast<string>(k)] = new StaticWorldAgent(0.5, 0.1);

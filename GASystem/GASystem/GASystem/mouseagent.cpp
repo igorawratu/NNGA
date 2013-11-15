@@ -11,38 +11,36 @@ void MouseAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond
     double right = getRayCollisionDistance(btVector3(100, 0, 100), _world);
 
     //calculate rotation
-    if(left < _frontRayDistance && right < _frontRayDistance){
+    /*if(left < _frontRayDistance && right < _frontRayDistance){
         //account for special case
     }
-    else{
+    else{*/
         btVector3 torque;
 
         if(right > left)
-            torque = btVector3(0, -1, 0);
+            torque = btVector3(0, -0.75, 0);
         else if(left > right)
-            torque = btVector3(0, 1, 0);
+            torque = btVector3(0, 0.75, 0);
         else if(left == right){
             int choose = generateRandInt();
 
             if(choose % 2 == 0)
-                torque = btVector3(0, 1, 0);
-            else torque = btVector3(0, -1, 0);
+                torque = btVector3(0, 0.75, 0);
+            else torque = btVector3(0, -0.75, 0);
         }
         
         btVector3 correctedTorque = mRigidBody->getWorldTransform().getBasis() * torque;
         mRigidBody->applyTorque(correctedTorque);
-    }
+    //}
 
     //calculate velocity
     double decisionsPerSecond = _cyclesPerSecond / _cyclesPerDecision;
     double deceleration = (-(mCurrVel * mCurrVel) / (2*_frontRayDistance - 3)) / decisionsPerSecond;
+    deceleration = deceleration < 0 ? deceleration : 0;
 
     mCurrVel += deceleration;
-    cout << deceleration << endl;
     if(mCurrVel < 0)
         mCurrVel = 0;
-    else if(mCurrVel > mMaxLinearVel)
-        mCurrVel = mMaxLinearVel;
 
     btVector3 relativeVel = btVector3(mCurrVel, 0, 0);
 

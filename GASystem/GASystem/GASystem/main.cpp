@@ -33,7 +33,7 @@
 #include "carracesimulation.h"
 #include "warrobotsimulation.h"
 
-//#define TRAIN
+#define TRAIN
 
 using namespace std;
 
@@ -619,7 +619,7 @@ void runCarCrashSim(){
     params.mutationParameters["Deviation"] = 0.2;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "UNDX";
+    params.crossoverAlgorithm = "BLX";
     params.selectionAlgorithm = "QuadraticRankSelection";
     params.elitismCount = 5;
 
@@ -793,9 +793,9 @@ void testCrossoverOp(){
 }
 
 int main(){
-    runBridgeMouseSim();
+    //runBridgeMouseSim();
     //runBridgeCarSim();
-    //runCarCrashSim();
+    runCarCrashSim();
     //runCarRaceSim();
     //runWarRobotSim();
 

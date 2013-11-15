@@ -219,7 +219,9 @@ bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
         int expandsize = mLinePool.size() + mLinesInUse.size();
         while(mLinePool.size() < newlines.size()){
             for(uint k = 0; k < expandsize; ++k)
-                mLinePool.push_back(createLineObject(mLinePool.size()));
+                mLinePool.push_back(createLineObject(expandsize + k));
+
+            expandsize = mLinePool.size() + mLinesInUse.size();
         }
 
         //attach new lines

@@ -199,7 +199,7 @@ double WarRobotSimulation::realFitness(){
 double WarRobotSimulation::getRayCollisionDistance(string _agentName, const btVector3& _ray, const btCollisionObject*& _collidedObject, vector3& _hitpos){
     double dist = 200;
 
-    btCollisionWorld::ClosestRayResultCallback ray = calculateRay(_agentName, _ray, ENVIRONMENT);
+    btCollisionWorld::ClosestRayResultCallback ray = calculateRay(_agentName, _ray);
 
     vector3 from = getPositionInfo(_agentName);
     if(ray.hasHit()){

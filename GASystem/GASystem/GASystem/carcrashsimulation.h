@@ -33,6 +33,7 @@ public:
         CarCrashSimulation* sim = (CarCrashSimulation*)world->getWorldUserInfo();
         sim->tick();
     }
+    virtual vector<Line> getLines();
 
 private:
     void applyUpdateRules(string _agentName, uint groupNum);

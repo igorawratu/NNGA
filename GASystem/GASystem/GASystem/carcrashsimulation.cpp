@@ -73,7 +73,7 @@ double CarCrashSimulation::realFitness(){
     map<string, vector3> pos;
     map<string, long> intAcc;
     map<string, double> doubleAcc;
-    doubleAcc["Collisions"] = mRangefinderVals + mCollisions; 
+    doubleAcc["Collisions"] = mCollisions; 
     doubleAcc["FLFitnessWeight"] = 1;
     doubleAcc["ColFitnessWeight"] = 1;
     
@@ -167,15 +167,23 @@ bool CarCrashSimulation::initialise(){
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupTwoAgents[k]]->getRigidBody());
     }
-    
+
     mWorldEntities["environment"] = new StaticWorldAgent(0.5, 0.1);
-    if(!mWorldEntities["environment"]->initialise("corridor.mesh", vector3(20, 20, 20), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(-2, 2, 0), 0, mSeed))
+    if(!mWorldEntities["environment"]->initialise("corridor.mesh", vector3(21, 20, 25), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(-2, 2, 0), 0, mSeed))
         return false;
-    mWorldEnv->addRigidBody(mWorldEntities["environment"]->getRigidBody());
+    mWorld->addRigidBody(mWorldEntities["environment"]->getRigidBody());
 
     mInitialised = true;
 
     return true;
+}
+
+vector<Line> CarCrashSimulation::getLines(){
+    vector<Line> lines;
+    lines.push_back(mGroupOneFinish);
+    lines.push_back(mGroupTwoFinish);
+
+    return lines;
 }
 
 void CarCrashSimulation::tick(){
@@ -187,10 +195,21 @@ void CarCrashSimulation::tick(){
 }
 
 void CarCrashSimulation::applyUpdateRules(string _agentName, uint _groupNum){
+    map<uint, double> input;
     btTransform trans;
     mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
 
-    map<uint, double> input;
+    btBoxShape* agentBox = dynamic_cast<btBoxShape*>(mWorldEntities[_agentName]->getRigidBody()->getCollisionShape());
+    if(agentBox == 0){
+        cout << "Error: unable to get box to agent, will not apply update" << endl;
+        return;
+    }
+
+    double d1 = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, 0, agentBox->getHalfExtentsWithMargin().getZ()));
+    double d2 = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, 0, -agentBox->getHalfExtentsWithMargin().getZ()));
+
+    double frontDist = d1 > d2 ? d2 : d1;
+
     //rangefinders
     input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), AGENT) / 50;
     input[2] = getRayCollisionDistance(_agentName, btVector3(-100, 0, 0), AGENT) / 50;
@@ -200,7 +219,6 @@ void CarCrashSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     input[6] = getRayCollisionDistance(_agentName, btVector3(-100, 0, 100), AGENT) / 50;
     input[7] = getRayCollisionDistance(_agentName, btVector3(-100, 0, -100), AGENT) / 50;
     input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0, 100), AGENT) / 50;
-
     //agent position
     input[9] = trans.getOrigin().getX() / 50;
     input[10] = trans.getOrigin().getZ() / 50;
@@ -216,12 +234,14 @@ void CarCrashSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     input[15] = agentVel.x;
     input[16] = agentVel.z;
 
-    vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
-
-    mWorldEntities[_agentName]->update(output);
+    if(frontDist < 5)
+        mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld);
+    else{
+        vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
+        mWorldEntities[_agentName]->update(output);
+    }
 
     Line finishLine = _groupNum == 1 ? mGroupOneFinish : mGroupTwoFinish;
-
     bool checkCollisions = calcCrossVal(finishLine.p1, finishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0;
 
     if(checkCollisions){
@@ -240,7 +260,7 @@ void CarCrashSimulation::applyUpdateRules(string _agentName, uint _groupNum){
 		    const btCollisionObject* obA = contactManifold->getBody0();
 		    const btCollisionObject* obB = contactManifold->getBody1();
             
-            if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB))
+            if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB) && (mWorldEntities["environment"]->getRigidBody() != obA && mWorldEntities["environment"]->getRigidBody() != obB))
                 mCollisions++;
         }
     }

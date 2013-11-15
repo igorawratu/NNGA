@@ -15,12 +15,16 @@
 #include <btBulletDynamicsCommon.h>
 #include <boost/tuple/tuple.hpp>
 #include <BulletCollision/CollisionShapes/btCollisionShape.h>
+#include <BulletCollision/CollisionShapes/btBoxShape.h>
 
 typedef boost::tuples::tuple<btRigidBody*, string, vector3> ObjectInfo;
 
 using namespace std;
 
-enum RaycastLevel{AGENT, ENVIRONMENT};
+enum RaycastLevel{
+    ENVIRONMENT = BIT(0),
+    AGENT = BIT(1)
+};
 
 class Simulation
 {
@@ -52,7 +56,11 @@ public:
 protected:
     vector3 getPositionInfo(string _entityName);
     double getRayCollisionDistance(string _agentName, const btVector3& _ray, RaycastLevel _rclevel);
-    btCollisionWorld::ClosestRayResultCallback calculateRay(string _agentName, const btVector3& _ray, RaycastLevel _rclevel);
+    double getRayCollisionDistance(string _agentName, const btVector3& _ray, RaycastLevel _rclevel, vector3 _offset);
+    btCollisionWorld::ClosestRayResultCallback calculateRay(string _agentName, const btVector3& _ray);
+    btCollisionWorld::ClosestRayResultCallback calculateRay(string _agentName, const btVector3& _ray, vector3 _offset);
+    btCollisionWorld::AllHitsRayResultCallback calculateAllhitsRay(string _agentName, const btVector3& _ray);
+    btCollisionWorld::AllHitsRayResultCallback calculateAllhitsRay(string _agentName, const btVector3& _ray, vector3 _offset);
 
     
 protected:
@@ -63,11 +71,11 @@ protected:
     uint mCyclesPerSecond;
     map<string, Agent*> mWorldEntities;
 
-    btBroadphaseInterface *mBroadphase, *mBroadphaseEnv;
-    btDefaultCollisionConfiguration *mCollisionConfig, *mCollisionConfigEnv;
-    btCollisionDispatcher *mDispatcher, *mDispatcherEnv;
-    btSequentialImpulseConstraintSolver *mSolver, *mSolverEnv;
-    btDiscreteDynamicsWorld *mWorld, *mWorldEnv;
+    btBroadphaseInterface *mBroadphase;
+    btDefaultCollisionConfiguration *mCollisionConfig;
+    btCollisionDispatcher *mDispatcher;
+    btSequentialImpulseConstraintSolver *mSolver;
+    btDiscreteDynamicsWorld *mWorld;
     Solution* mSolution;
     ResourceManager* mResourceManager;
 

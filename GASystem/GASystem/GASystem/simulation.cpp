@@ -14,22 +14,14 @@ Simulation::Simulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPer
     mDispatcher = new btCollisionDispatcher(mCollisionConfig);
     mSolver = new btSequentialImpulseConstraintSolver();
 
-    mBroadphaseEnv = new btDbvtBroadphase();
-    mCollisionConfigEnv = new btDefaultCollisionConfiguration();
-    mDispatcherEnv = new btCollisionDispatcher(mCollisionConfig);
-    mSolverEnv = new btSequentialImpulseConstraintSolver();
-
     mWorld = new btDiscreteDynamicsWorld(mDispatcher, mBroadphase, mSolver, mCollisionConfig);
-    mWorldEnv = new btDiscreteDynamicsWorld(mDispatcherEnv, mBroadphaseEnv, mSolverEnv, mCollisionConfigEnv);
 }
 
 Simulation::Simulation(const Simulation& other){}
 
 Simulation::~Simulation(){
     for(map<string, Agent*>::const_iterator iter = mWorldEntities.begin(); iter != mWorldEntities.end(); iter++){
-        if(iter->first == "environment")
-            mWorldEnv->removeRigidBody(iter->second->getRigidBody());
-        else mWorld->removeRigidBody(iter->second->getRigidBody());
+        mWorld->removeRigidBody(iter->second->getRigidBody());
 
         delete iter->second;
     }
@@ -43,51 +35,25 @@ Simulation::~Simulation(){
         mWorld = 0;
     }
 
-    if(mWorldEnv){
-        delete mWorldEnv;
-        mWorldEnv = 0;
-    }
-    
     if(mSolver){
         delete mSolver;
         mSolver = 0;
     }
 
-    if(mSolverEnv){
-        delete mSolverEnv;
-        mSolverEnv = 0;
-    }
-    
     if(mDispatcher){
         delete mDispatcher;
         mDispatcher = 0;
     }
 
-    if(mDispatcherEnv){
-        delete mDispatcherEnv;
-        mDispatcherEnv = 0;
-    }
-    
     if(mCollisionConfig){
         delete mCollisionConfig;
         mCollisionConfig = 0;
     }
 
-    if(mCollisionConfigEnv){
-        delete mCollisionConfigEnv;
-        mCollisionConfigEnv = 0;
-    }
-    
     if(mBroadphase){
         delete mBroadphase;
         mBroadphase = 0;
     }
-
-    if(mBroadphaseEnv){
-        delete mBroadphaseEnv;
-        mBroadphaseEnv = 0;
-    }
-
 }
 
 uint Simulation::getCyclesPerSecond(){
@@ -130,17 +96,63 @@ vector3 Simulation::getPositionInfo(string _entityName){
 
 double Simulation::getRayCollisionDistance(string _agentName, const btVector3& _ray, RaycastLevel _rclevel){
     double dist = 100;
-
-    btCollisionWorld::ClosestRayResultCallback ray = calculateRay(_agentName, _ray, _rclevel);
-
     vector3 from = getPositionInfo(_agentName);
-    if(ray.hasHit())
-        dist = from.calcDistance(vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
+
+    if(_rclevel == AGENT){
+        btCollisionWorld::ClosestRayResultCallback ray = calculateRay(_agentName, _ray);
+
+        if(ray.hasHit())
+            dist = from.calcDistance(vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
+    }
+    else{
+        btCollisionWorld::AllHitsRayResultCallback ray = calculateAllhitsRay(_agentName, _ray);
+        vector<double> hitDistances;
+        for(uint k = 0; k < ray.m_collisionObjects.size(); ++k){
+            if(ray.m_collisionObjects[k] == mWorldEntities["environment"]->getRigidBody()){
+                btVector3 hitpoint = ray.m_hitPointWorld[k];
+                double newHitDistance = from.calcDistance(vector3(hitpoint.getX(), hitpoint.getY(), hitpoint.getZ()));
+                hitDistances.push_back(newHitDistance);
+            }
+        }
+
+        for(uint k = 0; k < hitDistances.size(); ++k){
+            dist = dist > hitDistances[k] ? hitDistances[k] : dist;
+        }
+    }
 
     return dist;
 }
 
-btCollisionWorld::ClosestRayResultCallback Simulation::calculateRay(string _agentName, const btVector3& _ray, RaycastLevel _rclevel){
+double Simulation::getRayCollisionDistance(string _agentName, const btVector3& _ray, RaycastLevel _rclevel, vector3 _offset){
+    double dist = 100;
+    vector3 from = getPositionInfo(_agentName);
+
+    if(_rclevel == AGENT){
+        btCollisionWorld::ClosestRayResultCallback ray = calculateRay(_agentName, _ray, _offset);
+
+        if(ray.hasHit())
+            dist = from.calcDistance(vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
+    }
+    else{
+        btCollisionWorld::AllHitsRayResultCallback ray = calculateAllhitsRay(_agentName, _ray, _offset);
+        vector<double> hitDistances;
+        for(uint k = 0; k < ray.m_collisionObjects.size(); ++k){
+            if(ray.m_collisionObjects[k] == mWorldEntities["environment"]->getRigidBody()){
+                btVector3 hitpoint = ray.m_hitPointWorld[k];
+                double newHitDistance = from.calcDistance(vector3(hitpoint.getX(), hitpoint.getY(), hitpoint.getZ()));
+                hitDistances.push_back(newHitDistance);
+            }
+        }
+
+        for(uint k = 0; k < hitDistances.size(); ++k){
+            dist = dist > hitDistances[k] ? hitDistances[k] : dist;
+        }
+    }
+
+    return dist;
+}
+
+btCollisionWorld::ClosestRayResultCallback Simulation::calculateRay(string _agentName, const btVector3& _ray){
     btVector3 correctedRot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * _ray;
 
     btTransform trans;
@@ -152,9 +164,62 @@ btCollisionWorld::ClosestRayResultCallback Simulation::calculateRay(string _agen
 
     btCollisionWorld::ClosestRayResultCallback ray(agentPosition, correctedRay);
 
-    if(_rclevel == ENVIRONMENT)
-        mWorldEnv->rayTest(agentPosition, correctedRay, ray);
-    else mWorld->rayTest(agentPosition, correctedRay, ray);
+    mWorld->rayTest(agentPosition, correctedRay, ray);
+
+    return ray;
+}
+
+btCollisionWorld::AllHitsRayResultCallback Simulation::calculateAllhitsRay(string _agentName, const btVector3& _ray){
+    btVector3 correctedRot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * _ray;
+
+    btTransform trans;
+    mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
+
+    btVector3 agentPosition = trans.getOrigin();
+
+    btVector3 correctedRay(correctedRot.getX() + agentPosition.getX(), correctedRot.getY() + agentPosition.getY(), correctedRot.getZ() + agentPosition.getZ());
+
+    btCollisionWorld::AllHitsRayResultCallback ray(agentPosition, correctedRay);
+
+    mWorld->rayTest(agentPosition, correctedRay, ray);
+
+    return ray;
+}
+
+btCollisionWorld::ClosestRayResultCallback Simulation::calculateRay(string _agentName, const btVector3& _ray, vector3 _offset){
+    btVector3 correctedRot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * _ray;
+
+    btTransform trans;
+    mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
+
+    btVector3 agentCenter = trans.getOrigin();
+    btVector3 correctedOffset = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * btVector3(_offset.x, _offset.y, _offset.z);
+    btVector3 agentPosition = agentCenter + correctedOffset;
+
+    btVector3 correctedRay(correctedRot.getX() + agentPosition.getX(), correctedRot.getY() + agentPosition.getY(), correctedRot.getZ() + agentPosition.getZ());
+
+    btCollisionWorld::ClosestRayResultCallback ray(agentPosition, correctedRay);
+
+    mWorld->rayTest(agentPosition, correctedRay, ray);
+
+    return ray;
+}
+
+btCollisionWorld::AllHitsRayResultCallback Simulation::calculateAllhitsRay(string _agentName, const btVector3& _ray, vector3 _offset){
+    btVector3 correctedRot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * _ray;
+
+    btTransform trans;
+    mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
+
+    btVector3 agentCenter = trans.getOrigin();
+    btVector3 correctedOffset = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * btVector3(_offset.x, _offset.y, _offset.z);
+    btVector3 agentPosition = agentCenter + correctedOffset;
+
+    btVector3 correctedRay(correctedRot.getX() + agentPosition.getX(), correctedRot.getY() + agentPosition.getY(), correctedRot.getZ() + agentPosition.getZ());
+
+    btCollisionWorld::AllHitsRayResultCallback ray(agentPosition, correctedRay);
+
+    mWorld->rayTest(agentPosition, correctedRay, ray);
 
     return ray;
 }

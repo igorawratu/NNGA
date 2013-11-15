@@ -50,6 +50,7 @@ private:
     int mSeed;
     double mRangefinderRadius;
     double mRangefinderVals;
+    vector<Line> mLines;
 };
 
 #endif
