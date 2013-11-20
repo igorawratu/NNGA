@@ -7,16 +7,82 @@ StarFighterAgent::StarFighterAgent(double _maxLinearVel, double _maxAngularVel){
 }
 
 void StarFighterAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world){
-    cout << "Error: Starfighter agent CA not implemented yet" << endl;
+    double left = getRayCollisionDistance(btVector3(100, 0, -100), _world);
+    double right = getRayCollisionDistance(btVector3(100, 0, 100), _world);
+    double bot = getRayCollisionDistance(btVector3(100, -100, 0), _world);
+    double top = getRayCollisionDistance(btVector3(100, 100, 0), _world);
+
+    double horizontalTorque, verticleTorque;
+
+    //calculate rotation
+    if(left < _frontRayDistance && right < _frontRayDistance)
+        mAvoidanceMode = true;
+    
+    if(mAvoidanceMode){
+        btVector3 torque = btVector3(0, -0.75, 0);
+        btVector3 correctedTorque = mRigidBody->getWorldTransform().getBasis() * torque;
+
+        mRigidBody->applyTorque(correctedTorque);
+    }
+    else{
+        if(right > left)
+            horizontalTorque = -0.75;
+        else if(left > right)
+            horizontalTorque = 0.75;
+        else if(left == right){
+            int choose = generateRandInt();
+
+            if(choose % 2 == 0)
+                horizontalTorque = 0.75;
+            else horizontalTorque = -0.75;
+        }
+
+        if(bot > top)
+            verticleTorque = -0.75;
+        else if(top > bot)
+            verticleTorque = 0.75;
+        else if(top == bot){
+            int choose = generateRandInt();
+
+            if(choose % 2 == 0)
+                verticleTorque = 0.75;
+            else verticleTorque = -0.75;
+        }
+
+        btVector3 torque(0, horizontalTorque, verticleTorque);
+        
+        btVector3 correctedTorque = mRigidBody->getWorldTransform().getBasis() * torque;
+        mRigidBody->applyTorque(correctedTorque);
+    }
+
+    //calculate velocity
+    double decisionsPerSecond = _cyclesPerSecond / _cyclesPerDecision;
+    double deceleration = (-(mCurrVel * mCurrVel) / (2*_frontRayDistance - 3)) / decisionsPerSecond;
+    deceleration = deceleration < 0 ? deceleration : 0;
+
+    mCurrVel += deceleration;
+    if(mCurrVel < 0)
+        mCurrVel = 0;
+
+    btVector3 relativeVel = btVector3(mCurrVel, 0, 0);
+
+    btMatrix3x3& rot = mRigidBody->getWorldTransform().getBasis();
+    btVector3 correctedVel = rot * relativeVel;
+    correctedVel.setY(0);
+
+    mRigidBody->setLinearVelocity(correctedVel);
 }
 
 
 void StarFighterAgent::update(const vector<double>& _nnOutput){
     assert(_nnOutput.size() >= 4);
 
-    mRigidBody->applyTorque(btVector3((_nnOutput[0] - 0.5)/2, (_nnOutput[1] - 0.5)/2, (_nnOutput[2] - 0.5)/2));
+    
+    btVector3 torque((_nnOutput[0] - 0.5)/2, (_nnOutput[1] - 0.5)/2, (_nnOutput[2] - 0.5)/2);
+    btVector3 correctedTorque = mRigidBody->getWorldTransform().getBasis() * torque;
+    mRigidBody->applyTorque(correctedTorque);
 
-    double currAcc = _nnOutput[3] - 0.5;
+    double currAcc = (_nnOutput[3] - 0.5) * 5;
 
     mCurrVel += currAcc * 10;
     if(mCurrVel > mMaxLinearVel)

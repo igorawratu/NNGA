@@ -132,14 +132,14 @@ bool WarRobotSimulation::initialise(){
     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genztwo(rngtwoz, distztwo);
 
     for(uint k = 0; k < mGroupOneAgents.size(); ++k){
-        mWorldEntities[mGroupOneAgents[k]] = new WarRobotAgent(5, vector3(10, 0, 10), vector3(-10, 0, -10), 2, 30);
+        mWorldEntities[mGroupOneAgents[k]] = new WarRobotAgent(5, vector3(10, 0, 10), vector3(-10, 0, -10), 2, 15);
         if(!mWorldEntities[mGroupOneAgents[k]]->initialise("warrobotr.mesh", vector3(1, 1, 1), rotG1, mResourceManager, vector3(genxone(), 0, genzone()), 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupOneAgents[k]]->getRigidBody());
     }
     
     for(uint k = 0; k < mGroupTwoAgents.size(); ++k){
-        mWorldEntities[mGroupTwoAgents[k]] = new WarRobotAgent(5, vector3(10, 0, 10), vector3(-10, 0, -10), 1, 30);
+        mWorldEntities[mGroupTwoAgents[k]] = new WarRobotAgent(5, vector3(10, 0, 10), vector3(-10, 0, -10), 1, 15);
         if(!mWorldEntities[mGroupTwoAgents[k]]->initialise("warrobotb.mesh", vector3(1, 1, 1), rotG2, mResourceManager, vector3(genxtwo(), 0, genztwo()), 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupTwoAgents[k]]->getRigidBody());
@@ -243,6 +243,19 @@ void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     vector3 hitposfront, hitposother;
 
     map<uint, double> input;
+
+    btBoxShape* agentBox = dynamic_cast<btBoxShape*>(mWorldEntities[_agentName]->getRigidBody()->getCollisionShape());
+    if(agentBox == 0){
+        cout << "Error: unable to get box to agent, will not apply update" << endl;
+        return;
+    }
+
+    double d1 = Simulation::getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, 0, agentBox->getHalfExtentsWithMargin().getZ()));
+    double d2 = Simulation::getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, 0, -agentBox->getHalfExtentsWithMargin().getZ()));
+
+    double frontDist = d1 > d2 ? d2 : d1;
+
+
     //rangefinders
     input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), front, hitposfront) / 50;
     checkRayObject(_groupNum, front, frontTeamInd, colliderName);
@@ -285,12 +298,13 @@ void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     input[11] = agentVel.x;
     input[12] = agentVel.z;
 
-    vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
-    /*vector<double> output;
-    output.push_back(1);
-    output.push_back(1);*/
-
-    mWorldEntities[_agentName]->update(output);
+    if(frontDist < 10)
+        mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld);
+    else{
+        mWorldEntities[_agentName]->avoided();
+        vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
+        mWorldEntities[_agentName]->update(output);
+    }
 
     //shooting logic here
     if(frontTeamInd == 1){
@@ -299,7 +313,7 @@ void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum){
         ray.p1 = getPositionInfo(_agentName);
         ray.p2 = hitposfront;
 
-        if(ray.p1.calcDistance(ray.p2) < 100){
+        if(ray.p1.calcDistance(ray.p2) < 100 && dynamic_cast<WarRobotAgent*>(mWorldEntities[_agentName])->shootRay()){
             mRaysShot.push_back(ray);
             mObjectsToRemove.push_back(colliderName);
         }
@@ -311,22 +325,24 @@ void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum){
         mVelocityAcc += mWorldEntities[_agentName]->getVelocity().calcDistance(vector3(0, 0, 0));
 
     //rangefinder vals
-    for(uint k = 1; k <= 8; k++)
-        if(input[k] * 50 < mRangefinderRadius)
-            mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;
-    
-    //gets collision data
-    int numManifolds = mWorld->getDispatcher()->getNumManifolds();
-    for (int i=0;i<numManifolds;i++)
-    {
-	    btPersistentManifold* contactManifold =  mWorld->getDispatcher()->getManifoldByIndexInternal(i);
-        if(contactManifold->getNumContacts() < 1)
-            continue;
-
-	    const btCollisionObject* obA = contactManifold->getBody0();
-	    const btCollisionObject* obB = contactManifold->getBody1();
+    if(mCycleCounter > 10){
+        for(uint k = 1; k <= 8; k++)
+            if(input[k] * 50 < mRangefinderRadius)
+                mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;
         
-        if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB))
-            mCollisions++;
+        //gets collision data
+        int numManifolds = mWorld->getDispatcher()->getNumManifolds();
+        for (int i=0;i<numManifolds;i++)
+        {
+	        btPersistentManifold* contactManifold =  mWorld->getDispatcher()->getManifoldByIndexInternal(i);
+            if(contactManifold->getNumContacts() < 1)
+                continue;
+
+	        const btCollisionObject* obA = contactManifold->getBody0();
+	        const btCollisionObject* obB = contactManifold->getBody1();
+            
+            if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB))
+                mCollisions++;
+        }
     }
 }

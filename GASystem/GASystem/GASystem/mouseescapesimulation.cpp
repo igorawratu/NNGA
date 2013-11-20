@@ -71,7 +71,7 @@ double MouseEscapeSimulation::fitness(){
     pos["LineP1"] = mFinishLine.p1;
     pos["LineP2"] = mFinishLine.p2;
 
-    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
     dblAcc["LowerBound"] = 19;
     dblAcc["UpperBound"] = 21;
@@ -132,14 +132,14 @@ bool MouseEscapeSimulation::initialise(){
     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genztwo(rngtwoz, distztwo);
 
     for(uint k = 0; k < mMouseAgents.size(); ++k){
-        mWorldEntities[mMouseAgents[k]] = new MouseAgent(10, 1);
+        mWorldEntities[mMouseAgents[k]] = new MouseAgent(15, 1);
         if(!mWorldEntities[mMouseAgents[k]]->initialise("mouse.mesh", vector3(1, 1, 1), rotG1, mResourceManager, vector3(genxone(), 0, genzone()), 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mMouseAgents[k]]->getRigidBody());
     }
     
     for(uint k = 0; k < mRobotAgents.size(); ++k){
-        mWorldEntities[mRobotAgents[k]] = new WarRobotAgent(10, vector3(10, 0, 10), vector3(-10, 0, -10), 1, 30);
+        mWorldEntities[mRobotAgents[k]] = new WarRobotAgent(10, vector3(10, 0, 10), vector3(-10, 0, -10), 1, 15);
         if(!mWorldEntities[mRobotAgents[k]]->initialise("warrobot.mesh", vector3(1, 1, 1), rotG2, mResourceManager, vector3(genxtwo(), 0, genztwo()), 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mRobotAgents[k]]->getRigidBody());
@@ -179,7 +179,7 @@ double MouseEscapeSimulation::realFitness(){
     pos["LineP1"] = mFinishLine.p1;
     pos["LineP2"] = mFinishLine.p2;
 
-    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
     dblAcc["LowerBound"] = 19;
     dblAcc["UpperBound"] = 21;
@@ -250,6 +250,18 @@ void MouseEscapeSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     vector3 hitposfront, hitposother;
 
     map<uint, double> input;
+
+    btBoxShape* agentBox = dynamic_cast<btBoxShape*>(mWorldEntities[_agentName]->getRigidBody()->getCollisionShape());
+    if(agentBox == 0){
+        cout << "Error: unable to get box to agent, will not apply update" << endl;
+        return;
+    }
+
+    double d1 = Simulation::getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, 0, agentBox->getHalfExtentsWithMargin().getZ()));
+    double d2 = Simulation::getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, 0, -agentBox->getHalfExtentsWithMargin().getZ()));
+
+    double frontDist = d1 > d2 ? d2 : d1;
+
     //rangefinders
     input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), front, hitposfront) / 50;
     if(_groupNum == 1){
@@ -308,6 +320,7 @@ void MouseEscapeSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     input[11] = agentVel.x;
     input[12] = agentVel.z;
 
+    //NB: Find closest point
     if(_groupNum == 0){
         input[13] = mFinishLine.p1.x;
         input[14] = mFinishLine.p1.z;
@@ -315,9 +328,16 @@ void MouseEscapeSimulation::applyUpdateRules(string _agentName, uint _groupNum){
         input[16] = mFinishLine.p2.z;
     }
 
-    vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
 
-    mWorldEntities[_agentName]->update(output);
+    if(frontDist < 10)
+        mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld);
+    else{
+        mWorldEntities[_agentName]->avoided();
+        vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
+        double frontVal = Simulation::getRayCollisionDistance(_agentName, btVector3(100, 0, 0), AGENT) > 3 ? 1 : 0;
+        output.push_back(frontVal);
+        mWorldEntities[_agentName]->update(output);
+    }
 
     //shooting logic here
     if(frontTeamInd == 1 && _groupNum == 1 && !crossed(colliderName)){
@@ -326,7 +346,7 @@ void MouseEscapeSimulation::applyUpdateRules(string _agentName, uint _groupNum){
         ray.p1 = getPositionInfo(_agentName);
         ray.p2 = hitposfront;
 
-        if(ray.p1.calcDistance(ray.p2) < 40){
+        if(ray.p1.calcDistance(ray.p2) < 40 && dynamic_cast<WarRobotAgent*>(mWorldEntities[_agentName])->shootRay()){
             mRaysShot.push_back(ray);
             mObjectsToRemove.push_back(colliderName);
         }
@@ -343,7 +363,7 @@ void MouseEscapeSimulation::applyUpdateRules(string _agentName, uint _groupNum){
         mVelocityAcc += mWorldEntities[_agentName]->getVelocity().calcDistance(vector3(0, 0, 0));
 
     //rangefinder vals
-    if(!crossed(_agentName)){
+    if(!crossed(_agentName) && mCycleCounter > 10){
         for(uint k = 1; k <= 8; k++)
             if(input[k] * 50 < mRangefinderRadius)
                 mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;

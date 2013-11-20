@@ -110,6 +110,21 @@ void SFSimulation::applyUpdateRules(string _agentName){
 
     map<uint, double> input;
 
+    btBoxShape* agentBox = dynamic_cast<btBoxShape*>(mWorldEntities[_agentName]->getRigidBody()->getCollisionShape());
+    if(agentBox == 0){
+        cout << "Error: unable to get box to agent, will not apply update" << endl;
+        return;
+    }
+
+    double d1 = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, 0, agentBox->getHalfExtentsWithMargin().getZ()));
+    double d2 = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, 0, -agentBox->getHalfExtentsWithMargin().getZ()));
+    double d3 = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, agentBox->getHalfExtentsWithMargin().getZ(), 0));
+    double d4 = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, -agentBox->getHalfExtentsWithMargin().getZ(), 0));
+
+    double semifinDist1 = d1 > d2 ? d2 : d1;
+    double semifinDist2 = d3 > d4 ? d4 : d3;
+    double frontDist = semifinDist1 > semifinDist2 ? semifinDist2 : semifinDist1;
+
     int inputIndex = 1;
 
     for(int k = -100; k <= 100; k += 50){
@@ -134,14 +149,18 @@ void SFSimulation::applyUpdateRules(string _agentName){
     input[8 + inputIndex] = agentVel.y;
     input[9 + inputIndex] = agentVel.z;
 
-    vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
-
-    mWorldEntities[_agentName]->update(output);
+    if(frontDist < 10)
+        mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld);
+    else{
+        mWorldEntities[_agentName]->avoided();
+        vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
+        mWorldEntities[_agentName]->update(output);
+    }
 
     if(!reached(_agentName) && getPositionInfo(_agentName).calcDistance(mGoalpoint) < mGoalRadius)
         mReached.push_back(_agentName);
 
-    if(!reached(_agentName)){
+    if(!reached(_agentName) && mCycleCounter > 10){
         for(uint k = 1; k < inputIndex; k++)
             if(input[k] * 50 < mRangefinderRadius)
                 mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;

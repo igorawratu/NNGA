@@ -237,6 +237,7 @@ void CarCrashSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     if(frontDist < 5)
         mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld);
     else{
+        mWorldEntities[_agentName]->avoided();
         vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
         mWorldEntities[_agentName]->update(output);
     }
@@ -244,7 +245,7 @@ void CarCrashSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     Line finishLine = _groupNum == 1 ? mGroupOneFinish : mGroupTwoFinish;
     bool checkCollisions = calcCrossVal(finishLine.p1, finishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0;
 
-    if(checkCollisions){
+    if(checkCollisions && mCycleCounter > 10){
         for(uint k = 1; k <= 8; k++)
             if(input[k] * 50 < mRangefinderRadius)
                 mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;
@@ -260,7 +261,7 @@ void CarCrashSimulation::applyUpdateRules(string _agentName, uint _groupNum){
 		    const btCollisionObject* obA = contactManifold->getBody0();
 		    const btCollisionObject* obB = contactManifold->getBody1();
             
-            if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB) && (mWorldEntities["environment"]->getRigidBody() != obA && mWorldEntities["environment"]->getRigidBody() != obB))
+            if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB))
                 mCollisions++;
         }
     }

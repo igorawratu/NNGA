@@ -15,10 +15,16 @@ void WarRobotAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSec
     double right = getRayCollisionDistance(btVector3(100, 0, 100), _world);
 
     //calculate rotation
-    /*if(left < _frontRayDistance && right < _frontRayDistance){
-        //account for special case
+    if(left < _frontRayDistance && right < _frontRayDistance)
+        mAvoidanceMode = true;
+    
+    if(mAvoidanceMode){
+        btVector3 torque = btVector3(0, -0.75, 0);
+        btVector3 correctedTorque = mRigidBody->getWorldTransform().getBasis() * torque;
+
+        mRigidBody->applyTorque(correctedTorque);
     }
-    else{*/
+    else{
         btVector3 torque;
 
         if(right > left)
@@ -35,7 +41,7 @@ void WarRobotAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSec
         
         btVector3 correctedTorque = mRigidBody->getWorldTransform().getBasis() * torque;
         mRigidBody->applyTorque(correctedTorque);
-    //}
+    }
 
     //calculate velocity
     double decisionsPerSecond = _cyclesPerSecond / _cyclesPerDecision;
@@ -56,7 +62,7 @@ void WarRobotAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSec
 }
 
 void WarRobotAgent::update(const vector<double>& _nnOutput){
-    assert(_nnOutput.size() >= 3);
+    assert(_nnOutput.size() >= 2);
 
     /*double currAccX = _nnOutput[1] - 0.5;
     double currAccZ = _nnOutput[2] - 0.5;
@@ -79,9 +85,9 @@ void WarRobotAgent::update(const vector<double>& _nnOutput){
 
     mRigidBody->setLinearVelocity(correctedVel);
 
-    /*if(mCurrVel <= 1)
+    //if(mCurrVel <= 1)
         mRigidBody->applyTorque(btVector3(0, (_nnOutput[0] - 0.5)/2, 0));
-    else{
+    /*else{
         mRigidBody->setAngularVelocity(btVector3(0, 0, 0));
     }*/
 }

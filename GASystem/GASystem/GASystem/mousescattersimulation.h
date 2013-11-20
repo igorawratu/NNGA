@@ -30,6 +30,7 @@ public:
     virtual Simulation* getNewCopy();
     virtual bool initialise();
     void tick();
+    virtual vector<Line> getLines();
     static void tickCallBack(btDynamicsWorld* world, btScalar timeStep){
         MouseScatterSimulation* sim = (MouseScatterSimulation*)world->getWorldUserInfo();
         sim->tick();
@@ -41,6 +42,7 @@ private:
 private:
     vector3 mCenterPoint;
     vector<string> mAgents; 
+    vector<Line> mLines;
     long mCollisions;
     int mSeed;
     double mRangefinderRadius;

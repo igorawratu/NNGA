@@ -133,6 +133,17 @@ void FormationSimulation::applyUpdateRules(string _agentName){
 
     map<uint, double> input;
 
+    btBoxShape* agentBox = dynamic_cast<btBoxShape*>(mWorldEntities[_agentName]->getRigidBody()->getCollisionShape());
+    if(agentBox == 0){
+        cout << "Error: unable to get box to agent, will not apply update" << endl;
+        return;
+    }
+
+    double d1 = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, 0, agentBox->getHalfExtentsWithMargin().getZ()));
+    double d2 = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, 0, -agentBox->getHalfExtentsWithMargin().getZ()));
+
+    double frontDist = d1 > d2 ? d2 : d1;
+
     input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 0), AGENT) / 50;
     input[2] = getRayCollisionDistance(_agentName, btVector3(-100, 0.1, 0), AGENT) / 50;
     input[3] = getRayCollisionDistance(_agentName, btVector3(0, 0.1, 100), AGENT) / 50;
@@ -141,7 +152,6 @@ void FormationSimulation::applyUpdateRules(string _agentName){
     input[6] = getRayCollisionDistance(_agentName, btVector3(-100, 0.1, 100), AGENT) / 50;
     input[7] = getRayCollisionDistance(_agentName, btVector3(-100, 0.1, -100), AGENT) / 50;
     input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 100), AGENT) / 50;
-    frontVal = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 0), AGENT);
 
     //agent position
     input[9] = trans.getOrigin().getX() / 50;
@@ -155,10 +165,13 @@ void FormationSimulation::applyUpdateRules(string _agentName){
     input[13] = agentVel.x;
     input[14] = agentVel.z;
 
-    vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
-    output.push_back(frontVal);
-
-    mWorldEntities[_agentName]->update(output);
+    if(frontDist < 10)
+        mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld);
+    else{
+        mWorldEntities[_agentName]->avoided();
+        vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
+        mWorldEntities[_agentName]->update(output);
+    }
 
     for(uint k = 1; k <= 8; k++)
         if(input[k] * 50 < mRangefinderRadius)

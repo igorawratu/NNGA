@@ -48,16 +48,17 @@ double MouseScatterSimulation::fitness(){
     dblAcc["ColFitnessWeight"] = 1;
     intAcc["Positive"] = 0;
 
-    dblAcc["EVFitnessWeight"] = 1;
-    dblAcc["LowerBound"] = mAgents.size() * mNumCycles * 5;
-    dblAcc["UpperBound"] = mAgents.size() * mNumCycles * 10;
+    dblAcc["EVWeight"] = 1;
+    dblAcc["LowerBound"] = mAgents.size() * (mNumCycles/mCyclesPerSecond) * 8;
+    dblAcc["UpperBound"] = mAgents.size() * (mNumCycles/mCyclesPerSecond) * 10;
+
     double distance = 0;
     for(uint k = 0; k < mAgents.size(); ++k)
         distance += getPositionInfo(mAgents[k]).calcDistance(mCenterPoint);
     dblAcc["Value"] = distance;
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : mAgents.size() * mNumCycles * 5;
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : mAgents.size() * (mNumCycles/mCyclesPerSecond) * 8;
     //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
@@ -85,19 +86,24 @@ double MouseScatterSimulation::realFitness(){
     dblAcc["ColFitnessWeight"] = 1;
     intAcc["Positive"] = 0;
 
-    dblAcc["EVFitnessWeight"] = 1;
-    dblAcc["LowerBound"] = mAgents.size() * mNumCycles * 5;
-    dblAcc["UpperBound"] = mAgents.size() * mNumCycles * 10;
+    dblAcc["EVWeight"] = 1;
+    dblAcc["LowerBound"] = mAgents.size() * (mNumCycles/mCyclesPerSecond) * 8;
+    dblAcc["UpperBound"] = mAgents.size() * (mNumCycles/mCyclesPerSecond) * 10;
+
     double distance = 0;
     for(uint k = 0; k < mAgents.size(); ++k)
         distance += getPositionInfo(mAgents[k]).calcDistance(mCenterPoint);
     dblAcc["Value"] = distance;
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : mAgents.size() * mNumCycles * 5;
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : mAgents.size() * (mNumCycles/mCyclesPerSecond) * 8;
     //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
+}
+
+vector<Line> MouseScatterSimulation::getLines(){
+    return mLines;
 }
 
 bool MouseScatterSimulation::initialise(){
@@ -116,35 +122,56 @@ bool MouseScatterSimulation::initialise(){
     boost::mt19937 rngz(mSeed + mSeed / 2);
 
     boost::uniform_real<double> distx(minDim.x, maxDim.x);
-    boost::uniform_real<double> disty(minDim.y, maxDim.y);
     boost::uniform_real<double> distz(minDim.z, maxDim.z);
 
     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genx(rng, distx);
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> geny(rng, disty);
     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genz(rngz, distz);
 
 
     for(uint k = 0; k < mAgents.size(); k++){
         //set rotation to have an orientation facing away from centerpoint
+        vector3 currAgentPos(genx(), 0, genz());
+
+        btVector3 agentOrientation(1, 0, 0);
+        btVector3 rotVec(currAgentPos.x - mCenterPoint.x, currAgentPos.y - mCenterPoint.y, currAgentPos.z - mCenterPoint.z);
+
         btQuaternion rot(0, 0, 0, 1);
+        btVector3 cross = agentOrientation.cross(rotVec);
 
-        vector3 currAgentPos;
-        currAgentPos.x = genx();
-        currAgentPos.y = 0;
-        currAgentPos.z = genz();
+        if(cross.length() > 0){
+            rot.setX(cross.getX());
+            rot.setY(cross.getY());
+            rot.setZ(cross.getZ());
+            rot.setW(sqrt(agentOrientation.length() * agentOrientation.length() + rotVec.length() * rotVec.length()) + agentOrientation.dot(rotVec));
+        }
 
-        vector3 directionVec = vector3(currAgentPos.x - mCenterPoint.x, currAgentPos.y - mCenterPoint.y, currAgentPos.z - mCenterPoint.z);
-        vector3 originalVec = vector3(1, 0, 0);
+        /*btVector3 directionVec = btVector3(currAgentPos.x - mCenterPoint.x, 0, currAgentPos.z - mCenterPoint.z);
+        btVector3 originalVec = btVector3(1, 0, 0);
+        btVector3 cross = directionVec.cross(originalVec);
 
-        double dot = directionVec.x * originalVec.x + directionVec.y * originalVec.y + directionVec.z * originalVec.z;
-        double mag = directionVec.calcDistance(vector3(0, 0, 0)) * originalVec.calcDistance(vector3(0, 0, 0));
+        Line l1, l2, l3;
+        l1.p1 = l2.p1 = l3.p1 = vector3(0, 0, 0);
+        l1.p2 = vector3(cross.getX(), cross.getY(), cross.getZ());
+        l2.p2 = vector3(originalVec.getX(), originalVec.getY(), originalVec.getZ());
+        l3.p2 = vector3(directionVec.getX(), directionVec.getY(), directionVec.getZ());
 
-        double c = dot/mag;
+        mLines.push_back(l1);
+        mLines.push_back(l2);
+        mLines.push_back(l3);
 
-        rot.setEuler(acos(c), 0, 0);
+        if(cross.length() > 0){
+            double dot = directionVec.dot(originalVec);
+            double mag = directionVec.length() * originalVec.length();
+
+            double c = dot/mag;
+            double crossSign = cross < 0 ? -1 : 1;
+
+            //rot.setEuler(acos(c), 0, 0);
+            rot.setRotation(btVector3(0, 1, 0), acos(c) * crossSign);
+        }*/
 
         mWorldEntities[mAgents[k]] = new MouseAgent(10, 1);
-        if(!mWorldEntities[mAgents[k]]->initialise("mouse.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(genx(), 0, genz()), 0.01, mSeed))
+        if(!mWorldEntities[mAgents[k]]->initialise("mouse.mesh", vector3(1, 1, 1), -rot, mResourceManager, vector3(currAgentPos.x, currAgentPos.y, currAgentPos.z), 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());
     }
@@ -153,6 +180,10 @@ bool MouseScatterSimulation::initialise(){
     if(!mWorldEntities["environment"]->initialise("stadium.mesh", vector3(50, 50, 50), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 0, 0), 0, mSeed))
         return false;
     mWorld->addRigidBody(mWorldEntities["environment"]->getRigidBody());
+
+    mWorldEntities["sphere"] = new StaticWorldAgent(0.5, 0.1);
+    if(!mWorldEntities["sphere"]->initialise("sphere.mesh", vector3(1, 1, 1), btQuaternion(0, 0, 0, 1), mResourceManager, mCenterPoint, 0, mSeed))
+        return false;
 
     mInitialised = true;
     
@@ -165,6 +196,19 @@ void MouseScatterSimulation::applyUpdateRules(string _agentName){
     double frontVal = -1;
 
     map<uint, double> input;
+
+    btBoxShape* agentBox = dynamic_cast<btBoxShape*>(mWorldEntities[_agentName]->getRigidBody()->getCollisionShape());
+    if(agentBox == 0){
+        cout << "Error: unable to get box to agent, will not apply update" << endl;
+        return;
+    }
+
+    double d1 = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, 0, agentBox->getHalfExtentsWithMargin().getZ()));
+    double d2 = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, 0, -agentBox->getHalfExtentsWithMargin().getZ()));
+
+    double frontDist = d1 > d2 ? d2 : d1;
+
+
     //rangefinders
     input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 105), AGENT) / 50;
     input[2] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 75), AGENT) / 50;
@@ -188,27 +232,36 @@ void MouseScatterSimulation::applyUpdateRules(string _agentName){
     input[13] = agentVel.x / 10;
     input[14] = agentVel.z / 10;
 
-    vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
-    output.push_back(frontVal);
+    //possibly add nearest exit?
 
-    mWorldEntities[_agentName]->update(output);
+    if(frontDist < 10)
+        mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld);
+    else{
+        mWorldEntities[_agentName]->avoided();
+        vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
+        output.push_back(frontVal);
 
-    for(uint k = 1; k <= 8; k++)
-        if(input[k] * 50 < mRangefinderRadius)
-            mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;
-    
-    //gets collision data
-    int numManifolds = mWorld->getDispatcher()->getNumManifolds();
-    for (int i=0;i<numManifolds;i++)
-    {
-	    btPersistentManifold* contactManifold =  mWorld->getDispatcher()->getManifoldByIndexInternal(i);
-        if(contactManifold->getNumContacts() < 1)
-            continue;
+        mWorldEntities[_agentName]->update(output);
+    }
 
-	    const btCollisionObject* obA = contactManifold->getBody0();
-	    const btCollisionObject* obB = contactManifold->getBody1();
+    if(mCycleCounter > 10){
+        for(uint k = 1; k <= 8; k++)
+            if(input[k] * 50 < mRangefinderRadius)
+                mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;
         
-        if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB))
-            mCollisions++;
+        //gets collision data
+        int numManifolds = mWorld->getDispatcher()->getNumManifolds();
+        for (int i=0;i<numManifolds;i++)
+        {
+	        btPersistentManifold* contactManifold =  mWorld->getDispatcher()->getManifoldByIndexInternal(i);
+            if(contactManifold->getNumContacts() < 1)
+                continue;
+
+	        const btCollisionObject* obA = contactManifold->getBody0();
+	        const btCollisionObject* obB = contactManifold->getBody1();
+            
+            if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB))
+                mCollisions++;
+        }
     }
 }

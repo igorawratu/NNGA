@@ -38,6 +38,10 @@ public:
 
     virtual void tick()=0;
 
+    void setVelocity(vector3 _velocity);
+
+    void avoided();
+
 protected:
     virtual btCollisionShape* getCollisionShape(ResourceManager* _rm)=0;
     virtual void setRigidbodyProperties()=0;
@@ -55,6 +59,7 @@ protected:
     boost::mt19937 mRNG;
     boost::uniform_int<> mDist;
     boost::variate_generator<boost::mt19937, boost::uniform_int<>> generateRandInt;
+    bool mAvoidanceMode;
 };
 
 #endif

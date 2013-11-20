@@ -11,10 +11,16 @@ void MouseAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond
     double right = getRayCollisionDistance(btVector3(100, 0, 100), _world);
 
     //calculate rotation
-    /*if(left < _frontRayDistance && right < _frontRayDistance){
-        //account for special case
+    if(left < _frontRayDistance && right < _frontRayDistance)
+        mAvoidanceMode = true;
+    
+    if(mAvoidanceMode){
+        btVector3 torque = btVector3(0, -0.75, 0);
+        btVector3 correctedTorque = mRigidBody->getWorldTransform().getBasis() * torque;
+
+        mRigidBody->applyTorque(correctedTorque);
     }
-    else{*/
+    else{
         btVector3 torque;
 
         if(right > left)
@@ -31,7 +37,7 @@ void MouseAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond
         
         btVector3 correctedTorque = mRigidBody->getWorldTransform().getBasis() * torque;
         mRigidBody->applyTorque(correctedTorque);
-    //}
+    }
 
     //calculate velocity
     double decisionsPerSecond = _cyclesPerSecond / _cyclesPerDecision;

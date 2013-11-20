@@ -128,7 +128,7 @@ bool BridgeSimulation::initialise(){
 
     if(mAgentType == CAR){
         for(uint k = 0; k < mAgents.size(); k++){
-            mWorldEntities[mAgents[k]] = new CarAgent(10, 1);
+            mWorldEntities[mAgents[k]] = new CarAgent(15, 1);
             vector3 pos(genx(), geny(), genz());
             if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, pos, 0.01, mSeed))
                 return false;
@@ -137,7 +137,7 @@ bool BridgeSimulation::initialise(){
     }
     else if(mAgentType == MOUSE){
         for(uint k = 0; k < mAgents.size(); k++){
-            mWorldEntities[mAgents[k]] = new MouseAgent(10, 1);
+            mWorldEntities[mAgents[k]] = new MouseAgent(15, 1);
             if(!mWorldEntities[mAgents[k]]->initialise("mouse.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(genx(), geny(), genz()), 0.01, mSeed))
                 return false;
             mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());
@@ -243,6 +243,7 @@ void BridgeSimulation::applyUpdateRules(string _agentName){
     if(frontDist < 10)
         mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld);
     else{
+        mWorldEntities[_agentName]->avoided();
         vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
         output.push_back(frontVal);
 
@@ -250,7 +251,7 @@ void BridgeSimulation::applyUpdateRules(string _agentName){
     }
 
 
-    if(calcCrossVal(mFinishLine.p1, mFinishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0){
+    if(calcCrossVal(mFinishLine.p1, mFinishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0 && mCycleCounter > 10){
         for(uint k = 1; k <= 8; k++)
             if(input[k] * 50 < mRangefinderRadius)
                 mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;
@@ -266,7 +267,7 @@ void BridgeSimulation::applyUpdateRules(string _agentName){
 		    const btCollisionObject* obA = contactManifold->getBody0();
 		    const btCollisionObject* obB = contactManifold->getBody1();
             
-            if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB) && (mWorldEntities["environment"]->getRigidBody() != obA & mWorldEntities["environment"]->getRigidBody() != obB)){
+            if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB)){
                 mCollisions++;
                 //cout << mCollisions << endl;
             }

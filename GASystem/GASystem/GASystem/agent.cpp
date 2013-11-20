@@ -1,6 +1,6 @@
 #include "agent.h"
 
-Agent::Agent() : mRNG(0), mDist(0, 1), generateRandInt(mRNG, mDist){}
+Agent::Agent() : mRNG(0), mDist(0, 1), generateRandInt(mRNG, mDist), mAvoidanceMode(false){}
 
 bool Agent::initialise(const string& _modelName, const vector3& _scale, const btQuaternion& _rotation, ResourceManager* _rm, const vector3& _position, const double& _mass, int _seed){
     mModelName = _modelName;
@@ -27,6 +27,10 @@ bool Agent::initialise(const string& _modelName, const vector3& _scale, const bt
     generateRandInt = boost::variate_generator<boost::mt19937, boost::uniform_int<>>(mRNG, mDist);
 
     return true;
+}
+
+void Agent::avoided(){
+    mAvoidanceMode = false;
 }
 
 Agent::~Agent(){
@@ -77,4 +81,8 @@ btCollisionWorld::ClosestRayResultCallback Agent::calculateRay(const btVector3& 
     _world->rayTest(agentPosition, correctedRay, ray);
 
     return ray;
+}
+
+void Agent::setVelocity(vector3 _velocity){
+    mRigidBody->setLinearVelocity(btVector3(_velocity.x, _velocity.y, _velocity.z));
 }

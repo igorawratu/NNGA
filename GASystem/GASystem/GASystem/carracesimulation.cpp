@@ -114,6 +114,7 @@ bool CarRaceSimulation::initialise(){
         if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, pos, 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());
+        mWorldEntities[mAgents[k]]->setVelocity(vector3(5, 0, 0));
     }
     
     mWorldEntities["environment"] = new StaticWorldAgent(0.5, 0.1);
@@ -216,6 +217,7 @@ void CarRaceSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     if(frontDist < 10)
         mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld);
     else{
+        mWorldEntities[_agentName]->avoided();
         vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
         mWorldEntities[_agentName]->update(output);
     }
@@ -234,7 +236,7 @@ void CarRaceSimulation::applyUpdateRules(string _agentName, uint _groupNum){
             }
     }
 
-    if(checkCollisions){
+    if(checkCollisions && mCycleCounter > 10){
         for(uint k = 1; k <= 8; k++)
             if(input[k] * 50 < mRangefinderRadius)
                 mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;

@@ -24,10 +24,12 @@ bool SFObstacleSimulation::initialise(){
         return true;
 
     mGoalpoint = vector3(40, 0, 0);
+    mGoalRadius = 5;
 
-    vector3 minDim(-50, -10, -10), maxDim(-30, 10, 10);
+    vector3 minDim(-50, -20, -10), maxDim(-30, 20, 10);
 
     boost::mt19937 rng(mSeed);
+    boost::mt19937 rngy(mSeed * 2);
     boost::mt19937 rngz(mSeed + mSeed / 2);
 
     boost::uniform_real<double> distx(minDim.x, maxDim.x);
@@ -35,16 +37,15 @@ bool SFObstacleSimulation::initialise(){
     boost::uniform_real<double> distz(minDim.z, maxDim.z);
 
     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genx(rng, distx);
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> geny(rng, disty);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> geny(rngy, disty);
     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genz(rngz, distz);
 
     btQuaternion rot(0, 0, 0, 1);
-    rot.setEuler(PI/2, 0, 0);
 
     for(uint k = 0; k < mAgents.size(); k++){
-        mWorldEntities[mAgents[k]] = new StarFighterAgent(10, 0.5);
+        mWorldEntities[mAgents[k]] = new StarFighterAgent(25, 0.5);
         vector3 pos(genx(), geny(), genz());
-        if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, pos, 0.01, mSeed))
+        if(!mWorldEntities[mAgents[k]]->initialise("starfighter.mesh", vector3(1, 1, 1), rot, mResourceManager, pos, 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());
     }

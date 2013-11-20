@@ -55,6 +55,7 @@ double CorneringSim::fitness(){
     map<string, long> intAcc;
     doubleAcc["ColFitnessWeight"] = 1;
     doubleAcc["Collisions"] = mCollisions + mRangefinderVals;
+    doubleAcc["WPFitnessWeight"] = 1;
     intAcc = mWaypointTracker;
 
     for(uint k = 0; k < mWaypoints.size(); k++)
@@ -79,6 +80,7 @@ double CorneringSim::realFitness(){
     map<string, long> intAcc;
     doubleAcc["ColFitnessWeight"] = 1;
     doubleAcc["Collisions"] = mCollisions;
+    doubleAcc["WPFitnessWeight"] = 1;
     intAcc = mWaypointTracker;
 
     for(uint k = 0; k < mWaypoints.size(); k++)
@@ -108,20 +110,17 @@ bool CorneringSim::initialise(){
     mFitnessFunctions.push_back(new WaypointFitness());
     mFitnessFunctions.push_back(new CollisionFitness());
 
-    mWaypointTracker["WPFitnessWeight"] = 1;
     mWaypointTracker["ColFitnessWeight"] = 1;
     mWaypointTracker["NumAgents"] = mAgents.size();
 
-    mWaypoints.push_back(vector3(43, 0, -20));
-    mWaypoints.push_back(vector3(41, 0, -8));
-    mWaypoints.push_back(vector3(-22.5, 0, 10));
-    mWaypoints.push_back(vector3(36, 0, 24));
-    mWaypoints.push_back(vector3(37, 0, 44));
+    mWaypoints.push_back(vector3(-35, 0, -40));
+    mWaypoints.push_back(vector3(5, 0, -30));
+    mWaypoints.push_back(vector3(25, 0, 30));
 
     mWaypointTracker["NumWaypoints"] = mWaypoints.size();
 
     //set the vals
-    vector3 minDim(-45, 0, -45), maxDim(-25, 0, -35);
+    vector3 minDim(-45, 0, 30), maxDim(-40, 0, 40);
 
     boost::mt19937 rng(mSeed);
     boost::mt19937 rngz(mSeed + mSeed / 2);
@@ -133,22 +132,23 @@ bool CorneringSim::initialise(){
     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genz(rngz, distz);
 
     btQuaternion rot(0, 0, 0, 1);
+    rot.setEuler(PI/2, 0, 0);
 
     for(uint k = 0; k < mAgents.size(); k++){
-        mWorldEntities[mAgents[k]] = new CarAgent(10, 1);
+        mWorldEntities[mAgents[k]] = new CarAgent(15, 1);
         if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(genx(), minDim.y, genz()), 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());
     }
     
     mWorldEntities["environment"] = new StaticWorldAgent(0.5, 0.1);
-    if(!mWorldEntities["environment"]->initialise("corneringtrack.mesh", vector3(50, 50, 50), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 6.5, 0), 0, mSeed))
+    if(!mWorldEntities["environment"]->initialise("corneringtrack.mesh", vector3(50, 5, 50), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 0, 0), 0, mSeed))
         return false;
     mWorld->addRigidBody(mWorldEntities["environment"]->getRigidBody());
 
     /*for(uint k = 0; k < mWaypoints.size(); k++){
         mWorldEntities["waypoint" + boost::lexical_cast<string>(k)] = new StaticWorldAgent(0.5, 0.1);
-        if(!mWorldEntities["waypoint" + boost::lexical_cast<string>(k)]->initialise("sphere.mesh", vector3(3, 3, 3), btQuaternion(0, 0, 0, 1), mResourceManager, mWaypoints[k], 0))
+        if(!mWorldEntities["waypoint" + boost::lexical_cast<string>(k)]->initialise("sphere.mesh", vector3(5, 5, 5), btQuaternion(0, 0, 0, 1), mResourceManager, mWaypoints[k], 0, mSeed))
             return false;
     }*/
 
@@ -169,6 +169,17 @@ void CorneringSim::applyUpdateRules(string _agentName){
 
     map<uint, double> input;
 
+    btBoxShape* agentBox = dynamic_cast<btBoxShape*>(mWorldEntities[_agentName]->getRigidBody()->getCollisionShape());
+    if(agentBox == 0){
+        cout << "Error: unable to get box to agent, will not apply update" << endl;
+        return;
+    }
+
+    double d1 = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, 0, agentBox->getHalfExtentsWithMargin().getZ()));
+    double d2 = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, 0, -agentBox->getHalfExtentsWithMargin().getZ()));
+
+    double frontDist = d1 > d2 ? d2 : d1;
+
     input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 0), AGENT) / 50;
     input[2] = getRayCollisionDistance(_agentName, btVector3(-100, 0.1, 0), AGENT) / 50;
     input[3] = getRayCollisionDistance(_agentName, btVector3(0, 0.1, 100), AGENT) / 50;
@@ -177,7 +188,6 @@ void CorneringSim::applyUpdateRules(string _agentName){
     input[6] = getRayCollisionDistance(_agentName, btVector3(-100, 0.1, 100), AGENT) / 50;
     input[7] = getRayCollisionDistance(_agentName, btVector3(-100, 0.1, -100), AGENT) / 50;
     input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 100), AGENT) / 50;
-    frontVal = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 0), AGENT);
 
     vector3 agentVel = mWorldEntities[_agentName]->getVelocity();
     input[9] = agentVel.x;
@@ -190,12 +200,15 @@ void CorneringSim::applyUpdateRules(string _agentName){
     input[13] = trans.getOrigin().getX() / 50;
     input[14] = trans.getOrigin().getZ() / 50;
 
-    vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
-    output.push_back(frontVal);
+    if(frontDist < 10)
+        mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld);
+    else{
+        mWorldEntities[_agentName]->avoided();
+        vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
+        mWorldEntities[_agentName]->update(output);
+    }
 
-    mWorldEntities[_agentName]->update(output);
-
-    if(mWaypointTracker[_agentName] < mWaypoints.size()){
+    if(mWaypointTracker[_agentName] < mWaypoints.size() && mCycleCounter > 10){
         for(uint k = 1; k <= 8; k++)
             if(input[k] * 50 < mRangefinderRadius)
                 mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;
