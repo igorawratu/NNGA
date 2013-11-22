@@ -560,7 +560,7 @@ void runCorneringSim(){
     int seed = 50;
     GraphicsEngine engine(NULL);
 
-    CorneringSim* sim = new CorneringSim(2, 4, 430, 5, 30, NULL, engine.getResourceManager(), seed);
+    CorneringSim* sim = new CorneringSim(2, 4, 450, 5, 30, NULL, engine.getResourceManager(), seed);
     sim->initialise();
 
     SimulationContainer cont(sim);

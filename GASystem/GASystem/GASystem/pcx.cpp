@@ -128,8 +128,8 @@ vector<Chromosome*> PCX::execute(vector<Chromosome*> _population, uint numOffspr
         calculateOrthogonalBasis(spanvecdim, spansize, initialspan, orthbasisvectors, dvec);
 
         //rngs
-        double sigone = (0.5 * 0.5)/(double)dvec.size();
-        double sigtwo = 0.5;
+        double sigone = (0.35 * 0.35)/(double)dvec.size();
+        double sigtwo = 0.25;
 
         boost::mt19937 rng(rand());
         boost::normal_distribution<> dist(0, sigone);
