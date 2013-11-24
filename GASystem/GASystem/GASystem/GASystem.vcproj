@@ -616,6 +616,22 @@
 				>
 			</File>
 			<File
+				RelativePath=".\espchromosome.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\espchromosome.h"
+				>
+			</File>
+			<File
+				RelativePath=".\espsubpopulation.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\espsubpopulation.h"
+				>
+			</File>
+			<File
 				RelativePath=".\factory.h"
 				>
 			</File>

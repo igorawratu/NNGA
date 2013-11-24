@@ -10,8 +10,8 @@
 #include "leafneuron.h"
 #include "nonleafneuron.h"
 
-#include "boost/random.hpp"
-#include "boost/generator_iterator.hpp"
+#include <boost/random.hpp>
+#include <boost/generator_iterator.hpp>
 #include <boost/lexical_cast.hpp>
 
 using namespace std;
