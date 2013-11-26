@@ -15,6 +15,7 @@ using namespace std;
 class Solution
 {
 public:
+    Solution(){}
     Solution(string _filename);
     Solution(vector<NeuralNetwork>);
     
@@ -24,9 +25,6 @@ public:
 
     double& fitness(){return mFitness;}
     double& realFitness(){return mRealFitness;}
-
-private:
-    Solution(){}
 
 private:
     vector<NeuralNetwork> mNeuralNets;

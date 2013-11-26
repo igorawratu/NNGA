@@ -6,6 +6,7 @@
 #include "mutation.h"
 #include "mutationfactory.h"
 #include "common.h"
+#include "pugixml.hpp"
 
 #include <map>
 #include <vector>
@@ -30,6 +31,7 @@ public:
     virtual void setWeights(vector<map<uint, vector<double>>>& _weights);
     virtual void setStructure(vector<map<uint, NeuronInfo>>& structure);
     virtual Chromosome* clone();
+    Neuron* getNeuron(){return mNeuron;}
 
 private:
     NonLeafNeuron* mNeuron;

@@ -25,6 +25,30 @@ NeuralNetwork::NeuralNetwork(map<uint, NeuronInfo> _neuronInfo){
 
 }
 
+void NeuralNetwork::setStructure(map<uint, Neuron*> _neuronCache, map<uint, Neuron*> _output){
+    for(map<uint, Neuron*>::iterator iter = mNeuronCache.begin(); iter != mNeuronCache.end(); iter++){
+        if(iter->second)
+        {
+            delete iter->second;
+            iter->second = 0;
+        }
+    }
+    mNeuronCache.clear();
+    mOutput.clear();
+
+    mCounter = 0;
+    for(map<uint, Neuron*>::iterator iter = _neuronCache.begin(); iter != _neuronCache.end(); ++iter){
+        mNeuronCache[iter->first] = iter->second->clone();
+        for(map<uint, Neuron*>::iterator outIter = _output.begin(); outIter != _output.end(); ++outIter){
+            if(iter->second == outIter->second){
+                mOutput[iter->first] = mNeuronCache[iter->first];
+                break;
+            }
+        }
+        mNeuronCache[iter->first]->setNeuronCache(&mNeuronCache);
+    }
+}
+
 void NeuralNetwork::setStructure(map<uint, NeuronInfo> _neuronInfo){
     //clear old structure
     for(map<uint, Neuron*>::iterator iter = mNeuronCache.begin(); iter != mNeuronCache.end(); iter++){
@@ -189,6 +213,15 @@ NeuralNetwork::NeuralNetwork(const NeuralNetwork& _other){
 }
 
 NeuralNetwork& NeuralNetwork::operator = (const NeuralNetwork& _other){
+    for(map<uint, Neuron*>::iterator iter = mNeuronCache.begin(); iter != mNeuronCache.end(); iter++){
+        if(iter->second)
+        {
+            delete iter->second;
+            iter->second = 0;
+        }
+    }
+    mNeuronCache.clear();
+    mOutput.clear();
 
     for(map<uint, Neuron*>::const_iterator iter = _other.mNeuronCache.begin(); iter != _other.mNeuronCache.end(); iter++){
         mNeuronCache[iter->first] = iter->second->clone();

@@ -19,8 +19,6 @@
 
 using namespace std;
 
-//#define MT
-
 struct StandardGAParameters
 {
     uint populationSize;

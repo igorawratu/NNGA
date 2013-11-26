@@ -33,6 +33,7 @@ public:
     vector<double> evaluate(map<uint, double> _inputs);
     void setWeights(map<uint, vector<double>> _weights);
     void setStructure(map<uint, NeuronInfo> _neuronInfo);
+    void setStructure(map<uint, Neuron*> _neuronCache, map<uint, Neuron*> _output);
     void getXMLStructure(pugi::xml_node& _root);
     map<uint, NeuronInfo> getMapStructure();
     map<uint, vector<double>> getWeights();

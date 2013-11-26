@@ -616,6 +616,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\esp.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\esp.h"
+				>
+			</File>
+			<File
 				RelativePath=".\espchromosome.cpp"
 				>
 			</File>

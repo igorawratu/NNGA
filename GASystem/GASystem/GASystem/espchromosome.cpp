@@ -9,26 +9,26 @@ bool ESPChromosome::initialize(pugi::xml_node* _root){
     set<uint> predecessors;
 
     //assign activation function
-    if(node.attribute("ActivationFunction").empty()){
+    if(_root->attribute("ActivationFunction").empty()){
         cerr << "Error: Non input nodes must have an Activation Function" << endl;
         return false;
     }
 
     ActivationFunction activationFunction;
-    if(strcmp(node.attribute("ActivationFunction").value(), "Sigmoid") == 0)
+    if(strcmp(_root->attribute("ActivationFunction").value(), "Sigmoid") == 0)
         activationFunction = SIGMOID;
     else{
-            cerr << "Error: unable to understand the activation function of neuron " << neuronID << ", defaulting to sigmoid" << endl;
+            cerr << "Error: unable to understand the activation function of a neuron, defaulting to sigmoid" << endl;
             activationFunction = SIGMOID;
     }
 
     //assign predecessors
-    if(node.child("Predecessors").empty()){
+    if(_root->child("Predecessors").empty()){
         cerr << "Error: Non input nodes must have Predecessors" << endl;
         return false;
     }
 
-    pugi::xml_node predecessorsRoot = node.child("Predecessors");
+    pugi::xml_node predecessorsRoot = _root->child("Predecessors");
     for(pugi::xml_node predecessorNode = predecessorsRoot.first_child(); predecessorNode; predecessorNode = predecessorNode.next_sibling()){
         if(predecessorNode.attribute("ID").empty()){
             cerr << "Error: Predecessors must have an ID" << endl;
@@ -36,15 +36,14 @@ bool ESPChromosome::initialize(pugi::xml_node* _root){
         }
         predecessors.insert(atoi(predecessorNode.attribute("ID").value()));
     }
-    predecessorMap[neuronID] = predecessors;
 
     //assign weights
-    if(node.child("Weights").empty()){
+    if(_root->child("Weights").empty()){
         cerr << "Error: Non input nodes must have Weights" << endl;
         return false;
     }
 
-    pugi::xml_node weightRoot = node.child("Weights");
+    pugi::xml_node weightRoot = _root->child("Weights");
 
     if(weightRoot.attribute("Distribution").empty()){
         cerr << "Error: Weights must have a Distribution attribute" << endl;
@@ -84,7 +83,7 @@ bool ESPChromosome::initialize(pugi::xml_node* _root){
                 weights.push_back(genWeight());
         }
         else{
-            cerr << "Error: Invalid distribution found for neuron " << neuronID << ", defaulting to Uniform" << endl;
+            cerr << "Error: Invalid distribution found for a neuron, defaulting to Uniform" << endl;
             boost::uniform_real<double> weightDist(atoi(weightRoot.attribute("Min").value()), atoi(weightRoot.attribute("Max").value()));
             boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genWeight(rng, weightDist);                  
 
@@ -94,6 +93,9 @@ bool ESPChromosome::initialize(pugi::xml_node* _root){
     }
 
     mNeuron = new NonLeafNeuron(NULL, weights, activationFunction);
+    mNeuron->setInput(predecessors, true);
+
+    return true;
 }
 
 ESPChromosome::ESPChromosome(const ESPChromosome& other){
@@ -110,6 +112,8 @@ ESPChromosome& ESPChromosome::operator = (const ESPChromosome& other){
         delete mNeuron;
 
     mNeuron = new NonLeafNeuron(*other.mNeuron);
+
+    return *this;
 }
 
 void ESPChromosome::mutate(string _mutationType, map<string, double>& _parameters){

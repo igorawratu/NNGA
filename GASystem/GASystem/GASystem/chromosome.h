@@ -23,6 +23,7 @@ public:
     virtual void setWeights(vector<map<uint, vector<double>>>& _weights)=0;
     virtual void setStructure(vector<map<uint, NeuronInfo>>& _struct)=0;
     virtual Chromosome* clone()=0;
+    virtual bool initialize(pugi::xml_node* _root)=0;
 
     double& fitness(){return mFitness;}
     double& realFitness(){return mRealFitness;}

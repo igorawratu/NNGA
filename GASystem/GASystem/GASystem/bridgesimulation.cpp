@@ -70,8 +70,28 @@ Simulation* BridgeSimulation::getNewCopy(){
 }
 
 void BridgeSimulation::tick(){
-    for(int k = 0; k < mAgents.size(); k++)
+    for(int k = 0; k < mAgents.size(); k++){
         mWorldEntities[mAgents[k]]->tick();
+
+        btTransform trans;
+        mWorldEntities[mAgents[k]]->getRigidBody()->getMotionState()->getWorldTransform(trans);
+
+        if(calcCrossVal(mFinishLine.p1, mFinishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0 && mCycleCounter > 10){
+            int numManifolds = mWorld->getDispatcher()->getNumManifolds();
+	        for (int i=0;i<numManifolds;i++)
+	        {
+		        btPersistentManifold* contactManifold =  mWorld->getDispatcher()->getManifoldByIndexInternal(i);
+                if(contactManifold->getNumContacts() < 1)
+                    continue;
+
+		        const btCollisionObject* obA = contactManifold->getBody0();
+		        const btCollisionObject* obB = contactManifold->getBody1();
+                
+                if((mWorldEntities[mAgents[k]]->getRigidBody() == obA || mWorldEntities[mAgents[k]]->getRigidBody() == obB))
+                    mCollisions++;
+            }
+        }
+    }
 
 }
 
@@ -128,7 +148,7 @@ bool BridgeSimulation::initialise(){
 
     if(mAgentType == CAR){
         for(uint k = 0; k < mAgents.size(); k++){
-            mWorldEntities[mAgents[k]] = new CarAgent(15, 1);
+            mWorldEntities[mAgents[k]] = new CarAgent(10, 1);
             vector3 pos(genx(), geny(), genz());
             if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, pos, 0.01, mSeed))
                 return false;
@@ -255,23 +275,6 @@ void BridgeSimulation::applyUpdateRules(string _agentName){
         for(uint k = 1; k <= 8; k++)
             if(input[k] * 50 < mRangefinderRadius)
                 mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;
-        
-        //gets collision data
-        int numManifolds = mWorld->getDispatcher()->getNumManifolds();
-	    for (int i=0;i<numManifolds;i++)
-	    {
-		    btPersistentManifold* contactManifold =  mWorld->getDispatcher()->getManifoldByIndexInternal(i);
-            if(contactManifold->getNumContacts() < 1)
-                continue;
-
-		    const btCollisionObject* obA = contactManifold->getBody0();
-		    const btCollisionObject* obB = contactManifold->getBody1();
-            
-            if((mWorldEntities[_agentName]->getRigidBody() == obA || mWorldEntities[_agentName]->getRigidBody() == obB)){
-                mCollisions++;
-                //cout << mCollisions << endl;
-            }
-        }
     }
 }
 

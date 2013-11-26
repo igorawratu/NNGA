@@ -37,6 +37,7 @@
 #include "sfobstaclesimulation.h"
 #include "sfturnbacksimulation.h"
 #include "sfobstaclefieldsimulation.h"
+#include "esp.h"
 
 #define TRAIN
 
@@ -484,7 +485,7 @@ void runBridgeCarSim(){
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
     params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "QuadraticRankSelection";
+    params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = 5;
 
     GeneticAlgorithm* ga = new StandardGA(params);
@@ -1035,18 +1036,67 @@ void testCrossoverOp(){
 
 }
 
+void runBridgeCarSimESP(){
+    int seed = 50;
+    GraphicsEngine engine(NULL);
+
+    BridgeSimulation* sim = new BridgeSimulation(2, 10, CAR, 300, 5, 30, NULL, engine.getResourceManager(), seed);
+    sim->initialise();
+
+    SimulationContainer cont(sim);
+
+#ifdef TRAIN
+    ESPParameters params;
+    params.populationSize = 20;
+    params.maxGenerations = 200;
+    params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input6h.xml";
+    params.stagnationThreshold = 0;
+    params.fitnessEpsilonThreshold = 0;
+    params.mutationAlgorithm = "GaussianMutation";
+    params.mutationParameters["MutationProbability"] = 0.02;
+    params.mutationParameters["Deviation"] = 0.2;
+    params.mutationParameters["MaxConstraint"] = 1;
+    params.mutationParameters["MinConstraint"] = -1;
+    params.crossoverAlgorithm = "BLX";
+    params.selectionAlgorithm = "LRankSelection";
+    params.elitismCount = 2;
+    params.sampleEvaluationsPerChromosome = 5;
+
+    GeneticAlgorithm* ga = new ESP(params);
+
+    GAEngine gaengine;
+    Solution solution = gaengine.train(ga, &cont);
+
+    delete ga;
+
+    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
+    solution.printToFile("neuralxmls/bridgesimulation/car/output.xml");
+
+    cont.resetSimulation();
+#else
+    Solution solution("neuralxmls/bridgesimulation/car/output.xml");
+#endif
+
+    cont.setSolution(&solution);
+    
+    engine.setSimulation(&cont);
+    
+    engine.renderSimulation();
+}
+
 int main(){
     //runBridgeMouseSim();
     //runBridgeCarSim();
     //runCarCrashSim();
     //runCarRaceSim();
     //runWarRobotSim();
-    runCorneringSim();
+    //runCorneringSim();
     //runMouseEscapeSim();
     //runMouseScatterSim();
     //runSFObstacleSim();
     //runSFTurnbackSim();
     //runSFObstacleFieldSim();
+    runBridgeCarSimESP();
 
 
     //testCrossoverOp();

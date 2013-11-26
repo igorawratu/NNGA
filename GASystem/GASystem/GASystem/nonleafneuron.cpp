@@ -64,21 +64,23 @@ bool NonLeafNeuron::checkLoop(Neuron* _loopNeuron){
 
 bool NonLeafNeuron::setInput(set<uint> _inputs, bool _checkLoops){
     assert(_inputs.size() + 1 == mWeights.size());
-    for(set<uint>::iterator iter = _inputs.begin(); iter != _inputs.end(); iter++){
-        map<uint, Neuron*>::const_iterator neuronIter = mNeuronCache->find(*iter);
+    if(mNeuronCache != NULL){
+        for(set<uint>::iterator iter = _inputs.begin(); iter != _inputs.end(); iter++){
+            map<uint, Neuron*>::const_iterator neuronIter = mNeuronCache->find(*iter);
 
-        if(neuronIter == mNeuronCache->end())
-        {
-            mPredecessors.clear();
-            cerr << "Error: Cannot find the neuron ID " << *iter << " to link to non-leaf neuron" << endl;
-            return false;
-        }
+            if(neuronIter == mNeuronCache->end())
+            {
+                mPredecessors.clear();
+                cerr << "Error: Cannot find the neuron ID " << *iter << " to link to non-leaf neuron" << endl;
+                return false;
+            }
 
-        if(_checkLoops && (*mNeuronCache)[*iter]->checkLoop(this))
-        {
-            mPredecessors.clear();
-            cerr << "Error: a loop was found when attempting to link the neuron with ID " << *iter <<  " to a non-leaf neuron" << endl;
-            return false;
+            if(_checkLoops && (*mNeuronCache)[*iter]->checkLoop(this))
+            {
+                mPredecessors.clear();
+                cerr << "Error: a loop was found when attempting to link the neuron with ID " << *iter <<  " to a non-leaf neuron" << endl;
+                return false;
+            }
         }
     }
 
