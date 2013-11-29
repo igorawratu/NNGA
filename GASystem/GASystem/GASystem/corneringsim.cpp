@@ -66,7 +66,7 @@ double CorneringSim::fitness(){
 
     
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, mWaypointTracker) : maxCollisions;
+    finalFitness += /*finalFitness == 0 ? */mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, mWaypointTracker)/* : maxCollisions*/;
 
     return finalFitness;
 }
@@ -91,7 +91,7 @@ double CorneringSim::realFitness(){
 
     
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, mWaypointTracker) : maxCollisions;
+    finalFitness += /*finalFitness == 0 ? */mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, mWaypointTracker)/* : maxCollisions*/;
 
     return finalFitness;
 }

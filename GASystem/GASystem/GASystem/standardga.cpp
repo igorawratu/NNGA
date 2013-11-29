@@ -65,7 +65,7 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
         cout << "Creating offspring..." << endl;
 
         //create offspring
-        vector<Chromosome*> offspring = crossoverAlgorithm->execute(population, population.size(), mParameters.crossoverParameters, selectionAlgorithm);
+        vector<Chromosome*> offspring = crossoverAlgorithm->execute(population, population.size() - mParameters.elitismCount, mParameters.crossoverParameters, selectionAlgorithm);
         
         cout << "Mutating offspring..." << endl;
         //mutate offspring
@@ -86,14 +86,13 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
         }
 
         cout << "Merging population..." << endl;
-        //merge parents and children into 1 population as they contend with each other
-        population.insert(population.end(), offspring.begin(), offspring.end());
 
         quicksort(population, 0, population.size() - 1);
-        cout << "Population before selection..." << endl;
-        for(uint i = 0; i < population.size(); i++)
-            cout << population[i]->fitness() << " " << population[i]->realFitness() << " | ";
-        cout << endl;
+        for(uint k = mParameters.elitismCount; k < population.size(); ++k)
+            delete population[k];
+        population.erase(population.begin() + mParameters.elitismCount, population.end());
+        population.insert(population.end(), offspring.begin(), offspring.end());
+        quicksort(population, 0, population.size() - 1);
 
         //checks if the fitness of the solution is below the epsilon threshold, if it is, stop training
         for(uint i = 0; i < population.size(); ++i){
@@ -111,7 +110,7 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
             }
         }
 
-        vector<Chromosome*> unselected;
+        /*vector<Chromosome*> unselected;
         vector<Chromosome*> newPopulation;
         for(uint i = 0; i < mParameters.elitismCount; i++)
             newPopulation.push_back(population[i]);
@@ -129,7 +128,7 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer){
             delete unselected[i];
         unselected.clear();
 
-        quicksort(population, 0, population.size() - 1);
+        quicksort(population, 0, population.size() - 1);*/
         
         cout << "Current population fitnesses..." << endl;
         for(uint i = 0; i < population.size(); i++)

@@ -58,7 +58,7 @@ void ESPSubPopulation::print(){
 
 void ESPSubPopulation::generateOffspring(){
     quicksort(mSubpopulation, 0, mSubpopulation.size() - 1);
-    mUnevaluatedSubpopulation = mCrossoverAlgorithm->execute(mSubpopulation, mSubpopulation.size(), mParameters.crossoverParameters, mSelectionAlgorithm);
+    mUnevaluatedSubpopulation = mCrossoverAlgorithm->execute(mSubpopulation, mSubpopulation.size() - mParameters.elitismCount, mParameters.crossoverParameters, mSelectionAlgorithm);
     for(uint k = 0; k < mUnevaluatedSubpopulation.size(); ++k){
         mUnevaluatedSubpopulation[k]->mutate(mParameters.mutationAlgorithm, mParameters.mutationParameters);
         mEvaluationCounter.push_back(0);
@@ -74,8 +74,8 @@ void ESPSubPopulation::nextGeneration(){
     assert(!mUnevaluatedSubpopulation.size());
 
     quicksort(mSubpopulation, 0, mSubpopulation.size() - 1);
-    
-    vector<Chromosome*> unselected, newPopulation;
+
+    /*vector<Chromosome*> unselected, newPopulation;
 
     for(uint i = 0; i < mParameters.elitismCount; i++)
         newPopulation.push_back(mSubpopulation[i]);
@@ -89,7 +89,7 @@ void ESPSubPopulation::nextGeneration(){
     quicksort(mSubpopulation, 0, mSubpopulation.size() - 1);
 
     for(uint k = 0; k < unselected.size(); ++k)
-        delete unselected[k];
+        delete unselected[k];*/
 }
 
 Chromosome* ESPSubPopulation::getUnevaluatedChromosome(){
@@ -194,7 +194,7 @@ void ESPSubPopulation::integrateDeltaCodes(){
     quicksort(mDeltaCodes, 0, mDeltaCodes.size() - 1);
     Crossover* crossoverAlgorithm = CrossoverFactory::instance().create("BLX");
 
-    while(mUnevaluatedSubpopulation.size() < mParameters.populationSize * 2){
+    while(mUnevaluatedSubpopulation.size() < mParameters.populationSize - 1){
         vector<Chromosome*> unselected;
         vector<Chromosome*> selected = mSelectionAlgorithm->execute(mDeltaCodes, 1, unselected);
         selected.push_back(mSubpopulation[0]);

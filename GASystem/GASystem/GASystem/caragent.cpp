@@ -60,7 +60,10 @@ void CarAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, 
 void CarAgent::update(const vector<double>& _nnOutput){
     assert(_nnOutput.size() >= 2);
 
-    mRigidBody->applyTorque(btVector3(0, (_nnOutput[0] - 0.5)/2, 0));
+    double angularAcc = _nnOutput[0] - 0.5;
+    angularAcc = fabs(angularAcc) > 0.2 ? angularAcc : 0;
+
+    mRigidBody->applyTorque(btVector3(0, angularAcc/2, 0));
 
     double currAcc = _nnOutput[1] - 0.5;
 
