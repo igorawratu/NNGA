@@ -32,6 +32,8 @@ public:
     virtual void setStructure(vector<map<uint, NeuronInfo>>& structure);
     virtual Chromosome* clone();
     Neuron* getNeuron(){return mNeuron;}
+    virtual bool addDelta(vector<map<uint, vector<double>>> _weights);
+    virtual void reInitialize();
 
 private:
     NonLeafNeuron* mNeuron;

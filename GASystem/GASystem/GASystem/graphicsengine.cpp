@@ -80,7 +80,7 @@ void GraphicsEngine::renderSimulation(){
     camera->setNearClipDistance(1);
 
     Ogre::SceneNode* camNode = mSceneManager->getRootSceneNode()->createChildSceneNode("CameraNode");
-    camNode->setPosition(Ogre::Vector3(0, 150, 0));
+    camNode->setPosition(Ogre::Vector3(0, 0, 10));
     camNode->lookAt(Ogre::Vector3(0, 0, 0), Ogre::Node::TS_WORLD);
     camNode->attachObject(camera);
     camNode->setFixedYawAxis(true);

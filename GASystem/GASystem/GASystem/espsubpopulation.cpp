@@ -63,6 +63,11 @@ void ESPSubPopulation::generateOffspring(){
         mUnevaluatedSubpopulation[k]->mutate(mParameters.mutationAlgorithm, mParameters.mutationParameters);
         mEvaluationCounter.push_back(0);
     }
+
+    for(uint k = mParameters.elitismCount; k < mSubpopulation.size(); ++k)
+        delete mSubpopulation[k];
+
+    mSubpopulation.erase(mSubpopulation.begin() + mParameters.elitismCount, mSubpopulation.end());
 }
 
 void ESPSubPopulation::nextGeneration(){
@@ -146,18 +151,72 @@ void ESPSubPopulation::quicksort(vector<Chromosome*>& elements, int left, int ri
 		quicksort(elements, i, right);
 }
 
-/*void ESPSubPopulation::generateDeltaCodes(){
-
+void ESPSubPopulation::generateDeltaCodes(){
+    for(uint k = 0; k < mParameters.populationSize; ++k){
+        mUnevaluatedDeltaCodes.push_back(mSubpopulation[0]->clone());
+        mUnevaluatedDeltaCodes[k]->reInitialize();
+        mUnevaluatedDeltaCodes[k]->addDelta(mSubpopulation[0]->getWeightData());
+        mDCEvaluationCounter.push_back(0);
+    }
 }
 
-ESPChromosome* ESPSubPopulation::getDeltaCode(){
+Chromosome* ESPSubPopulation::getUnevaluatedDeltaCode(){
+    if(mUnevaluatedDeltaCodes.size() == 0)
+        return NULL;
+    else if(mUnevaluatedDeltaCodes.size() == 1)
+        return mUnevaluatedDeltaCodes[0];
 
+    boost::mt19937 rng(rand());
+    boost::uniform_int<> dist(0, mUnevaluatedDeltaCodes.size() - 1);
+    boost::variate_generator<boost::mt19937, boost::uniform_int<>> gen(rng, dist);
+
+    return mUnevaluatedDeltaCodes[gen()];
 }
 
-void ESPSubPopulation::setDeltaCodeFitness(ESPChromosome* _deltaCode){
-
+void ESPSubPopulation::setDeltaCodeFitness(Neuron* _neuron, double _fitnessVal, double _realFitnessVal){
+    for(uint k = 0; k < mUnevaluatedDeltaCodes.size(); ++k){
+        if(_neuron == dynamic_cast<ESPChromosome*>(mUnevaluatedDeltaCodes[k])->getNeuron()){
+            mUnevaluatedDeltaCodes[k]->fitness() += _fitnessVal;
+            mUnevaluatedDeltaCodes[k]->realFitness() += _realFitnessVal;
+            ++mDCEvaluationCounter[k];
+            if(mDCEvaluationCounter[k] == mParameters.sampleEvaluationsPerChromosome){
+                mUnevaluatedDeltaCodes[k]->fitness() /= mParameters.sampleEvaluationsPerChromosome;
+                mDeltaCodes.push_back(mUnevaluatedDeltaCodes[k]);
+                mUnevaluatedDeltaCodes.erase(mUnevaluatedDeltaCodes.begin() + k);
+                mDCEvaluationCounter.erase(mDCEvaluationCounter.begin() + k);
+            }
+        }
+    }
 }
 
 void ESPSubPopulation::integrateDeltaCodes(){
+    assert(mUnevaluatedDeltaCodes.size() == 0);
+    quicksort(mDeltaCodes, 0, mDeltaCodes.size() - 1);
+    Crossover* crossoverAlgorithm = CrossoverFactory::instance().create("BLX");
 
-}*/
+    while(mUnevaluatedSubpopulation.size() < mParameters.populationSize * 2){
+        vector<Chromosome*> unselected;
+        vector<Chromosome*> selected = mSelectionAlgorithm->execute(mDeltaCodes, 1, unselected);
+        selected.push_back(mSubpopulation[0]);
+        vector<Chromosome*> offspring = crossoverAlgorithm->execute(selected, 1, mParameters.crossoverParameters, mSelectionAlgorithm);
+        mUnevaluatedSubpopulation.push_back(offspring[0]);
+    }
+
+    for(uint k = 0; k < mUnevaluatedSubpopulation.size(); ++k){
+        mUnevaluatedSubpopulation[k]->mutate(mParameters.mutationAlgorithm, mParameters.mutationParameters);
+        mEvaluationCounter.push_back(0);
+    }
+
+    for(uint k = 0; k < mDeltaCodes.size(); ++k)
+        delete mDeltaCodes[k];
+    mDeltaCodes.clear();
+
+    for(uint k = 1; k < mSubpopulation.size(); ++k){
+        delete mSubpopulation[k];
+    }
+    Chromosome* temp = mSubpopulation[0];
+    mSubpopulation.clear();
+    mSubpopulation.push_back(temp);
+
+    delete crossoverAlgorithm;
+}

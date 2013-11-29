@@ -320,6 +320,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\polebalancingsimulation.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\polebalancingsimulation.h"
+				>
+			</File>
+			<File
 				RelativePath=".\prototypesimulation.cpp"
 				>
 			</File>

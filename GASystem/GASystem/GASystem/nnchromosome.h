@@ -27,6 +27,8 @@ public:
     virtual void setWeights(vector<map<uint, vector<double>>>& _weights);
     virtual void setStructure(vector<map<uint, NeuronInfo>>& structure);
     virtual Chromosome* clone();
+    virtual bool addDelta(vector<map<uint, vector<double>>> _weights);
+    virtual void reInitialize();
     vector<NeuralNetwork>& getNeuralNets(){return mNets;}
 
 private:

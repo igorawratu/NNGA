@@ -23,10 +23,20 @@ NNChromosome::~NNChromosome(){
 
 }
 
+void NNChromosome::reInitialize(){
+    cout << "reinitialise not implemented for NNChromosome yet" << endl;
+}
+
+
 NNChromosome& NNChromosome::operator = (const NNChromosome& other){
     mNets = other.mNets;
 
     return *this;
+}
+
+bool NNChromosome::addDelta(vector<map<uint, vector<double>>> _weights){
+    cout << "Add delta currently not implemented for NNChromosome" << endl;
+    return false;
 }
 
 void NNChromosome::mutate(string _mutationType, map<string, double>& _parameters){

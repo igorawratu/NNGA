@@ -43,13 +43,13 @@ public:
     void nextGeneration();
     Chromosome* getUnevaluatedChromosome();
     Chromosome* getChromosome(uint _position);
-    void setChromosomeFitness(Neuron* _chromosome, double _fitnessVal, double _realFitnessVal);
+    void setChromosomeFitness(Neuron* _neuron, double _fitnessVal, double _realFitnessVal);
     void print();
 
-    /*void generateDeltaCodes();
-    vector<double> getDeltaCode(uint& _pos, bool& _complete);
-    void setDeltaCodeFitness(uint _pos, double _fitnessVal);
-    void integrateDeltaCodes();*/
+    void generateDeltaCodes();
+    Chromosome* getUnevaluatedDeltaCode();
+    void setDeltaCodeFitness(Neuron* _neuron, double _fitnessVal, double _realFitnessVal);
+    void integrateDeltaCodes();
 
 private:
     void quicksort(vector<Chromosome*>& elements, int left, int right);
@@ -61,6 +61,10 @@ private:
     ESPParameters mParameters;
     Crossover* mCrossoverAlgorithm;
     Selection* mSelectionAlgorithm;
+
+    vector<Chromosome*> mUnevaluatedDeltaCodes;
+    vector<Chromosome*> mDeltaCodes;
+    vector<uint> mDCEvaluationCounter;
 };
 
 #endif

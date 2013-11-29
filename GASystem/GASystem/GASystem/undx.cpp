@@ -94,94 +94,108 @@ void UNDX::calculateOrthogonalBasis(double _spanvecdim, double _spansize, double
 vector<Chromosome*> UNDX::execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters, Selection* _selectionAlgorithm){;
     vector<Chromosome*> offspring;
 
+    boost::mt19937 rngCP(rand());
+    boost::uniform_real<double> distCP(0, 1);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genCP(rngCP, distCP);
+
     while(offspring.size() < numOffspring){
         vector<map<uint, vector<double>>> p1Weights, childWeights, child2Weights;
         vector<double> mvec, dvec, p1vec, p2vec, p3vec;
 
         vector<Chromosome*> parents = _selectionAlgorithm->execute(_population, 3, vector<Chromosome*>());
-        p1Weights = parents[0]->getWeightData();
 
-        calculateDMParents(parents, dvec, mvec, p1vec, p2vec, p3vec);
+        if(genCP() > _parameters["CrossoverProbability"]){
+            boost::mt19937 rngP(rand());
+            boost::uniform_int<> distP(0, 2);
+            boost::variate_generator<boost::mt19937, boost::uniform_int<>> genParent(rngP, distP);
 
-        double dp3distance = calculateP3DDistance(dvec, p1vec, p3vec);
-
-        
-        const int spansize = dvec.size() - 1;
-        const int spanvecdim = dvec.size();
-        double **initialspan = new double*[spansize];
-        double **orthbasisvectors = new double*[spansize];      
-        double *sum = new double[spanvecdim];
-
-        for(uint k = 0; k < spansize; ++k){
-            initialspan[k] = new double[spanvecdim];
-            orthbasisvectors[k] = new double[spanvecdim];
+            offspring.push_back(parents[genParent()]->clone());
         }
+        else{
+            p1Weights = parents[0]->getWeightData();
 
-        calculateOrthogonalBasis(spanvecdim, spansize, initialspan, orthbasisvectors, dvec);
+            calculateDMParents(parents, dvec, mvec, p1vec, p2vec, p3vec);
 
-        //rngs
-        double sigone = (0.35 * 0.35)/(double)dvec.size();
-        double sigtwo = 0.25;
+            double dp3distance = calculateP3DDistance(dvec, p1vec, p3vec);
 
-        boost::mt19937 rng(rand());
-        boost::normal_distribution<> dist(0, sigone);
-        boost::variate_generator<boost::mt19937, boost::normal_distribution<double>> n1(rng, dist);
+            
+            const int spansize = dvec.size() - 1;
+            const int spanvecdim = dvec.size();
+            double **initialspan = new double*[spansize];
+            double **orthbasisvectors = new double*[spansize];      
+            double *sum = new double[spanvecdim];
 
-        boost::mt19937 rng2(rand());
-        boost::normal_distribution<> dist2(0, sigtwo);
-        boost::variate_generator<boost::mt19937, boost::normal_distribution<double>> n2(rng2, dist2);
-
-        //calculate sum of the orthogonal basis weighted with random values sampled from n2(sampled per vector)
-        for(uint k = 0; k < spanvecdim; ++k)
-            sum[k] = 0;
-
-        for(uint k = 0; k < spanvecdim; ++k){
-            double rval = n1();
-
-            for(uint i = 0; i < spansize; ++i){
-                sum[k] += orthbasisvectors[i][k] * rval;
+            for(uint k = 0; k < spansize; ++k){
+                initialspan[k] = new double[spanvecdim];
+                orthbasisvectors[k] = new double[spanvecdim];
             }
-        }
 
+            calculateOrthogonalBasis(spanvecdim, spansize, initialspan, orthbasisvectors, dvec);
 
-        //run the actual undx equation
-        for(uint k = 0; k < p1Weights.size(); k++){
-            map<uint, vector<double>> currentNetworkWeights;
-            map<uint, vector<double>> currentNetworkWeights2;
-            uint mapPos = 0;
-            for(map<uint, vector<double>>::iterator iter = p1Weights[k].begin(); iter != p1Weights[k].end(); iter++){
-                vector<double> weights;
-                vector<double> weights2;
-                for(uint i = 0; i < iter->second.size(); i++){
-                    uint currWeightPos = k+mapPos+i;
-                    double rngval = n2();
-                    double weightVal = mvec[currWeightPos] + dvec[currWeightPos] * rngval + dp3distance * sum[currWeightPos];
-                    double weightVal2 = mvec[currWeightPos] + dvec[currWeightPos] * rngval - dp3distance * sum[currWeightPos];
-                    weights.push_back(weightVal);
-                    weights2.push_back(weightVal2);
+            //rngs
+            double sigone = (0.35 * 0.35)/(double)dvec.size();
+            double sigtwo = 0.25;
+
+            boost::mt19937 rng(rand());
+            boost::normal_distribution<> dist(0, sigone);
+            boost::variate_generator<boost::mt19937, boost::normal_distribution<double>> n1(rng, dist);
+
+            boost::mt19937 rng2(rand());
+            boost::normal_distribution<> dist2(0, sigtwo);
+            boost::variate_generator<boost::mt19937, boost::normal_distribution<double>> n2(rng2, dist2);
+
+            //calculate sum of the orthogonal basis weighted with random values sampled from n2(sampled per vector)
+            for(uint k = 0; k < spanvecdim; ++k)
+                sum[k] = 0;
+
+            for(uint k = 0; k < spanvecdim; ++k){
+                double rval = n1();
+
+                for(uint i = 0; i < spansize; ++i){
+                    sum[k] += orthbasisvectors[i][k] * rval;
                 }
-                currentNetworkWeights[iter->first] = weights;
-                currentNetworkWeights2[iter->first] = weights2;
-                mapPos++;
             }
-            childWeights.push_back(currentNetworkWeights);
-            child2Weights.push_back(currentNetworkWeights2);
-        }
-        Chromosome* child = parents[0]->clone();
-        child->setWeights(childWeights);
-        offspring.push_back(child);
 
-        Chromosome* child2 = parents[0]->clone();
-        child2->setWeights(child2Weights);
-        offspring.push_back(child2);
 
-        for(uint k = 0; k < spansize; ++k){
-            delete [] initialspan[k];
-            delete [] orthbasisvectors[k];
+            //run the actual undx equation
+            for(uint k = 0; k < p1Weights.size(); k++){
+                map<uint, vector<double>> currentNetworkWeights;
+                map<uint, vector<double>> currentNetworkWeights2;
+                uint mapPos = 0;
+                for(map<uint, vector<double>>::iterator iter = p1Weights[k].begin(); iter != p1Weights[k].end(); iter++){
+                    vector<double> weights;
+                    vector<double> weights2;
+                    for(uint i = 0; i < iter->second.size(); i++){
+                        uint currWeightPos = k+mapPos+i;
+                        double rngval = n2();
+                        double weightVal = mvec[currWeightPos] + dvec[currWeightPos] * rngval + dp3distance * sum[currWeightPos];
+                        double weightVal2 = mvec[currWeightPos] + dvec[currWeightPos] * rngval - dp3distance * sum[currWeightPos];
+                        weights.push_back(weightVal);
+                        weights2.push_back(weightVal2);
+                    }
+                    currentNetworkWeights[iter->first] = weights;
+                    currentNetworkWeights2[iter->first] = weights2;
+                    mapPos++;
+                }
+                childWeights.push_back(currentNetworkWeights);
+                child2Weights.push_back(currentNetworkWeights2);
+            }
+            Chromosome* child = parents[0]->clone();
+            child->setWeights(childWeights);
+            offspring.push_back(child);
+
+            Chromosome* child2 = parents[0]->clone();
+            child2->setWeights(child2Weights);
+            offspring.push_back(child2);
+
+            for(uint k = 0; k < spansize; ++k){
+                delete [] initialspan[k];
+                delete [] orthbasisvectors[k];
+            }
+            delete [] initialspan;
+            delete [] orthbasisvectors;
+            delete [] sum;
         }
-        delete [] initialspan;
-        delete [] orthbasisvectors;
-        delete [] sum;
     }
 
     //possibility of creating more offspring than asked for, remove until the amount is correct

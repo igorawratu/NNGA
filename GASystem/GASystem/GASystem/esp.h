@@ -21,13 +21,16 @@ private:
     void setupSubpopulationStructure();
     //first neuron cache, then output
     bool createNeuralNetworkPrimitives(vector<pair<map<uint, Neuron*>, map<uint, Neuron*>>>& _output);
+    bool createDeltaNeuralNetworkPrimitives(vector<pair<map<uint, Neuron*>, map<uint, Neuron*>>>& _output);
     void evaluateFitness(SimulationContainer* _simulationContainer);
+    void runDeltaCodes(SimulationContainer* _simulationContainer);
 
 private:
     ESPParameters mParameters;
     vector<map<uint, pair<ESPSubPopulation*, uint>>> mSubpopulations;
     double mBestFitness, mBestRealFitness;
     Solution mBestSolution;
+    uint mStagnationCounter;
 
 private:
     ESP(const ESP& other){}

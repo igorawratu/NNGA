@@ -1,7 +1,24 @@
 #include "espchromosome.h"
 
 ESPChromosome::ESPChromosome(){
+    mSSMax = 1;
+    mSSMin = -1;
+    mFitness = 0;
+    mRealFitness = 0;
+}
 
+void ESPChromosome::reInitialize(){
+    uint weightCount = mNeuron->getWeights().size();
+    vector<double> weights;
+
+    boost::mt19937 rng(rand());
+    boost::uniform_real<double> weightDist(mSSMin, mSSMax);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genWeight(rng, weightDist);      
+    for(uint k = 0; k < weightCount; k++)
+        weights.push_back(genWeight());
+    mNeuron->setWeights(weights);
+    mFitness = 0;
+    mRealFitness = 0;
 }
 
 bool ESPChromosome::initialize(pugi::xml_node* _root){
@@ -77,7 +94,10 @@ bool ESPChromosome::initialize(pugi::xml_node* _root){
                 return false;
             }
 
-            boost::uniform_real<double> weightDist(atof(weightRoot.attribute("Min").value()), atof(weightRoot.attribute("Max").value()));
+            mSSMin = atof(weightRoot.attribute("Min").value());
+            mSSMax = atof(weightRoot.attribute("Max").value());
+
+            boost::uniform_real<double> weightDist(mSSMin, mSSMax);
             boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genWeight(rng, weightDist);      
             for(uint k = 0; k < weightCount; k++)
                 weights.push_back(genWeight());
@@ -100,6 +120,10 @@ bool ESPChromosome::initialize(pugi::xml_node* _root){
 
 ESPChromosome::ESPChromosome(const ESPChromosome& other){
     mNeuron = new NonLeafNeuron(*other.mNeuron);
+    mSSMax = other.mSSMax;
+    mSSMin = other.mSSMin;
+    mFitness = 0;
+    mRealFitness = 0;
 }
 
 ESPChromosome::~ESPChromosome(){
@@ -112,6 +136,10 @@ ESPChromosome& ESPChromosome::operator = (const ESPChromosome& other){
         delete mNeuron;
 
     mNeuron = new NonLeafNeuron(*other.mNeuron);
+    mSSMax = other.mSSMax;
+    mSSMin = other.mSSMin;
+    mFitness = 0;
+    mRealFitness = 0;
 
     return *this;
 }
@@ -132,6 +160,22 @@ vector<map<uint, vector<double>>> ESPChromosome::getWeightData(){
     out[0][1] = mNeuron->getWeights();
 
     return out;
+}
+
+bool ESPChromosome::addDelta(vector<map<uint, vector<double>>> _weights){
+    vector<double> newWeights;
+    vector<double> currentNeuronWeights = mNeuron->getWeights();
+    vector<double> deltaWeights = _weights[0][1];
+
+    if(deltaWeights.size() != currentNeuronWeights.size())
+        return false;
+
+    for(uint k = 0; k < currentNeuronWeights.size(); ++k)
+        newWeights.push_back(deltaWeights[k] + currentNeuronWeights[k]);
+
+    mNeuron->setWeights(newWeights);
+
+    return true;
 }
 
 vector<map<uint, NeuronInfo>> ESPChromosome::getFullStructureData(){

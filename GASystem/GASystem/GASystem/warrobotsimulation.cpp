@@ -91,8 +91,6 @@ double WarRobotSimulation::fitness(){
     dblAcc["ColFitnessWeight"] = 1;
     finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 5000;
 
-    cout << finalFitness << " " << mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) << endl;
-
     return finalFitness;
 }
 
