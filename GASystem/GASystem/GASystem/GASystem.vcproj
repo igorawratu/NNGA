@@ -396,6 +396,14 @@
 			Name="Crossover"
 			>
 			<File
+				RelativePath=".\ax.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ax.h"
+				>
+			</File>
+			<File
 				RelativePath=".\blx.cpp"
 				>
 			</File>
@@ -416,11 +424,27 @@
 				>
 			</File>
 			<File
+				RelativePath=".\hx.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\hx.h"
+				>
+			</File>
+			<File
 				RelativePath=".\multipointcrossover.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\multipointcrossover.h"
+				>
+			</File>
+			<File
+				RelativePath=".\opx.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\opx.h"
 				>
 			</File>
 			<File
@@ -432,11 +456,27 @@
 				>
 			</File>
 			<File
+				RelativePath=".\sbx.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\sbx.h"
+				>
+			</File>
+			<File
 				RelativePath=".\spx.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\spx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\tpx.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\tpx.h"
 				>
 			</File>
 			<File

@@ -997,8 +997,10 @@ void runSFTurnbackSim(){
 
 void testCrossoverOp(){
     srand(time(0));
-    Crossover* crossoverAlgorithm = CrossoverFactory::instance().create("UNDX");
+    Crossover* crossoverAlgorithm = CrossoverFactory::instance().create("SBX");
     vector<Chromosome*> parents;
+    map<string, double> params;
+    params["CrossoverProbability"] = 1;
 
     //p1
     xmldoc p1doc;
@@ -1028,7 +1030,7 @@ void testCrossoverOp(){
     parents.push_back(p2);
     parents.push_back(p1);
     
-    vector<Chromosome*> offspring = crossoverAlgorithm->execute(parents, 2000, map<string, double>(), SelectionFactory::instance().create("RandomSelection"));
+    vector<Chromosome*> offspring = crossoverAlgorithm->execute(parents, 2000, params, SelectionFactory::instance().create("RandomSelection"));
 
     ofstream outputFile, y;
     outputFile.open("neuralxmls/crossovertest/offspring.txt");
@@ -1654,7 +1656,7 @@ int main(){
     //runCarCrashSimESP();
     //runCarRaceSimESP();
     //runWarRobotSimESP();
-    runCorneringSimESP();
+    //runCorneringSimESP();
     //runMouseEscapeSimESP();
     //runMouseScatterSimESP();
     //runSFObstacleSimESP();
@@ -1662,7 +1664,7 @@ int main(){
     //runSFObstacleFieldSimESP();
     //runPBESP();
 
-    //testCrossoverOp();
+    testCrossoverOp();
 
     return 0;
 }

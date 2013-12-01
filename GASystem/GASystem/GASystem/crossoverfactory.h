@@ -14,6 +14,11 @@
 #include "blx.h"
 #include "undx.h"
 #include "pcx.h"
+#include "sbx.h"
+#include "ax.h"
+#include "hx.h"
+#include "opx.h"
+#include "tpx.h"
 
 using namespace std;
 

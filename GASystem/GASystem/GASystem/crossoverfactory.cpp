@@ -22,6 +22,11 @@ void CrossoverFactory::startup(){
     crossoverFactory.mFactory.registerCreator("BLX", BLX::createBLX);
     crossoverFactory.mFactory.registerCreator("UNDX", UNDX::createUNDX);
     crossoverFactory.mFactory.registerCreator("PCX", PCX::createPCX);
+    crossoverFactory.mFactory.registerCreator("TPX", TPX::createTPX);
+    crossoverFactory.mFactory.registerCreator("AX", AX::createAX);
+    crossoverFactory.mFactory.registerCreator("SBX", SBX::createSBX);
+    crossoverFactory.mFactory.registerCreator("PCX", OPX::createOPX);
+    crossoverFactory.mFactory.registerCreator("HX", HX::createHX);
 }
 
 void CrossoverFactory::shutdown(){
