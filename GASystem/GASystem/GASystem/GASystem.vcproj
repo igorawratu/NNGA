@@ -432,6 +432,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\lx.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\lx.h"
+				>
+			</File>
+			<File
 				RelativePath=".\multipointcrossover.cpp"
 				>
 			</File>

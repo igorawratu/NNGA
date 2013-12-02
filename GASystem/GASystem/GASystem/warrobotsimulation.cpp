@@ -73,13 +73,13 @@ double WarRobotSimulation::fitness(){
     dblAcc["UpperBound"] = 11;
     dblAcc["Value"] = mGroupOneAgents.size();
     dblAcc["EVWeight"] = 1;
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
+    finalFitness += 20 * mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
     dblAcc["LowerBound"] = 9;
     dblAcc["UpperBound"] = 11;
     dblAcc["Value"] = mGroupTwoAgents.size();
     dblAcc["EVWeight"] = 1;
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
+    finalFitness += 20 * mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
     dblAcc["LowerBound"] = mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 3;
     dblAcc["UpperBound"] = mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;
@@ -89,7 +89,7 @@ double WarRobotSimulation::fitness(){
 
     dblAcc["Collisions"] = mRangefinderVals + mCollisions; 
     dblAcc["ColFitnessWeight"] = 1;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 5000;
+    finalFitness += /*finalFitness == 0 ? */mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc)/* : 5000*/;
 
     return finalFitness;
 }
@@ -173,13 +173,13 @@ double WarRobotSimulation::realFitness(){
     dblAcc["UpperBound"] = 11;
     dblAcc["Value"] = mGroupOneAgents.size();
     dblAcc["EVWeight"] = 1;
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
+    finalFitness += 20 * mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
     dblAcc["LowerBound"] = 9;
     dblAcc["UpperBound"] = 11;
     dblAcc["Value"] = mGroupTwoAgents.size();
     dblAcc["EVWeight"] = 1;
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
+    finalFitness += 20 * mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
     dblAcc["LowerBound"] = mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;
     dblAcc["UpperBound"] = mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 10; 
@@ -189,7 +189,7 @@ double WarRobotSimulation::realFitness(){
 
     dblAcc["Collisions"] = mCollisions; 
     dblAcc["ColFitnessWeight"] = 1;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 5000;
+    finalFitness += /*finalFitness == 0 ? */mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc)/* : 5000*/;
 
     return finalFitness;
 }

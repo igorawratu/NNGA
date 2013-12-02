@@ -7,6 +7,8 @@
 #include "pugixml.hpp"
 #include "solution.h"
 
+#include <fstream>
+
 using namespace std;
 
 class ESP : public GeneticAlgorithm
@@ -15,7 +17,7 @@ public:
     ESP(ESPParameters _parameters);
     virtual ~ESP();
 
-    virtual Solution train(SimulationContainer* _simulationContainer);
+    virtual Solution train(SimulationContainer* _simulationContainer, string _outputFileName);
 
 private:
     void setupSubpopulationStructure();

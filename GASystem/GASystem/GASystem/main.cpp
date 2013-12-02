@@ -39,6 +39,7 @@
 #include "sfobstaclefieldsimulation.h"
 #include "esp.h"
 #include "polebalancingsimulation.h"
+#include <boost/lexical_cast.hpp>
 
 #define TRAIN
 
@@ -431,7 +432,7 @@ void testGA(){
     SimulationContainer sc(sim);
 
     GAEngine gaengine;
-    Solution sol = gaengine.train(ga, &sc);
+    Solution sol = gaengine.train(ga, &sc, "");
 
     delete sim;
     delete ga;
@@ -493,7 +494,7 @@ void runBridgeCarSim(){
     GeneticAlgorithm* ga = new StandardGA(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -541,7 +542,7 @@ void runBridgeMouseSim(){
     GeneticAlgorithm* ga = new StandardGA(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -589,7 +590,7 @@ void runCorneringSim(){
     GeneticAlgorithm* ga = new StandardGA(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -637,7 +638,7 @@ void runCarCrashSim(){
     GeneticAlgorithm* ga = new StandardGA(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -685,7 +686,7 @@ void runCarRaceSim(){
     GeneticAlgorithm* ga = new StandardGA(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -733,7 +734,7 @@ void runWarRobotSim(){
     GeneticAlgorithm* ga = new StandardGA(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -782,7 +783,7 @@ void runMouseEscapeSim(){
     GeneticAlgorithm* ga = new StandardGA(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -830,7 +831,7 @@ void runMouseScatterSim(){
     GeneticAlgorithm* ga = new StandardGA(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -878,7 +879,7 @@ void runSFObstacleSim(){
     GeneticAlgorithm* ga = new StandardGA(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -926,7 +927,7 @@ void runSFObstacleFieldSim(){
     GeneticAlgorithm* ga = new StandardGA(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -974,7 +975,7 @@ void runSFTurnbackSim(){
     GeneticAlgorithm* ga = new StandardGA(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -997,7 +998,7 @@ void runSFTurnbackSim(){
 
 void testCrossoverOp(){
     srand(time(0));
-    Crossover* crossoverAlgorithm = CrossoverFactory::instance().create("SBX");
+    Crossover* crossoverAlgorithm = CrossoverFactory::instance().create("LX");
     vector<Chromosome*> parents;
     map<string, double> params;
     params["CrossoverProbability"] = 1;
@@ -1080,7 +1081,7 @@ void runBridgeCarSimESP(){
     GeneticAlgorithm* ga = new ESP(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -1129,7 +1130,7 @@ void runBridgeMouseSimESP(){
     GeneticAlgorithm* ga = new ESP(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -1149,7 +1150,10 @@ void runBridgeMouseSimESP(){
 }
 
 void runCorneringSimESP(){
-    int seed = 50;
+    int seed = rand();
+
+    cout << seed << endl;
+
     GraphicsEngine engine(NULL);
 
     CorneringSim* sim = new CorneringSim(2, 4, 450, 5, 30, NULL, engine.getResourceManager(), seed);
@@ -1178,7 +1182,7 @@ void runCorneringSimESP(){
     GeneticAlgorithm* ga = new ESP(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -1227,7 +1231,7 @@ void runCarCrashSimESP(){
     GeneticAlgorithm* ga = new ESP(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -1276,7 +1280,7 @@ void runCarRaceSimESP(){
     GeneticAlgorithm* ga = new ESP(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -1325,7 +1329,7 @@ void runWarRobotSimESP(){
     GeneticAlgorithm* ga = new ESP(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -1375,7 +1379,7 @@ void runMouseEscapeSimESP(){
     GeneticAlgorithm* ga = new ESP(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -1424,7 +1428,7 @@ void runMouseScatterSimESP(){
     GeneticAlgorithm* ga = new ESP(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -1444,7 +1448,7 @@ void runMouseScatterSimESP(){
 }
 
 void runSFObstacleSimESP(){
-    int seed = 110;
+    int seed = rand();
     GraphicsEngine engine(NULL);
 
     SFObstacleSimulation* sim = new SFObstacleSimulation(2, 40, 300, 5, 30, NULL, engine.getResourceManager(), seed);
@@ -1473,7 +1477,7 @@ void runSFObstacleSimESP(){
     GeneticAlgorithm* ga = new ESP(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -1522,7 +1526,7 @@ void runSFObstacleFieldSimESP(){
     GeneticAlgorithm* ga = new ESP(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -1571,7 +1575,7 @@ void runSFTurnbackSimESP(){
     GeneticAlgorithm* ga = new ESP(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -1620,7 +1624,7 @@ void runPBESP(){
     GeneticAlgorithm* ga = new ESP(params);
 
     GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont);
+    Solution solution = gaengine.train(ga, &cont, "");
 
     delete ga;
 
@@ -1639,7 +1643,134 @@ void runPBESP(){
     engine.renderSimulation();
 }
 
+
+void runWarRobotPaperTests(string _crossoverOp, double _crossoverProb, int _rep){
+    int seed = rand();
+    GraphicsEngine engine(NULL);
+
+    WarRobotSimulation* sim = new WarRobotSimulation(2, 300, 5, 30, NULL, engine.getResourceManager(), seed);
+    sim->initialise();
+
+    SimulationContainer cont(sim);
+
+    ESPParameters params;
+    params.populationSize = 20;
+    params.maxGenerations = 200;
+    params.nnFormatFilename = "neuralxmls/warrobotsimulation/input5h.xml";
+    params.stagnationThreshold = 30;
+    params.fitnessEpsilonThreshold = 0;
+    params.mutationAlgorithm = "GaussianMutation";
+    params.mutationParameters["MutationProbability"] = 0.02;
+    params.mutationParameters["Deviation"] = 0.2;
+    params.mutationParameters["MaxConstraint"] = 1;
+    params.mutationParameters["MinConstraint"] = -1;
+    params.crossoverAlgorithm = _crossoverOp;
+    params.selectionAlgorithm = "LRankSelection";
+    params.elitismCount = 5;
+    params.sampleEvaluationsPerChromosome = 3;
+    params.crossoverParameters["CrossoverProbability"] = _crossoverProb;
+
+    string resultFileName = "results/warrobotsimulation/" + _crossoverOp + "_" + boost::lexical_cast<string>(_crossoverProb) + "_" + boost::lexical_cast<string>(_rep) + ".txt";
+
+    GeneticAlgorithm* ga = new ESP(params);
+
+    GAEngine gaengine;
+    Solution solution = gaengine.train(ga, &cont, resultFileName);
+
+    delete ga;
+
+    char buffer[150];
+    sprintf(buffer, "neuralxmls/warrobotsimulation/output_%d.xml", seed);
+
+    solution.printToFile(string(buffer));
+}
+
+void runMouseBridgePaperTests(string _crossoverOp, double _crossoverProb, int _rep){
+    int seed = rand();
+    GraphicsEngine engine(NULL);
+
+    BridgeSimulation* sim = new BridgeSimulation(2, 30, MOUSE, 300, 5, 30, NULL, engine.getResourceManager(), seed);
+    sim->initialise();
+
+    SimulationContainer cont(sim);
+
+    ESPParameters params;
+    params.populationSize = 20;
+    params.maxGenerations = 200;
+    params.nnFormatFilename = "neuralxmls/bridgesimulation/mouse/input6h.xml";
+    params.stagnationThreshold = 30;
+    params.fitnessEpsilonThreshold = 0;
+    params.mutationAlgorithm = "GaussianMutation";
+    params.mutationParameters["MutationProbability"] = 0.02;
+    params.mutationParameters["Deviation"] = 0.2;
+    params.mutationParameters["MaxConstraint"] = 1;
+    params.mutationParameters["MinConstraint"] = -1;
+    params.crossoverAlgorithm = _crossoverOp;
+    params.selectionAlgorithm = "LRankSelection";
+    params.elitismCount = 5;
+    params.sampleEvaluationsPerChromosome = 3;
+    params.crossoverParameters["CrossoverProbability"] = _crossoverProb;
+
+    string resultFileName = "results/mousebridgesimulation/" + _crossoverOp + "_" + boost::lexical_cast<string>(_crossoverProb) + "_" + boost::lexical_cast<string>(_rep) + ".txt";
+
+    GeneticAlgorithm* ga = new ESP(params);
+
+    GAEngine gaengine;
+    Solution solution = gaengine.train(ga, &cont, resultFileName);
+
+    delete ga;
+
+    char buffer[150];
+    sprintf(buffer, "neuralxmls/bridgesimulation/mouse/output_%d.xml", seed);
+
+    solution.printToFile(string(buffer));
+}
+
+
+void runCarCorneringPaperTests(string _crossoverOp, double _crossoverProb, int _rep){
+    int seed = rand();
+    GraphicsEngine engine(NULL);
+
+    CorneringSim* sim = new CorneringSim(2, 4, 450, 5, 30, NULL, engine.getResourceManager(), seed);
+    sim->initialise();
+
+    SimulationContainer cont(sim);
+
+    ESPParameters params;
+    params.populationSize = 20;
+    params.maxGenerations = 200;
+    params.nnFormatFilename = "neuralxmls/corneringsimulation/input6h.xml";
+    params.stagnationThreshold = 30;
+    params.fitnessEpsilonThreshold = 0;
+    params.mutationAlgorithm = "GaussianMutation";
+    params.mutationParameters["MutationProbability"] = 0.02;
+    params.mutationParameters["Deviation"] = 0.2;
+    params.mutationParameters["MaxConstraint"] = 1;
+    params.mutationParameters["MinConstraint"] = -1;
+    params.crossoverAlgorithm = _crossoverOp;
+    params.selectionAlgorithm = "LRankSelection";
+    params.elitismCount = 5;
+    params.sampleEvaluationsPerChromosome = 3;
+    params.crossoverParameters["CrossoverProbability"] = _crossoverProb;
+
+    string resultFileName = "results/corneringsimulation/" + _crossoverOp + "_" + boost::lexical_cast<string>(_crossoverProb) + "_" + boost::lexical_cast<string>(_rep) + ".txt";
+
+    GeneticAlgorithm* ga = new ESP(params);
+
+    GAEngine gaengine;
+    Solution solution = gaengine.train(ga, &cont, resultFileName);
+
+    delete ga;
+
+    char buffer[150];
+    sprintf(buffer, "neuralxmls/corneringsimulation/output_%d.xml", seed);
+
+    solution.printToFile(string(buffer));
+}
+
+
 int main(){
+    srand(time(0));
     //runBridgeMouseSim();
     //runBridgeCarSim();
     //runCarCrashSim();
@@ -1656,7 +1787,7 @@ int main(){
     //runCarCrashSimESP();
     //runCarRaceSimESP();
     //runWarRobotSimESP();
-    //runCorneringSimESP();
+    runCorneringSimESP();
     //runMouseEscapeSimESP();
     //runMouseScatterSimESP();
     //runSFObstacleSimESP();
@@ -1664,7 +1795,32 @@ int main(){
     //runSFObstacleFieldSimESP();
     //runPBESP();
 
-    testCrossoverOp();
+    /*testCrossoverOp();
+
+    vector<double> crossoverProb;
+    crossoverProb.push_back(0.2);
+    crossoverProb.push_back(0.4);
+    crossoverProb.push_back(0.6);
+    crossoverProb.push_back(0.8);
+    crossoverProb.push_back(1);
+
+    vector<string> crossoverOp;
+    crossoverOp.push_back("AX");
+    crossoverOp.push_back("BLX");
+    crossoverOp.push_back("HX");
+    crossoverOp.push_back("LX");
+    crossoverOp.push_back("MultipointCrossover");
+    crossoverOp.push_back("OPX");
+    crossoverOp.push_back("PCX");
+    crossoverOp.push_back("SBX");
+    crossoverOp.push_back("TPX");
+    crossoverOp.push_back("UNDX");
+
+    for(uint k = 0; k < crossoverOp.size(); ++k){
+        for(uint i = 0; i < crossoverProb.size(); ++i)
+            for(uint j = 0; j < 30; ++j)
+                runCarCorneringPaperTests(crossoverOp[k], crossoverProb[i], j);
+    }*/
 
     return 0;
 }

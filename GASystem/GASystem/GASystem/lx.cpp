@@ -1,10 +1,10 @@
-#include "sbx.h"
+#include "lx.h"
 
-SBX::SBX(){}
+LX::LX(){}
 
-SBX::~SBX(){}
+LX::~LX(){}
 
-vector<Chromosome*> SBX::execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters, Selection* _selectionAlgorithm){
+vector<Chromosome*> LX::execute(vector<Chromosome*> _population, uint numOffspring, map<string, double>& _parameters, Selection* _selectionAlgorithm){
     assert(_population.size() >= 2);
     
     vector<Chromosome*> offspring;
@@ -28,34 +28,36 @@ vector<Chromosome*> SBX::execute(vector<Chromosome*> _population, uint numOffspr
             p1Weights = parents[0]->getWeightData(); p2Weights = parents[1]->getWeightData();
 
             for(uint k = 0; k < p1Weights.size(); k++){
-                map<uint, vector<double>> currentNetwork1Weights;
-                map<uint, vector<double>> currentNetwork2Weights;
-
+                map<uint, vector<double>> currentNetworkWeights1, currentNetworkWeights2;
                 for(map<uint, vector<double>>::iterator iter = p1Weights[k].begin(); iter != p1Weights[k].end(); iter++){
                     vector<double> weights1;
                     vector<double> weights2;
 
                     for(uint i = 0; i < iter->second.size(); i++){
-                        double alpha = 2;
+                        double u = gen();
+                        double a = 0;
+                        double b = 0.25;
 
-                        double child1Val = 0.5 * ((1 + alpha) * p1Weights[k][iter->first][i] + (1 - alpha) * p2Weights[k][iter->first][i]);
-                        double child2Val = 0.5 * ((1 - alpha) * p1Weights[k][iter->first][i] + (1 + alpha) * p2Weights[k][iter->first][i]);
-                        
-                        weights1.push_back(child1Val);
-                        weights2.push_back(child2Val);
+                        double beta = u < 0.5 ? a + b * log(2 * u) : a - b * log(2 - 2 * u);
+
+                        double childVal1 = p1Weights[k][iter->first][i] + beta * fabs(p1Weights[k][iter->first][i] - p2Weights[k][iter->first][i]);
+                        double childVal2 = p2Weights[k][iter->first][i] + beta * fabs(p1Weights[k][iter->first][i] - p2Weights[k][iter->first][i]);
+
+                        weights1.push_back(childVal1);
+                        weights2.push_back(childVal2);
                     }
 
-                    currentNetwork1Weights[iter->first] = weights1;
-                    currentNetwork2Weights[iter->first] = weights2;
+                    currentNetworkWeights1[iter->first] = weights1;
+                    currentNetworkWeights2[iter->first] = weights2;
                 }
-                child1Weights.push_back(currentNetwork1Weights);
-                child2Weights.push_back(currentNetwork2Weights);
+                child1Weights.push_back(currentNetworkWeights1);
+                child2Weights.push_back(currentNetworkWeights2);
             }
             Chromosome* child1 = parents[0]->clone();
-            Chromosome* child2 = parents[0]->clone();
             child1->setWeights(child1Weights);
-            child2->setWeights(child2Weights);
             offspring.push_back(child1);
+            Chromosome* child2 = parents[0]->clone();
+            child2->setWeights(child2Weights);
             offspring.push_back(child2);
         }
     }

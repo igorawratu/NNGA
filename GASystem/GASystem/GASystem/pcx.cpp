@@ -31,7 +31,7 @@ double PCX::calculateMeanDistanceD(const vector<double>& _dvec, const vector<dou
         dottopp2 += (_p2vec[k] - _g[k]) * _dvec[k];
     }
     
-    double p1distance, p2distance = 0;
+    double p1distance = 0, p2distance = 0;
     for(uint k = 0; k < _dvec.size(); ++k){
         double temp = (_dvec[k] * dottopp3/dotbot) - (_p3vec[k] - _g[k]);
         p1distance += temp * temp;

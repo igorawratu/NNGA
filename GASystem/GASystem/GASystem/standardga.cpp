@@ -20,7 +20,7 @@ StandardGA& StandardGA::operator = (const StandardGA& other){
 StandardGA::~StandardGA(){
 }
 
-Solution StandardGA::train(SimulationContainer* _simulationContainer){
+Solution StandardGA::train(SimulationContainer* _simulationContainer, string _outputFileName){
     vector<Chromosome*> population;
     
     xmldoc doc;

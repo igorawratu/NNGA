@@ -46,7 +46,7 @@ public:
     StandardGA& operator = (const StandardGA& other);
     virtual ~StandardGA();
 
-    virtual Solution train(SimulationContainer* _simulationContainer);
+    virtual Solution train(SimulationContainer* _simulationContainer, string _outputFileName);
 
 private:
     void quicksort(vector<Chromosome*>& elements, int left, int right);

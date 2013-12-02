@@ -19,7 +19,7 @@ public:
     GAEngine();
     ~GAEngine();
 
-    Solution train(GeneticAlgorithm* _geneticAlgorithm, SimulationContainer* _simulation);
+    Solution train(GeneticAlgorithm* _geneticAlgorithm, SimulationContainer* _simulation, string _filename);
 
 private:
     GAEngine(const GAEngine& other){}

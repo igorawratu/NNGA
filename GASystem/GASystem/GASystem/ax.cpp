@@ -18,7 +18,7 @@ vector<Chromosome*> AX::execute(vector<Chromosome*> _population, uint numOffspri
 
         if(gen() > _parameters["CrossoverProbability"]){
             boost::mt19937 rngP(rand());
-            boost::uniform_int<> distP(0, parents.size());
+            boost::uniform_int<> distP(0, parents.size() - 1);
             boost::variate_generator<boost::mt19937, boost::uniform_int<>> genParent(rngP, distP);
 
             offspring.push_back(parents[genParent()]->clone());
@@ -55,6 +55,12 @@ vector<Chromosome*> AX::execute(vector<Chromosome*> _population, uint numOffspri
             offspring.push_back(child1);
             offspring.push_back(child2);
         }
+    }
+
+    while(offspring.size() > numOffspring){
+        Chromosome* toRemove = offspring[0];
+        delete toRemove;
+        offspring.erase(offspring.begin());
     }
 
     return offspring;

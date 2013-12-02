@@ -14,7 +14,7 @@ ESP::~ESP(){
     }
 }
 
-Solution ESP::train(SimulationContainer* _simulationContainer){
+Solution ESP::train(SimulationContainer* _simulationContainer, string _outputFileName){
     //evaluate
     mBestFitness = mBestRealFitness = -1;
     evaluateFitness(_simulationContainer);
@@ -55,6 +55,14 @@ Solution ESP::train(SimulationContainer* _simulationContainer){
 
         if(mBestRealFitness <= mParameters.fitnessEpsilonThreshold)
             return mBestSolution;
+
+        if((k + 1) % 50 == 0 || k == 0){
+            ofstream outFile;
+            outFile.open(_outputFileName.c_str(), ofstream::app);
+            
+            outFile << (k == 0? k : k + 1) << ": " << mBestSolution.fitness() << " " << mBestSolution.realFitness() << endl;
+            outFile.close();
+        }
     }
 
     return mBestSolution;

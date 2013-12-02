@@ -61,7 +61,6 @@ void CarAgent::update(const vector<double>& _nnOutput){
     assert(_nnOutput.size() >= 2);
 
     double angularAcc = _nnOutput[0] - 0.5;
-    angularAcc = fabs(angularAcc) > 0.2 ? angularAcc : 0;
 
     mRigidBody->applyTorque(btVector3(0, angularAcc/2, 0));
 

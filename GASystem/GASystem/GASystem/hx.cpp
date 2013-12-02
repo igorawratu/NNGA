@@ -26,7 +26,7 @@ vector<Chromosome*> HX::execute(vector<Chromosome*> _population, uint numOffspri
         else{
             vector<map<uint, vector<double>>> p1Weights, p2Weights, childWeights;
             p1Weights = parents[0]->fitness() >= parents[1]->fitness() ? parents[0]->getWeightData() : parents[1]->getWeightData();
-            p2Weights = parents[1]->fitness() > parents[0]->fitness() ? parents[1]->getWeightData() : parents[0]->getWeightData();
+            p2Weights = parents[1]->fitness() > parents[0]->fitness() ? parents[0]->getWeightData() : parents[1]->getWeightData();
 
             for(uint k = 0; k < p1Weights.size(); k++){
                 map<uint, vector<double>> currentNetworkWeights;
@@ -45,11 +45,8 @@ vector<Chromosome*> HX::execute(vector<Chromosome*> _population, uint numOffspri
                 childWeights.push_back(currentNetworkWeights);
             }
             Chromosome* child1 = parents[0]->clone();
-            Chromosome* child2 = parents[0]->clone();
             child1->setWeights(childWeights);
-            child2->setWeights(p1Weights);
             offspring.push_back(child1);
-            offspring.push_back(child2);
         }
     }
 

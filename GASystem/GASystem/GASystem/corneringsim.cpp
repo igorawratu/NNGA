@@ -65,7 +65,7 @@ double CorneringSim::fitness(){
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
     
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += 2 * mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
     finalFitness += /*finalFitness == 0 ? */mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, mWaypointTracker)/* : maxCollisions*/;
 
     return finalFitness;
@@ -90,7 +90,7 @@ double CorneringSim::realFitness(){
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
     
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += 2 * mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
     finalFitness += /*finalFitness == 0 ? */mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, mWaypointTracker)/* : maxCollisions*/;
 
     return finalFitness;
@@ -120,7 +120,7 @@ bool CorneringSim::initialise(){
     mWaypointTracker["NumWaypoints"] = mWaypoints.size();
 
     //set the vals
-    vector3 minDim(-45, 0, 30), maxDim(-40, 0, 40);
+    vector3 minDim(-45, 0, 25), maxDim(-40, 0, 35);
 
     boost::mt19937 rng(mSeed);
     boost::mt19937 rngz(mSeed + mSeed / 2);

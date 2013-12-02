@@ -14,7 +14,7 @@ public:
     GeneticAlgorithm(){}
     virtual ~GeneticAlgorithm(){}
 
-    virtual Solution train(SimulationContainer* _simulationContainer)=0;
+    virtual Solution train(SimulationContainer* _simulationContainer, string _outputFileName)=0;
 };
 
 #endif
