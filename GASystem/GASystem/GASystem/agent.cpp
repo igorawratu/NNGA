@@ -51,22 +51,31 @@ vector3 Agent::getScale(){
     return mScale;
 }
 
-double Agent::getRayCollisionDistance(const btVector3& _ray, btDiscreteDynamicsWorld* _world){
+double Agent::getRayCollisionDistance(const btVector3& _ray, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody){
     double dist = 100;
-
-    btCollisionWorld::ClosestRayResultCallback ray = calculateRay(_ray, _world);
 
     btTransform trans;
     mRigidBody->getMotionState()->getWorldTransform(trans);
     vector3 from(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ());
 
-    if(ray.hasHit())
-        dist = from.calcDistance(vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
+    btCollisionWorld::AllHitsRayResultCallback ray = calculateRay(_ray, _world);
+    vector<double> hitDistances;
+    for(uint k = 0; k < ray.m_collisionObjects.size(); ++k){
+        if(ray.m_collisionObjects[k] == _envRigidBody){
+            btVector3 hitpoint = ray.m_hitPointWorld[k];
+            double newHitDistance = from.calcDistance(vector3(hitpoint.getX(), hitpoint.getY(), hitpoint.getZ()));
+            hitDistances.push_back(newHitDistance);
+        }
+    }
+
+    for(uint k = 0; k < hitDistances.size(); ++k){
+        dist = dist > hitDistances[k] ? hitDistances[k] : dist;
+    }
 
     return dist;
 }
 
-btCollisionWorld::ClosestRayResultCallback Agent::calculateRay(const btVector3& _ray, btDiscreteDynamicsWorld* _world){
+btCollisionWorld::AllHitsRayResultCallback Agent::calculateRay(const btVector3& _ray, btDiscreteDynamicsWorld* _world){
     btVector3 correctedRot = mRigidBody->getWorldTransform().getBasis() * _ray;
 
     btTransform trans;
@@ -76,7 +85,7 @@ btCollisionWorld::ClosestRayResultCallback Agent::calculateRay(const btVector3& 
 
     btVector3 correctedRay(correctedRot.getX() + agentPosition.getX(), correctedRot.getY() + agentPosition.getY(), correctedRot.getZ() + agentPosition.getZ());
 
-    btCollisionWorld::ClosestRayResultCallback ray(agentPosition, correctedRay);
+    btCollisionWorld::AllHitsRayResultCallback ray(agentPosition, correctedRay);
 
     _world->rayTest(agentPosition, correctedRay, ray);
 

@@ -24,7 +24,7 @@ public:
 
     virtual ~Agent();
 
-    virtual void avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world) = 0;
+    virtual void avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody) = 0;
 
     virtual void update(const vector<double>& _nnOutput)=0;
 
@@ -47,8 +47,8 @@ protected:
     virtual void setRigidbodyProperties()=0;
     virtual btVector3 calculateInertia(double _mass, btCollisionShape* _shape)=0;
 
-    double getRayCollisionDistance(const btVector3& _ray, btDiscreteDynamicsWorld* _world);
-    btCollisionWorld::ClosestRayResultCallback calculateRay(const btVector3& _ray, btDiscreteDynamicsWorld* _world);
+    double getRayCollisionDistance(const btVector3& _ray, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody);
+    btCollisionWorld::AllHitsRayResultCallback calculateRay(const btVector3& _ray, btDiscreteDynamicsWorld* _world);
 
 protected:
     btRigidBody* mRigidBody;

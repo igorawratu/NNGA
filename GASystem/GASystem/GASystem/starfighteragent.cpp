@@ -6,11 +6,11 @@ StarFighterAgent::StarFighterAgent(double _maxLinearVel, double _maxAngularVel){
     mCurrVel = 0;
 }
 
-void StarFighterAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world){
-    double left = getRayCollisionDistance(btVector3(100, 0, -100), _world);
-    double right = getRayCollisionDistance(btVector3(100, 0, 100), _world);
-    double bot = getRayCollisionDistance(btVector3(100, -100, 0), _world);
-    double top = getRayCollisionDistance(btVector3(100, 100, 0), _world);
+void StarFighterAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody){
+    double left = getRayCollisionDistance(btVector3(100, 0, -100), _world, _envRigidBody);
+    double right = getRayCollisionDistance(btVector3(100, 0, 100), _world, _envRigidBody);
+    double bot = getRayCollisionDistance(btVector3(100, -100, 0), _world, _envRigidBody);
+    double top = getRayCollisionDistance(btVector3(100, 100, 0), _world, _envRigidBody);
 
     double horizontalTorque, verticleTorque;
 

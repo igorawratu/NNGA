@@ -6,9 +6,9 @@ MouseAgent::MouseAgent(double _maxLinearVel, double _maxAngularVel){
     mCurrVel = 0;
 }
 
-void MouseAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world){
-    double left = getRayCollisionDistance(btVector3(100, 0, -100), _world);
-    double right = getRayCollisionDistance(btVector3(100, 0, 100), _world);
+void MouseAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody){
+    double left = getRayCollisionDistance(btVector3(100, 0, -100), _world, _envRigidBody);
+    double right = getRayCollisionDistance(btVector3(100, 0, 100), _world, _envRigidBody);
 
     //calculate rotation
     if(left < _frontRayDistance && right < _frontRayDistance)

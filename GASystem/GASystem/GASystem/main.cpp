@@ -43,6 +43,10 @@
 
 #define TRAIN
 
+#define TEST_1
+#define TEST_2
+#define TEST_3
+
 using namespace std;
 
 void quicksort(vector<Chromosome*>& elements, int left, int right)
@@ -1795,9 +1799,9 @@ int main(){
     //runSFObstacleFieldSimESP();
     //runPBESP();
 
-    /*testCrossoverOp();
+    //testCrossoverOp();
 
-    vector<double> crossoverProb;
+    /*vector<double> crossoverProb;
     crossoverProb.push_back(0.2);
     crossoverProb.push_back(0.4);
     crossoverProb.push_back(0.6);
@@ -1817,9 +1821,64 @@ int main(){
     crossoverOp.push_back("UNDX");
 
     for(uint k = 0; k < crossoverOp.size(); ++k){
-        for(uint i = 0; i < crossoverProb.size(); ++i)
-            for(uint j = 0; j < 30; ++j)
+        for(uint i = 0; i < crossoverProb.size(); ++i){
+            for(uint j = 0; j < 8; ++j){
+#ifdef TEST_1
                 runCarCorneringPaperTests(crossoverOp[k], crossoverProb[i], j);
+#endif
+#ifdef TEST_2
+                runMouseBridgePaperTests(crossoverOp[k], crossoverProb[i], j);
+#endif
+#ifdef TEST_3
+                runWarRobotPaperTests(crossoverOp[k], crossoverProb[i], j);
+#endif
+            }
+        }
+    }
+    
+    for(uint k = 0; k < crossoverOp.size(); ++k){
+        for(uint i = 0; i < crossoverProb.size(); ++i)
+            for(uint j = 8; j < 16; ++j){
+#ifdef TEST_1
+                runCarCorneringPaperTests(crossoverOp[k], crossoverProb[i], j);
+#endif
+#ifdef TEST_2
+                runMouseBridgePaperTests(crossoverOp[k], crossoverProb[i], j);
+#endif
+#ifdef TEST_3
+                runWarRobotPaperTests(crossoverOp[k], crossoverProb[i], j);
+#endif
+            }
+    }
+    
+    for(uint k = 0; k < crossoverOp.size(); ++k){
+        for(uint i = 0; i < crossoverProb.size(); ++i)
+            for(uint j = 16; j < 23; ++j){
+#ifdef TEST_1
+                runCarCorneringPaperTests(crossoverOp[k], crossoverProb[i], j);
+#endif
+#ifdef TEST_2
+                runMouseBridgePaperTests(crossoverOp[k], crossoverProb[i], j);
+#endif
+#ifdef TEST_3
+                runWarRobotPaperTests(crossoverOp[k], crossoverProb[i], j);
+#endif
+            }
+    }
+    
+    for(uint k = 0; k < crossoverOp.size(); ++k){
+        for(uint i = 0; i < crossoverProb.size(); ++i)
+            for(uint j = 23; j < 30; ++j){
+#ifdef TEST_1
+                runCarCorneringPaperTests(crossoverOp[k], crossoverProb[i], j);
+#endif
+#ifdef TEST_2
+                runMouseBridgePaperTests(crossoverOp[k], crossoverProb[i], j);
+#endif
+#ifdef TEST_3
+                runWarRobotPaperTests(crossoverOp[k], crossoverProb[i], j);
+#endif
+            }
     }*/
 
     return 0;

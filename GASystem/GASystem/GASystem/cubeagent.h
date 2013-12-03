@@ -18,7 +18,7 @@ public:
 
     virtual void tick();
 
-    virtual void avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world);
+    virtual void avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody);
 
 protected:
     virtual btCollisionShape* getCollisionShape(ResourceManager* _rm);
