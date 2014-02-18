@@ -61,8 +61,9 @@ double CorneringSim::fitness(){
     for(uint k = 0; k < mWaypoints.size(); k++)
         pos["Waypoint" + boost::lexical_cast<string>(k)] = mWaypoints[k];
 
-    for(uint k = 0; k < mAgents.size(); k++)
+    for(uint k = 0; k < mAgents.size(); k++){
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
+    }
 
     
     finalFitness += 2 * mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);

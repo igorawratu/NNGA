@@ -32,7 +32,7 @@ double UNDX::calculateP3DDistance(const vector<double>& _dvec, const vector<doub
     }
     
     for(uint k = 0; k < _dvec.size(); ++k){
-        double temp = (_dvec[k] * dottop/dotbot) - (_p3vec[k] - _p1vec[k]);
+		double temp = dotbot == 0 ? _p3vec[k] - _p1vec[k] : (_dvec[k] * dottop/dotbot) - (_p3vec[k] - _p1vec[k]);
         dp3distance += temp * temp;
     }
     dp3distance = sqrt(dp3distance);

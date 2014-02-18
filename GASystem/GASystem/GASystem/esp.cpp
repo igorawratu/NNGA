@@ -21,8 +21,6 @@ Solution ESP::train(SimulationContainer* _simulationContainer, string _outputFil
     for(uint k = 0; k < mParameters.maxGenerations; ++k){
         time_t t = time(0);
 
-        //mSubpopulations[0][7].first->print();
-
         cout << "Generation " << k << endl;
         if(mStagnationCounter >= mParameters.stagnationThreshold){
             cout << "Population stagnated, generating Delta Codes" << endl;

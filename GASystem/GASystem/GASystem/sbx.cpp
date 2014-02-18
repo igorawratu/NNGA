@@ -36,7 +36,9 @@ vector<Chromosome*> SBX::execute(vector<Chromosome*> _population, uint numOffspr
                     vector<double> weights2;
 
                     for(uint i = 0; i < iter->second.size(); i++){
-                        double alpha = 2;
+                        double r = gen();
+
+                        double alpha = r <= 0.5? pow(2*r, 0.5) : pow(1/(2*(1-r)), 0.5);
 
                         double child1Val = 0.5 * ((1 + alpha) * p1Weights[k][iter->first][i] + (1 - alpha) * p2Weights[k][iter->first][i]);
                         double child2Val = 0.5 * ((1 - alpha) * p1Weights[k][iter->first][i] + (1 + alpha) * p2Weights[k][iter->first][i]);

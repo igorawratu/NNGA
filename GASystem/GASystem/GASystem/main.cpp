@@ -41,11 +41,11 @@
 #include "polebalancingsimulation.h"
 #include <boost/lexical_cast.hpp>
 
-#define TRAIN
+//#define TRAIN
 
-#define TEST_1
-#define TEST_2
-#define TEST_3
+//#define TEST_1
+//#define TEST_2
+//#define TEST_3
 
 using namespace std;
 
@@ -538,7 +538,7 @@ void runBridgeMouseSim(){
     params.mutationParameters["Deviation"] = 0.2;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "MultipointCrossover";
+    params.crossoverAlgorithm = "UNDX";
     params.selectionAlgorithm = "QuadraticRankSelection";
     params.elitismCount = 5;
     params.crossoverParameters["CrossoverProbability"] = 0.8;
@@ -1108,7 +1108,7 @@ void runBridgeMouseSimESP(){
     int seed = 50;
     GraphicsEngine engine(NULL);
 
-    BridgeSimulation* sim = new BridgeSimulation(2, 30, MOUSE, 300, 5, 30, NULL, engine.getResourceManager(), seed);
+    BridgeSimulation* sim = new BridgeSimulation(2, 1, MOUSE, 300, 5, 30, NULL, engine.getResourceManager(), seed);
     sim->initialise();
 
     SimulationContainer cont(sim);
@@ -1177,7 +1177,7 @@ void runCorneringSimESP(){
     params.mutationParameters["Deviation"] = 0.2;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
+    params.crossoverAlgorithm = "UNDX";
     params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = 5;
     params.sampleEvaluationsPerChromosome = 3;
@@ -1660,8 +1660,8 @@ void runWarRobotPaperTests(string _crossoverOp, double _crossoverProb, int _rep)
     ESPParameters params;
     params.populationSize = 20;
     params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/warrobotsimulation/input5h.xml";
-    params.stagnationThreshold = 30;
+    params.nnFormatFilename = "neuralxmls/warrobotsimulation/input6h.xml";
+    params.stagnationThreshold = 40;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
@@ -1702,7 +1702,7 @@ void runMouseBridgePaperTests(string _crossoverOp, double _crossoverProb, int _r
     params.populationSize = 20;
     params.maxGenerations = 200;
     params.nnFormatFilename = "neuralxmls/bridgesimulation/mouse/input6h.xml";
-    params.stagnationThreshold = 30;
+    params.stagnationThreshold = 40;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
@@ -1744,7 +1744,7 @@ void runCarCorneringPaperTests(string _crossoverOp, double _crossoverProb, int _
     params.populationSize = 20;
     params.maxGenerations = 200;
     params.nnFormatFilename = "neuralxmls/corneringsimulation/input6h.xml";
-    params.stagnationThreshold = 30;
+    params.stagnationThreshold = 40;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
@@ -1791,8 +1791,8 @@ int main(){
     //runCarCrashSimESP();
     //runCarRaceSimESP();
     //runWarRobotSimESP();
-    runCorneringSimESP();
-    //runMouseEscapeSimESP();
+    //runCorneringSimESP();
+    runMouseEscapeSimESP();
     //runMouseScatterSimESP();
     //runSFObstacleSimESP();
     //runSFTurnbackSimESP();
@@ -1818,25 +1818,25 @@ int main(){
     crossoverOp.push_back("PCX");
     crossoverOp.push_back("SBX");
     crossoverOp.push_back("TPX");
-    crossoverOp.push_back("UNDX");
+    crossoverOp.push_back("UNDX");*/
 
-    for(uint k = 0; k < crossoverOp.size(); ++k){
+    /*for(uint k = 0; k < crossoverOp.size(); ++k){
         for(uint i = 0; i < crossoverProb.size(); ++i){
             for(uint j = 0; j < 8; ++j){
 #ifdef TEST_1
                 runCarCorneringPaperTests(crossoverOp[k], crossoverProb[i], j);
 #endif
 #ifdef TEST_2
-                runMouseBridgePaperTests(crossoverOp[k], crossoverProb[i], j);
+                runMouseBridgePaperTests(crossoverOp[k], crossoverProb[i], j); 
 #endif
 #ifdef TEST_3
                 runWarRobotPaperTests(crossoverOp[k], crossoverProb[i], j);
 #endif
             }
         }
-    }
+    }*/
     
-    for(uint k = 0; k < crossoverOp.size(); ++k){
+    /*for(uint k = 0; k < crossoverOp.size(); ++k){
         for(uint i = 0; i < crossoverProb.size(); ++i)
             for(uint j = 8; j < 16; ++j){
 #ifdef TEST_1
@@ -1849,9 +1849,9 @@ int main(){
                 runWarRobotPaperTests(crossoverOp[k], crossoverProb[i], j);
 #endif
             }
-    }
+    }*/
     
-    for(uint k = 0; k < crossoverOp.size(); ++k){
+    /*for(uint k = 0; k < crossoverOp.size(); ++k){
         for(uint i = 0; i < crossoverProb.size(); ++i)
             for(uint j = 16; j < 23; ++j){
 #ifdef TEST_1
@@ -1864,9 +1864,9 @@ int main(){
                 runWarRobotPaperTests(crossoverOp[k], crossoverProb[i], j);
 #endif
             }
-    }
-    
-    for(uint k = 0; k < crossoverOp.size(); ++k){
+    }*/   
+
+    /*for(uint k = 0; k < crossoverOp.size(); ++k){
         for(uint i = 0; i < crossoverProb.size(); ++i)
             for(uint j = 23; j < 30; ++j){
 #ifdef TEST_1
