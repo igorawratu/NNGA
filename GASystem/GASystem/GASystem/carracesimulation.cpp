@@ -47,7 +47,7 @@ double CarRaceSimulation::fitness(){
     intAcc["Positive"] = 0;
     intAcc["Winner"] = mWinner;
     intAcc["ExpectedWinner"] = 0;
-    doubleAcc["WinnerVal"] = ceil(mWinToExpectedDistance);
+    doubleAcc["WinnerVal"] = mWinToExpectedDistance;
     pos["LineP1"] = mFinishLine.p1;
     pos["LineP2"] = mFinishLine.p2;
 
@@ -79,6 +79,7 @@ bool CarRaceSimulation::initialise(){
     mFitnessFunctions.push_back(new FinishLineFitness());
     mFitnessFunctions.push_back(new WinnerFitness());
     mFitnessFunctions.push_back(new CollisionFitness());
+    
 
     //set finish like here
     mFinishLine.p1.x = -20;
@@ -96,6 +97,7 @@ bool CarRaceSimulation::initialise(){
     if(!mWorldEntities[mAgents[0]]->initialise("carone.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(-7.5, 0, 38), 0.01, mSeed))
         return false;
     mWorld->addRigidBody(mWorldEntities[mAgents[0]]->getRigidBody());
+    mWorldEntities[mAgents[0]]->setVelocity(vector3(0, 0, 0.5));
 
     for(uint k = 1; k < mAgents.size(); k++){
         vector3 pos;
@@ -113,6 +115,7 @@ bool CarRaceSimulation::initialise(){
         mWorldEntities[mAgents[k]] = new CarAgent(10, 0.5);
         if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, pos, 0.01, mSeed))
             return false;
+        mWorldEntities[mAgents[k]]->setVelocity(vector3(0, 0, 0.5));
         mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());
         mWorldEntities[mAgents[k]]->setVelocity(vector3(5, 0, 0));
     }
@@ -148,7 +151,7 @@ double CarRaceSimulation::realFitness(){
     intAcc["Positive"] = 0;
     intAcc["Winner"] = mWinner;
     intAcc["ExpectedWinner"] = 0;
-    doubleAcc["WinnerVal"] = ceil(mWinToExpectedDistance);
+    doubleAcc["WinnerVal"] = mWinToExpectedDistance;
     pos["LineP1"] = mFinishLine.p1;
     pos["LineP2"] = mFinishLine.p2;
 

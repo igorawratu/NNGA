@@ -665,7 +665,7 @@ void runCarRaceSim(){
     int seed = 110;
     GraphicsEngine engine(NULL);
 
-    CarRaceSimulation* sim = new CarRaceSimulation(1, 300, 5, 30, NULL, engine.getResourceManager(), seed);
+    CarRaceSimulation* sim = new CarRaceSimulation(2, 300, 5, 30, NULL, engine.getResourceManager(), seed);
     sim->initialise();
 
     SimulationContainer cont(sim);
@@ -1209,7 +1209,7 @@ void runCarCrashSimESP(){
     int seed = 110;
     GraphicsEngine engine(NULL);
 
-    CarCrashSimulation* sim = new CarCrashSimulation(1, 10, 300, 5, 30, NULL, engine.getResourceManager(), seed);
+    CarCrashSimulation* sim = new CarCrashSimulation(1, 8, 300, 5, 30, NULL, engine.getResourceManager(), seed);
     sim->initialise();
 
     SimulationContainer cont(sim);
@@ -1267,8 +1267,8 @@ void runCarRaceSimESP(){
     ESPParameters params;
     params.populationSize = 20;
     params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/carracesimulation/input5h.xml";
-    params.stagnationThreshold = 20;
+    params.nnFormatFilename = "neuralxmls/carracesimulation/input6h.xml";
+    params.stagnationThreshold = 40;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
@@ -1277,9 +1277,9 @@ void runCarRaceSimESP(){
     params.mutationParameters["MinConstraint"] = -1;
     params.crossoverAlgorithm = "BLX";
     params.selectionAlgorithm = "QuadraticRankSelection";
-    params.elitismCount = 5;
+    params.elitismCount = 2;
     params.sampleEvaluationsPerChromosome = 3;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
+    params.crossoverParameters["CrossoverProbability"] = 0.6;
 
     GeneticAlgorithm* ga = new ESP(params);
 
@@ -1789,10 +1789,10 @@ int main(){
     //runBridgeMouseSimESP();
     //runBridgeCarSimESP();
     //runCarCrashSimESP();
-    //runCarRaceSimESP();
+    runCarRaceSimESP();
     //runWarRobotSimESP();
     //runCorneringSimESP();
-    runMouseEscapeSimESP();
+    //runMouseEscapeSimESP();
     //runMouseScatterSimESP();
     //runSFObstacleSimESP();
     //runSFTurnbackSimESP();
