@@ -350,3 +350,87 @@ void NeuralNetwork::setWeights(map<uint, vector<double>> _weights){
     for(map<uint, vector<double>>::iterator iter = _weights.begin(); iter != _weights.end(); iter++)
         mNeuronCache[iter->first]->setWeights(iter->second);
 }
+
+void NeuralNetwork::serialize(int*& _nodes, int*& _format, float*& _weights, int& _formatSize, int& _weightSize){
+    _nodes = new int[3];
+    _formatSize = _weightSize = 0;
+
+    //calculate buffer sizes required
+    for(map<uint, Neuron*>::iterator iter = mNeuronCache.begin(); iter != mNeuronCache.end(); iter++){
+        if(iter->second->getNeuronType() == LEAF)
+            _nodes[0]++;
+        else{
+            _formatSize+=3;
+
+            map<uint, Neuron*>::const_iterator outputCheckIterator = mOutput.find(iter->first);
+            if(outputCheckIterator != mOutput.end())
+                _nodes[2]++;
+            else _nodes[1]++;
+
+            _formatSize += iter->second->getPredecessors().size();
+            _weightSize += iter->second->getWeights().size();
+        }
+    }
+
+    _format = new int[_formatSize];
+    _weights = new float[_weightSize];
+
+    int currentFormatPos = 0;
+    int currentWeightPos = 0;
+
+    for(map<uint, Neuron*>::iterator iter = mNeuronCache.begin(); iter != mNeuronCache.end(); iter++){
+        if(iter->second->getNeuronType() != LEAF){
+            _format[currentFormatPos++] = iter->first;
+
+            map<uint, Neuron*>::const_iterator outputCheckIterator = mOutput.find(iter->first);
+            if(outputCheckIterator != mOutput.end())
+                _format[currentFormatPos++] = 1;
+            else _format[currentFormatPos++] = 0;
+
+            _format[currentFormatPos++] = iter->second->getPredecessors().size();
+
+            for(set<uint>::iterator formatIter = iter->second->getPredecessors().begin(); formatIter != iter->second->getPredecessors().end(); formatIter++)
+                _format[currentFormatPos++] = *formatIter;
+
+            for(uint k = 0; k < _weightSize < iter->second->getWeights().size(); ++k)
+                _weights[currentWeightPos++] = iter->second->getWeights()[k];
+        }
+    }
+}
+
+NeuralNetwork::NeuralNetwork(int* _nodes, int* _format, float* _weights, int _formatSize, int _weightSize){
+    int input = _nodes[0], hidden = _nodes[1], output = _nodes[2];
+
+    for(uint k = 1; k <= input; ++k)
+        mNeuronCache[k] = new LeafNeuron(&mNeuronCache, vector<double>());
+
+    int currentFormatPos = 0;
+    int currentWeightPos = 0;
+    
+    for(uint k = 0; k < hidden + output; ++k){
+        int nodeid = _format[currentFormatPos++];
+        int nodetype = _format[currentFormatPos++];
+        int numPredecessors = _format[currentFormatPos++];
+
+        set<uint> predecessors;
+        vector<double> weights;
+
+        for(uint i = 0; i < numPredecessors; ++i){
+            predecessors.insert(_format[currentFormatPos++]);
+            weights.push_back(_weights[currentWeightPos++]);
+        }
+        //+1 for bias
+        weights.push_back(_weights[currentWeightPos++]);
+
+        Neuron* currNeuron = new NonLeafNeuron(&mNeuronCache, weights, SIGMOID);
+        currNeuron->setInput(predecessors, false);
+        mNeuronCache[nodeid] = currNeuron;
+
+        if(nodetype == 1)
+            mOutput[nodeid] = currNeuron;
+    }
+
+    delete [] _nodes;
+    delete [] _format;
+    delete [] _weights;
+}

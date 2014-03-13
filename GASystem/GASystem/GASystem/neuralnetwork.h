@@ -23,6 +23,7 @@ public:
     NeuralNetwork();
     NeuralNetwork(map<uint, NeuronInfo> _neuronInfo);
     NeuralNetwork(const NeuralNetwork& _other);
+    NeuralNetwork(int* _nodes, int* _format, float* _weights, int _formatSize, int _weightSize);
     NeuralNetwork& operator = (const NeuralNetwork& _other);
     ~NeuralNetwork();
 
@@ -37,6 +38,7 @@ public:
     void getXMLStructure(pugi::xml_node& _root);
     map<uint, NeuronInfo> getMapStructure();
     map<uint, vector<double>> getWeights();
+    void serialize(int*& _nodes, int*& _format, float*& _weights, int& _formatSize, int& _weightSize);
 
 private:
     bool constructNNStructure(pugi::xml_node* _file, bool _checkLoops);
