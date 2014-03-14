@@ -56,7 +56,7 @@ void Solution::printToFile(string _filename){
     
 }
 
-Solution::Solution(int* _nodes, int* _format, float* _weights, int _formatSize, int _weightSize){
+Solution::Solution(int* _nodes, int* _format, double* _weights, int _formatSize, int _weightSize){
     int currNodesPos = 0;
     int ANNCount = _nodes[currNodesPos++];
 
@@ -72,21 +72,21 @@ Solution::Solution(int* _nodes, int* _format, float* _weights, int _formatSize, 
         int lastFormatPos = currFormatPos;
         
         for(uint i = 0; i < currNNNodes[1] + currNNNodes[2]; ++i){
-            currFormatPos += _format[currFormatPos + 2] + 3;
             currWeightPos += _format[currFormatPos + 2] + 1;
+            currFormatPos += _format[currFormatPos + 2] + 3;
         }
 
         int weightSize = currWeightPos - lastWeightPos;
         int formatSize = currFormatPos - lastFormatPos;
 
         int* currNNFormat = new int[formatSize];
-        float* currNNWeight = new float[weightSize];
+        double* currNNWeight = new double[weightSize];
 
         for(uint i = 0; i < formatSize; ++i)
             currNNFormat[i] = _format[lastFormatPos + i];
 
         for(uint i = 0; i < weightSize; ++i)
-            currNNWeight[i] = _format[lastWeightPos + i];
+            currNNWeight[i] = _weights[lastWeightPos + i];
 
         mNeuralNets.push_back(NeuralNetwork(currNNNodes, currNNFormat, currNNWeight, formatSize, weightSize));
     }
@@ -96,7 +96,7 @@ Solution::Solution(int* _nodes, int* _format, float* _weights, int _formatSize, 
     delete [] _weights;
 }
 
-void Solution::serialize(int*& _nodes, int*& _format, float*& _weights, int& _formatSize, int& _weightSize){
+void Solution::serialize(int*& _nodes, int*& _format, double*& _weights, int& _formatSize, int& _weightSize){
     int nodeSize = mNeuralNets.size() * 3 + 1;
     _nodes = new int[nodeSize];
     int nodePos = 0;
@@ -105,16 +105,16 @@ void Solution::serialize(int*& _nodes, int*& _format, float*& _weights, int& _fo
     _nodes[nodePos++] = mNeuralNets.size();
 
     vector<int*> formats;
-    vector<float*> weights;
+    vector<double*> weights;
     vector<int> nnFormatSizes;
-    vector<float> nnWeightSizes;
+    vector<double> nnWeightSizes;
 
-    for(uint k = 1; k < mNeuralNets.size(); ++k){
+    for(uint k = 0; k < mNeuralNets.size(); ++k){
         int *nnNodes, *nnFormats;
-        float* nnWeights;
+        double* nnWeights;
         int nnWS, nnFS;
 
-        mNeuralNets[k - 1].serialize(nnNodes, nnFormats, nnWeights, nnFS, nnWS);
+        mNeuralNets[k].serialize(nnNodes, nnFormats, nnWeights, nnFS, nnWS);
 
         formats.push_back(nnFormats);
         weights.push_back(nnWeights);
@@ -131,7 +131,7 @@ void Solution::serialize(int*& _nodes, int*& _format, float*& _weights, int& _fo
     }
 
     _format = new int[_formatSize];
-    _weights = new float[_weightSize];
+    _weights = new double[_weightSize];
 
     int formatPos = 0, weightPos = 0;
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="GASystem"
 	ProjectGUID="{33658910-1D9C-4AC4-B854-A6572A4436AC}"
 	RootNamespace="GASystem"
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(CPPREPO)\boost_1_51_0\boost_1_51_0&quot;;&quot;$(OGRE_HOME)\Samples\Common\include&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;&quot;$(BULLET_ROOT)\src&quot;"
+				AdditionalIncludeDirectories="&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(CPPREPO)\boost_1_51_0\boost_1_51_0&quot;;&quot;$(OGRE_HOME)\Samples\Common\include&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;&quot;$(BULLET_ROOT)\src&quot;;&quot;C:\Program Files\Microsoft HPC Pack 2008 SDK\Include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -61,9 +61,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="OgreMain_d.lib OIS_d.lib OgreTerrain_d.lib BulletCollision_Debug.lib BulletDynamics_Debug.lib LinearMath_Debug.lib GIMPACTUtils_Debug.lib ConvexDecomposition_Debug.lib"
+				AdditionalDependencies="OgreMain_d.lib OIS_d.lib OgreTerrain_d.lib BulletCollision_Debug.lib BulletDynamics_Debug.lib LinearMath_Debug.lib GIMPACTUtils_Debug.lib ConvexDecomposition_Debug.lib msmpi.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;$(CPPREPO)\boost_1_51_0\boost_1_51_0\lib&quot;;&quot;$(BULLET_ROOT)\build\cmakebuild\lib\$(ConfigurationName)&quot;;&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;$(CPPREPO)\boost_1_51_0\boost_1_51_0\lib&quot;;&quot;$(BULLET_ROOT)\build\cmakebuild\lib\$(ConfigurationName)&quot;;&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;;&quot;C:\Program Files\Microsoft HPC Pack 2008 SDK\Lib\i386&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -118,7 +118,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(CPPREPO)\boost_1_51_0\boost_1_51_0&quot;;&quot;$(OGRE_HOME)\Samples\Common\include&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;&quot;$(BULLET_ROOT)\src&quot;"
+				AdditionalIncludeDirectories="&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(CPPREPO)\boost_1_51_0\boost_1_51_0&quot;;&quot;$(OGRE_HOME)\Samples\Common\include&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;&quot;$(BULLET_ROOT)\src&quot;;&quot;C:\Program Files\Microsoft HPC Pack 2008 SDK\Include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -138,9 +138,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="OgreMain.lib OIS.lib OgreTerrain.lib BulletCollision.lib BulletDynamics.lib LinearMath.lib GIMPACTUtils.lib ConvexDecomposition.lib"
+				AdditionalDependencies="OgreMain.lib OIS.lib OgreTerrain.lib BulletCollision.lib BulletDynamics.lib LinearMath.lib GIMPACTUtils.lib ConvexDecomposition.lib msmpi.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(CPPREPO)\boost_1_51_0\boost_1_51_0\lib&quot;;&quot;$(BULLET_ROOT)\build\cmakebuild\lib\$(ConfigurationName)&quot;;&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;$(CPPREPO)\boost_1_51_0\boost_1_51_0\lib&quot;;&quot;$(BULLET_ROOT)\build\cmakebuild\lib\$(ConfigurationName)&quot;;&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;;&quot;C:\Program Files\Microsoft HPC Pack 2008 SDK\Lib\i386&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -825,6 +825,14 @@
 			</File>
 			<File
 				RelativePath=".\pugixml.hpp"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Unit Tests"
+			>
+			<File
+				RelativePath=".\unittester.h"
 				>
 			</File>
 		</Filter>

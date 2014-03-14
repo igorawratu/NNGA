@@ -351,8 +351,12 @@ void NeuralNetwork::setWeights(map<uint, vector<double>> _weights){
         mNeuronCache[iter->first]->setWeights(iter->second);
 }
 
-void NeuralNetwork::serialize(int*& _nodes, int*& _format, float*& _weights, int& _formatSize, int& _weightSize){
+void NeuralNetwork::serialize(int*& _nodes, int*& _format, double*& _weights, int& _formatSize, int& _weightSize){
     _nodes = new int[3];
+    _nodes[0] = 0;
+    _nodes[1] = 0;
+    _nodes[2] = 0;
+
     _formatSize = _weightSize = 0;
 
     //calculate buffer sizes required
@@ -373,7 +377,7 @@ void NeuralNetwork::serialize(int*& _nodes, int*& _format, float*& _weights, int
     }
 
     _format = new int[_formatSize];
-    _weights = new float[_weightSize];
+    _weights = new double[_weightSize];
 
     int currentFormatPos = 0;
     int currentWeightPos = 0;
@@ -389,16 +393,18 @@ void NeuralNetwork::serialize(int*& _nodes, int*& _format, float*& _weights, int
 
             _format[currentFormatPos++] = iter->second->getPredecessors().size();
 
-            for(set<uint>::iterator formatIter = iter->second->getPredecessors().begin(); formatIter != iter->second->getPredecessors().end(); formatIter++)
+            set<uint> currPredecessors = iter->second->getPredecessors();
+
+            for(set<uint>::iterator formatIter = currPredecessors.begin(); formatIter != currPredecessors.end(); formatIter++)
                 _format[currentFormatPos++] = *formatIter;
 
-            for(uint k = 0; k < _weightSize < iter->second->getWeights().size(); ++k)
+            for(uint k = 0; k < iter->second->getWeights().size(); ++k)
                 _weights[currentWeightPos++] = iter->second->getWeights()[k];
         }
     }
 }
 
-NeuralNetwork::NeuralNetwork(int* _nodes, int* _format, float* _weights, int _formatSize, int _weightSize){
+NeuralNetwork::NeuralNetwork(int* _nodes, int* _format, double* _weights, int _formatSize, int _weightSize){
     int input = _nodes[0], hidden = _nodes[1], output = _nodes[2];
 
     for(uint k = 1; k <= input; ++k)
@@ -433,4 +439,24 @@ NeuralNetwork::NeuralNetwork(int* _nodes, int* _format, float* _weights, int _fo
     delete [] _nodes;
     delete [] _format;
     delete [] _weights;
+}
+
+bool NeuralNetwork::operator==(const NeuralNetwork& _other)const{
+    if(mNeuronCache.size() != _other.mNeuronCache.size() || mOutput.size() != _other.mOutput.size())
+        return false;
+
+    for(map<uint, Neuron*>::const_iterator iter = mNeuronCache.begin(); iter != mNeuronCache.end(); iter++){
+        map<uint, Neuron*>::const_iterator otherIter = _other.mNeuronCache.find(iter->first);
+
+        if(otherIter == mNeuronCache.end())
+            return false;
+
+        if(iter->second->getPredecessors() != otherIter->second->getPredecessors())
+            return false;
+
+        if(iter->second->getWeights() != otherIter->second->getWeights())
+            return false;
+    }
+
+    return true;
 }

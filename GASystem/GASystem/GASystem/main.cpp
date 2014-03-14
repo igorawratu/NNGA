@@ -3,6 +3,7 @@
 #include <string>
 #include <typeinfo>
 #include <vector>
+#include <mpi.h>
 #include <fstream>
 
 #include "common.h"
@@ -88,6 +89,48 @@ void testLoadStore(){
     test.getXMLStructure(outRoot);
 
     out.save_file("neuralxmls\\inputoutput\\output.xml");
+}
+
+void testANNSerialization(){
+    xmldoc doc;
+    pugi::xml_parse_result result = doc.load_file("neuralxmls\\inputoutput\\input.xml");
+    pugi::xml_node root = doc.child("NeuralNetworks");
+    pugi::xml_node nnRoot = root.first_child();
+    NeuralNetwork test;
+    test.initialize(&nnRoot, true);
+
+    int weightSize, formatSize;
+    int *nodes, *format;
+    double* weights;
+    test.serialize(nodes, format, weights, formatSize, weightSize);
+
+    NeuralNetwork outANN(nodes, format, weights, formatSize, weightSize);
+
+    xmldoc outser;
+    pugi::xml_node outRootSer = outser.append_child("NeuralNetworks");
+    outANN.getXMLStructure(outRootSer);
+
+    xmldoc out;
+    pugi::xml_node outRoot = out.append_child("NeuralNetworks");
+    test.getXMLStructure(outRoot);
+
+    outser.save_file("neuralxmls\\inputoutput\\serialization.xml");
+    out.save_file("neuralxmls\\inputoutput\\output.xml");
+}
+
+void testSolutionSerialization(){
+    Solution solution("neuralxmls\\solution\\input.xml");
+    solution.printToFile("neuralxmls\\solution\\output.xml");
+
+    int weightSize, formatSize;
+    int *format, *nodes;
+    double *weights;
+
+    solution.serialize(nodes, format, weights, formatSize, weightSize);
+
+    Solution serSol(nodes, format, weights, formatSize, weightSize);
+
+    serSol.printToFile("neuralxmls\\solution\\serializedOut.xml");
 }
 
 void testLoadStoreFixed(){
@@ -1773,8 +1816,15 @@ void runCarCorneringPaperTests(string _crossoverOp, double _crossoverProb, int _
 }
 
 
-int main(){
+int main(int argc, char** argv){
+
+    MPI_Init(&argc, &argv);
+
     srand(time(0));
+
+    //testANNSerialization();
+    //testSolutionSerialization();
+
     //runBridgeMouseSim();
     //runBridgeCarSim();
     //runCarCrashSim();
@@ -1789,7 +1839,7 @@ int main(){
     //runBridgeMouseSimESP();
     //runBridgeCarSimESP();
     //runCarCrashSimESP();
-    runCarRaceSimESP();
+    //runCarRaceSimESP();
     //runWarRobotSimESP();
     //runCorneringSimESP();
     //runMouseEscapeSimESP();
@@ -1880,6 +1930,8 @@ int main(){
 #endif
             }
     }*/
+
+    MPI_Finalize();
 
     return 0;
 }
