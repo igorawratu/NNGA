@@ -448,14 +448,16 @@ bool NeuralNetwork::operator==(const NeuralNetwork& _other)const{
     for(map<uint, Neuron*>::const_iterator iter = mNeuronCache.begin(); iter != mNeuronCache.end(); iter++){
         map<uint, Neuron*>::const_iterator otherIter = _other.mNeuronCache.find(iter->first);
 
-        if(otherIter == mNeuronCache.end())
+        if(otherIter == _other.mNeuronCache.end())
             return false;
 
-        if(iter->second->getPredecessors() != otherIter->second->getPredecessors())
-            return false;
+        if(iter->second->getNeuronType() == NONLEAF){
+            if(iter->second->getPredecessors() != otherIter->second->getPredecessors())
+                return false;
 
-        if(iter->second->getWeights() != otherIter->second->getWeights())
-            return false;
+            if(iter->second->getWeights() != otherIter->second->getWeights())
+                return false;
+        }
     }
 
     return true;

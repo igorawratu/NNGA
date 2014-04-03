@@ -42,475 +42,9 @@
 #include "polebalancingsimulation.h"
 #include <boost/lexical_cast.hpp>
 
-//#define TRAIN
-
-//#define TEST_1
-//#define TEST_2
-//#define TEST_3
+#define TRAIN
 
 using namespace std;
-
-void quicksort(vector<Chromosome*>& elements, int left, int right)
-{
-	int i = left;
-	int j = right;
-
-	Chromosome* pivot = elements[(left+ right) / 2];
-	do
-	{
-		while (elements[i]->fitness() < pivot->fitness())
-			i++;
-		while (elements[j]->fitness() > pivot->fitness())
-			j--;
-
-		if (i <= j)
-		{
-			Chromosome* temp = elements[i]; elements[i] = elements[j]; elements[j] = temp;
-			i++; j--;
-		}
-	} while (i <= j);
-
-	if (left < j)
-		quicksort(elements, left, j);
-	if (i < right)
-		quicksort(elements, i, right);
-}
-
-void testLoadStore(){
-    xmldoc doc;
-    pugi::xml_parse_result result = doc.load_file("neuralxmls\\inputoutput\\input.xml");
-    pugi::xml_node root = doc.child("NeuralNetworks");
-    pugi::xml_node nnRoot = root.first_child();
-    NeuralNetwork test;
-    test.initialize(&nnRoot, true);
-
-    xmldoc out;
-    pugi::xml_node outRoot = out.append_child("NeuralNetworks");
-    test.getXMLStructure(outRoot);
-
-    out.save_file("neuralxmls\\inputoutput\\output.xml");
-}
-
-void testANNSerialization(){
-    xmldoc doc;
-    pugi::xml_parse_result result = doc.load_file("neuralxmls\\inputoutput\\input.xml");
-    pugi::xml_node root = doc.child("NeuralNetworks");
-    pugi::xml_node nnRoot = root.first_child();
-    NeuralNetwork test;
-    test.initialize(&nnRoot, true);
-
-    int weightSize, formatSize;
-    int *nodes, *format;
-    double* weights;
-    test.serialize(nodes, format, weights, formatSize, weightSize);
-
-    NeuralNetwork outANN(nodes, format, weights, formatSize, weightSize);
-
-    xmldoc outser;
-    pugi::xml_node outRootSer = outser.append_child("NeuralNetworks");
-    outANN.getXMLStructure(outRootSer);
-
-    xmldoc out;
-    pugi::xml_node outRoot = out.append_child("NeuralNetworks");
-    test.getXMLStructure(outRoot);
-
-    outser.save_file("neuralxmls\\inputoutput\\serialization.xml");
-    out.save_file("neuralxmls\\inputoutput\\output.xml");
-}
-
-void testSolutionSerialization(){
-    Solution solution("neuralxmls\\solution\\input.xml");
-    solution.printToFile("neuralxmls\\solution\\output.xml");
-
-    int weightSize, formatSize;
-    int *format, *nodes;
-    double *weights;
-
-    solution.serialize(nodes, format, weights, formatSize, weightSize);
-
-    Solution serSol(nodes, format, weights, formatSize, weightSize);
-
-    serSol.printToFile("neuralxmls\\solution\\serializedOut.xml");
-}
-
-void testLoadStoreFixed(){
-    xmldoc doc;
-    pugi::xml_parse_result result = doc.load_file("neuralxmls\\inputoutputfixed\\iofixed.xml");
-    pugi::xml_node root = doc.child("NeuralNetworks");
-    pugi::xml_node nnRoot = root.first_child();
-    NeuralNetwork test;
-    test.initialize(&nnRoot, true);
-
-    xmldoc out;
-    pugi::xml_node outRoot = out.append_child("NeuralNetworks");
-    test.getXMLStructure(outRoot);
-
-    out.save_file("neuralxmls\\inputoutputfixed\\iofixedoutput.xml");
-}
-
-void testSigmoidOutput(){
-    xmldoc doc;
-    pugi::xml_parse_result result = doc.load_file("neuralxmls\\sigmoid\\sigmoid.xml");
-    pugi::xml_node root = doc.child("NeuralNetworks");
-    pugi::xml_node nnRoot = root.first_child();
-    NeuralNetwork test;
-    test.initialize(&nnRoot, true);
-
-    map<uint, double> inputs;
-    inputs[1] = 0;
-    inputs[2] = 0;
-    inputs[3] = 0;
-    inputs[4] = 0;
-
-    vector<double> nnOutput = test.evaluate(inputs);
-    assert(nnOutput.size() == 4);
-    for(uint k = 0; k < nnOutput.size(); k++)
-        assert(nnOutput[k] == 0.5);
-}
-
-void testHidden(){
-    xmldoc doc;
-    pugi::xml_parse_result result = doc.load_file("neuralxmls\\hidden\\hidden.xml");
-    pugi::xml_node root = doc.child("NeuralNetworks");
-    pugi::xml_node nnRoot = root.first_child();
-    NeuralNetwork test;
-    test.initialize(&nnRoot, true);
-
-    xmldoc out;
-    pugi::xml_node outRoot = out.append_child("NeuralNetworks");
-    test.getXMLStructure(outRoot);
-
-    out.save_file("neuralxmls\\hidden\\hiddenoutput.xml");
-}
-
-void testLoop(){
-    xmldoc doc;
-    pugi::xml_parse_result result = doc.load_file("neuralxmls\\loop\\loop.xml");
-    pugi::xml_node root = doc.child("NeuralNetworks");
-    pugi::xml_node nnRoot = root.first_child();
-    NeuralNetwork test;
-    assert(!test.initialize(&nnRoot, true));
-}
-
-void testCopyAssignment(){
-    xmldoc outCopy, outAss;
-    NeuralNetwork assignment;
-    NeuralNetwork* copy;
-
-    if(true){
-        xmldoc doc;
-        pugi::xml_parse_result result = doc.load_file("neuralxmls\\copyassignment\\original.xml");
-        pugi::xml_node root = doc.child("NeuralNetworks");
-        pugi::xml_node nnRoot = root.first_child();
-        NeuralNetwork test;
-        test.initialize(&nnRoot, true);
-
-        copy = new NeuralNetwork(test);
-        assignment = test;
-    }
-    
-    pugi::xml_node copyRoot = outCopy.append_child("NeuralNetworks");
-    pugi::xml_node assRoot = outAss.append_child("NeuralNetworks");
-    copy->getXMLStructure(copyRoot);
-    assignment.getXMLStructure(assRoot);
-
-    outAss.save_file("neuralxmls\\copyassignment\\assignment.xml");
-    outCopy.save_file("neuralxmls\\copyassignment\\copy.xml");
-
-    delete copy;
-}
-
-void testWeightsAndStructure(){
-    xmldoc doc, mod, outW, outS;
-    NeuralNetwork structNN, weightNN, test;
-
-    pugi::xml_parse_result result = doc.load_file("neuralxmls\\weightsstructure\\original.xml");
-    pugi::xml_node root = doc.child("NeuralNetworks");
-    pugi::xml_node nnRoot = root.first_child();
-
-    test.initialize(&nnRoot, true);
-
-    result = mod.load_file("neuralxmls\\weightsstructure\\modified.xml");
-    pugi::xml_node rootS = mod.child("NeuralNetworks");
-    pugi::xml_node nnRootS = rootS.first_child();
-
-    weightNN.initialize(&nnRootS, true);
-    
-    structNN.setStructure(test.getMapStructure());
-    weightNN.setWeights(test.getWeights());
-
-    pugi::xml_node strRoot = outS.append_child("NeuralNetworks");
-    pugi::xml_node weightRoot = outW.append_child("NeuralNetworks");
-    
-    weightNN.getXMLStructure(weightRoot);
-    structNN.getXMLStructure(strRoot);
-
-    outW.save_file("neuralxmls\\weightsstructure\\weight.xml");
-    outS.save_file("neuralxmls\\weightsstructure\\structure.xml");
-}
-
-void testHiddenSigmoidOutput(){
-    xmldoc doc;
-    pugi::xml_parse_result result = doc.load_file("neuralxmls\\hiddensigmoid\\input.xml");
-    pugi::xml_node root = doc.child("NeuralNetworks");
-    pugi::xml_node nnRoot = root.first_child();
-    NeuralNetwork test;
-    test.initialize(&nnRoot, true);
-
-    map<uint, double> inputs;
-    inputs[1] = 0;
-    inputs[2] = 0;
-    inputs[3] = 0;
-    inputs[4] = 0;
-
-    vector<double> nnOutput = test.evaluate(inputs);
-    assert(nnOutput.size() == 4);
-    for(uint k = 0; k < nnOutput.size(); k++)
-        assert(nnOutput[k] == 0.5);
-}
-
-void testSolutionLoadWrite(){
-    Solution solution("neuralxmls\\solution\\input.xml");
-    solution.printToFile("neuralxmls\\solution\\output.xml");
-}
-
-void testSolutionEvaluation(){
-    Solution solution("neuralxmls\\solution\\input.xml");
-
-    map<uint, double> inputs;
-    inputs[1] = 0;
-    inputs[2] = 0;
-    inputs[3] = 0;
-    inputs[4] = 0;
-
-    vector<map<uint, double>> inputmap;
-    inputmap.push_back(inputs);
-    inputmap.push_back(inputs);
-
-    vector<vector<double>> eval = solution.evaluateAllNeuralNetworks(inputmap);
-    assert(eval.size() == 2);
-    for(uint k = 0; k < eval.size(); k++){
-        assert(eval[k].size() == 4);
-        for(uint i = 0; i < eval[k].size(); i++)
-            assert(eval[k][i] == 0.5);
-    }
-}
-
-void testChromosomeLoad(){
-    xmldoc doc;
-    pugi::xml_parse_result result = doc.load_file("neuralxmls\\nnchromosome\\input.xml");
-    pugi::xml_node root = doc.child("NeuralNetworks");
-
-    NNChromosome cr;
-    assert(cr.initialize(&root));
-
-    Solution sol(cr.getNeuralNets());
-    sol.printToFile("neuralxmls\\nnchromosome\\output.xml");
-}
-
-void testChromosomeCopyAss(){
-    NNChromosome ass;
-    NNChromosome* copy;
-
-    if(true){
-        xmldoc doc;
-        pugi::xml_parse_result result = doc.load_file("neuralxmls\\nnchromosome\\get.xml");
-        pugi::xml_node root = doc.child("NeuralNetworks");
-
-        NNChromosome cr;
-        assert(cr.initialize(&root));
-
-        ass = cr;
-        copy = new NNChromosome(cr);
-    }
-
-    Solution assSol(ass.getNeuralNets());
-    Solution copySol(copy->getNeuralNets());
-    delete copy;
-    assSol.printToFile("neuralxmls\\nnchromosome\\assignment.xml");
-    copySol.printToFile("neuralxmls\\nnchromosome\\copy.xml");
-}
-
-void testChromosomeGetSet(){
-    xmldoc doc, mod;
-    pugi::xml_parse_result result = doc.load_file("neuralxmls\\nnchromosome\\input.xml");
-    result = mod.load_file("neuralxmls\\nnchromosome\\modified.xml");
-    pugi::xml_node root = doc.child("NeuralNetworks");
-    pugi::xml_node modroot = mod.child("NeuralNetworks");
-
-    NNChromosome cr;
-    cr.initialize(&root);
-
-    NNChromosome structure;
-    structure.setStructure(cr.getFullStructureData());
-
-    NNChromosome weight;
-    weight.initialize(&modroot);
-
-    weight.setWeights(cr.getWeightData());
-
-    Solution strSol(structure.getNeuralNets()), weightSol(weight.getNeuralNets());
-
-    strSol.printToFile("neuralxmls\\nnchromosome\\structure.xml");
-    weightSol.printToFile("neuralxmls\\nnchromosome\\weight.xml");
-}
-
-void testGaussianMutation(){
-    GaussianMutation mut;
-    map<string, double> params;
-    params["MutationProbability"] = 0.1;
-    params["Deviation"] = 0.2;
-    params["MaxConstraint"] = 1;
-    params["MinConstraint"] = -1;
-
-    vector<double> weights;
-    for(uint k = 0; k < 100; k++)
-        weights.push_back(0);
-
-    mut.execute(weights, params);
-
-    cout << "MUTATION TEST OUTPUT: " << endl;
-    for(uint k = 0; k < weights.size(); k++)
-        cout << weights[k] << " ";
-    cout << endl;
-}
-
-void testRankSelection(){
-    cout << "RANK SELECTION TEST OUTPUT: " << endl;
-    vector<Chromosome*> selectionPool;
-    for(uint k = 0; k < 100; k++){
-        Chromosome* chr = new NNChromosome();
-        chr->fitness() = k;
-        selectionPool.push_back(chr);
-    }
-    vector<Chromosome*> selected;
-    QuadraticRankSelection rankselection;
-    selected = rankselection.execute(selectionPool, 50, selectionPool);
-
-    assert(selectionPool.size() == 50);
-    assert(selected.size() == 50);
-
-    quicksort(selectionPool, 0, selectionPool.size() - 1);
-    quicksort(selected, 0, selected.size() - 1);
-    
-    cout << "Selected: " << endl;
-    for(uint k = 0; k < selected.size(); k++){
-        cout << selected[k]->fitness() << " ";
-        delete selected[k];
-    }
-    selected.clear();
-    cout << endl;
-
-    cout << "Remaining: " << endl;
-    for(uint k = 0; k < selectionPool.size(); k++){
-        cout << selectionPool[k]->fitness() << " ";
-        delete selectionPool[k];
-    }
-    selectionPool.clear();
-    cout << endl;
-}
-
-void testFactories(){
-    GaussianMutation gMut;
-    QuadraticRankSelection rSel;
-    MultipointCrossover mpCross;
-
-    Mutation* mut = MutationFactory::instance().create("GaussianMutation");
-    Selection* sel = SelectionFactory::instance().create("RankSelection");
-    Crossover* cross = CrossoverFactory::instance().create("MultipointCrossover");
-
-    assert(typeid(gMut) == typeid(*mut));
-    assert(typeid(rSel) == typeid(*sel));
-    assert(typeid(mpCross) == typeid(*cross));
-
-    delete mut;
-    delete sel;
-    delete cross;
-
-    Mutation* mutNul = MutationFactory::instance().create("somerandommut");
-    Selection* selNul = SelectionFactory::instance().create("somerandomsel");
-    Crossover* crossNul = CrossoverFactory::instance().create("somerandomco");
-
-    assert(mutNul == 0);
-    assert(crossNul == 0);
-    assert(selNul == 0);
-}
-
-void testMultipointCrossover(){
-    MultipointCrossover mpco;
-    
-    xmldoc doc;
-    pugi::xml_parse_result result = doc.load_file("neuralxmls\\nnchromosome\\input.xml");
-    pugi::xml_node root = doc.child("NeuralNetworks");
-
-    vector<Chromosome*> population;
-    population.push_back(new NNChromosome());
-    population.push_back(new NNChromosome());
-    dynamic_cast<NNChromosome*>(population[0])->initialize(&root);
-    dynamic_cast<NNChromosome*>(population[1])->initialize(&root);
-    
-    vector<Chromosome*> offspring = mpco.execute(population, 1, map<string, double>(), SelectionFactory::instance().create("RankSelection"));
-    Solution p1(dynamic_cast<NNChromosome*>(population[0])->getNeuralNets()), p2(dynamic_cast<NNChromosome*>(population[1])->getNeuralNets()), off(dynamic_cast<NNChromosome*>(offspring[0])->getNeuralNets());
-    p1.printToFile("neuralxmls\\nnchromosome\\p1.xml");
-    p2.printToFile("neuralxmls\\nnchromosome\\p2.xml");
-    off.printToFile("neuralxmls\\nnchromosome\\off.xml");
-}
-
-void testGA(){
-    StandardGAParameters params;
-
-    params.populationSize = 50;
-    params.maxGenerations = 100;
-    params.nnFormatFilename = "neuralxmls\\nnchromosome\\input.xml";
-    params.stagnationThreshold = 1;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.1;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "MultipointCrossover";
-    params.selectionAlgorithm = "QuadraticRankSelection";
-
-    GeneticAlgorithm* ga = new StandardGA(params);
-    Simulation* sim = new DummySimulation(100, 5, 5, NULL);
-
-    //create sim container ere
-    SimulationContainer sc(sim);
-
-    GAEngine gaengine;
-    Solution sol = gaengine.train(ga, &sc, "");
-
-    delete sim;
-    delete ga;
-    sol.printToFile("neuralxmls\\integration\\solution.xml");
-}
-
-
-void runNNTests(){
-    srand(time(0));
-    testLoadStore();
-    testLoadStoreFixed();
-    testSigmoidOutput();
-    testHidden();
-    testLoop();
-    testCopyAssignment();
-    testWeightsAndStructure();
-    testHiddenSigmoidOutput();
-}
-
-void runGATests(){
-    srand(time(0));
-    testSolutionLoadWrite();
-    testSolutionEvaluation();
-    testChromosomeLoad();
-    testChromosomeCopyAss();
-    testChromosomeGetSet();
-    testGaussianMutation();
-    testRankSelection();
-    testFactories();
-    testMultipointCrossover();
-}
 
 void runBridgeCarSim(){
     int seed = 50;
@@ -1151,7 +685,7 @@ void runBridgeMouseSimESP(){
     int seed = 50;
     GraphicsEngine engine(NULL);
 
-    BridgeSimulation* sim = new BridgeSimulation(2, 1, MOUSE, 300, 5, 30, NULL, engine.getResourceManager(), seed);
+    BridgeSimulation* sim = new BridgeSimulation(2, 30, MOUSE, 300, 5, 30, NULL, engine.getResourceManager(), seed);
     sim->initialise();
 
     SimulationContainer cont(sim);
@@ -1161,18 +695,18 @@ void runBridgeMouseSimESP(){
     params.populationSize = 20;
     params.maxGenerations = 200;
     params.nnFormatFilename = "neuralxmls/bridgesimulation/mouse/input6h.xml";
-    params.stagnationThreshold = 20;
+    params.stagnationThreshold = 400;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.1;
+    params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.2;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "MultipointCrossover";
-    params.selectionAlgorithm = "QuadraticRankSelection";
-    params.elitismCount = 5;
+    params.crossoverAlgorithm = "LX";
+    params.selectionAlgorithm = "LRankSelection";
+    params.elitismCount = 2;
     params.sampleEvaluationsPerChromosome = 3;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
+    params.crossoverParameters["CrossoverProbability"] = 0.6;
 
     GeneticAlgorithm* ga = new ESP(params);
 
@@ -1210,20 +744,20 @@ void runCorneringSimESP(){
 
 #ifdef TRAIN
     ESPParameters params;
-    params.populationSize = 20;
+    params.populationSize = 40;
     params.maxGenerations = 200;
     params.nnFormatFilename = "neuralxmls/corneringsimulation/input6h.xml";
-    params.stagnationThreshold = 20;
+    params.stagnationThreshold = 400;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.2;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "UNDX";
+    params.crossoverAlgorithm = "LX";
     params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 5;
-    params.sampleEvaluationsPerChromosome = 3;
+    params.elitismCount = 2;
+    params.sampleEvaluationsPerChromosome = 5;
     params.crossoverParameters["CrossoverProbability"] = 0.8;
 
     GeneticAlgorithm* ga = new ESP(params);
@@ -1369,7 +903,7 @@ void runWarRobotSimESP(){
     params.mutationParameters["MinConstraint"] = -1;
     params.crossoverAlgorithm = "BLX";
     params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 5;
+    params.elitismCount = 2;
     params.sampleEvaluationsPerChromosome = 3;
     params.crossoverParameters["CrossoverProbability"] = 0.8;
 
@@ -1817,7 +1351,6 @@ void runCarCorneringPaperTests(string _crossoverOp, double _crossoverProb, int _
 
 
 int main(int argc, char** argv){
-
     MPI_Init(&argc, &argv);
 
     srand(time(0));
@@ -1836,7 +1369,7 @@ int main(int argc, char** argv){
     //runSFObstacleSim();
     //runSFTurnbackSim();
     //runSFObstacleFieldSim();
-    //runBridgeMouseSimESP();
+    runBridgeMouseSimESP();
     //runBridgeCarSimESP();
     //runCarCrashSimESP();
     //runCarRaceSimESP();
@@ -1850,86 +1383,6 @@ int main(int argc, char** argv){
     //runPBESP();
 
     //testCrossoverOp();
-
-    /*vector<double> crossoverProb;
-    crossoverProb.push_back(0.2);
-    crossoverProb.push_back(0.4);
-    crossoverProb.push_back(0.6);
-    crossoverProb.push_back(0.8);
-    crossoverProb.push_back(1);
-
-    vector<string> crossoverOp;
-    crossoverOp.push_back("AX");
-    crossoverOp.push_back("BLX");
-    crossoverOp.push_back("HX");
-    crossoverOp.push_back("LX");
-    crossoverOp.push_back("MultipointCrossover");
-    crossoverOp.push_back("OPX");
-    crossoverOp.push_back("PCX");
-    crossoverOp.push_back("SBX");
-    crossoverOp.push_back("TPX");
-    crossoverOp.push_back("UNDX");*/
-
-    /*for(uint k = 0; k < crossoverOp.size(); ++k){
-        for(uint i = 0; i < crossoverProb.size(); ++i){
-            for(uint j = 0; j < 8; ++j){
-#ifdef TEST_1
-                runCarCorneringPaperTests(crossoverOp[k], crossoverProb[i], j);
-#endif
-#ifdef TEST_2
-                runMouseBridgePaperTests(crossoverOp[k], crossoverProb[i], j); 
-#endif
-#ifdef TEST_3
-                runWarRobotPaperTests(crossoverOp[k], crossoverProb[i], j);
-#endif
-            }
-        }
-    }*/
-    
-    /*for(uint k = 0; k < crossoverOp.size(); ++k){
-        for(uint i = 0; i < crossoverProb.size(); ++i)
-            for(uint j = 8; j < 16; ++j){
-#ifdef TEST_1
-                runCarCorneringPaperTests(crossoverOp[k], crossoverProb[i], j);
-#endif
-#ifdef TEST_2
-                runMouseBridgePaperTests(crossoverOp[k], crossoverProb[i], j);
-#endif
-#ifdef TEST_3
-                runWarRobotPaperTests(crossoverOp[k], crossoverProb[i], j);
-#endif
-            }
-    }*/
-    
-    /*for(uint k = 0; k < crossoverOp.size(); ++k){
-        for(uint i = 0; i < crossoverProb.size(); ++i)
-            for(uint j = 16; j < 23; ++j){
-#ifdef TEST_1
-                runCarCorneringPaperTests(crossoverOp[k], crossoverProb[i], j);
-#endif
-#ifdef TEST_2
-                runMouseBridgePaperTests(crossoverOp[k], crossoverProb[i], j);
-#endif
-#ifdef TEST_3
-                runWarRobotPaperTests(crossoverOp[k], crossoverProb[i], j);
-#endif
-            }
-    }*/   
-
-    /*for(uint k = 0; k < crossoverOp.size(); ++k){
-        for(uint i = 0; i < crossoverProb.size(); ++i)
-            for(uint j = 23; j < 30; ++j){
-#ifdef TEST_1
-                runCarCorneringPaperTests(crossoverOp[k], crossoverProb[i], j);
-#endif
-#ifdef TEST_2
-                runMouseBridgePaperTests(crossoverOp[k], crossoverProb[i], j);
-#endif
-#ifdef TEST_3
-                runWarRobotPaperTests(crossoverOp[k], crossoverProb[i], j);
-#endif
-            }
-    }*/
 
     MPI_Finalize();
 

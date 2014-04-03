@@ -832,6 +832,10 @@
 			Name="Unit Tests"
 			>
 			<File
+				RelativePath=".\unittester.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\unittester.h"
 				>
 			</File>

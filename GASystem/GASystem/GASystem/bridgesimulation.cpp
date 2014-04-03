@@ -56,8 +56,7 @@ double BridgeSimulation::fitness(){
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
-    finalFitness += /*finalFitness == 0 ? */mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc)/* : 1000*/;
-    //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
 
     return finalFitness;
 }
@@ -111,8 +110,7 @@ double BridgeSimulation::realFitness(){
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
-    finalFitness += /*finalFitness == 0 ? */mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc)/* : 1000*/;
-    //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
 
     return finalFitness;
 }
@@ -157,7 +155,7 @@ bool BridgeSimulation::initialise(){
     }
     else if(mAgentType == MOUSE){
         for(uint k = 0; k < mAgents.size(); k++){
-            mWorldEntities[mAgents[k]] = new MouseAgent(15, 1);
+            mWorldEntities[mAgents[k]] = new MouseAgent(12, 1);
             if(!mWorldEntities[mAgents[k]]->initialise("mouse.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(genx(), geny(), genz()), 0.01, mSeed))
                 return false;
             mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());

@@ -7,8 +7,8 @@ CarAgent::CarAgent(double _maxLinearVel, double _maxAngularVel){
 }
 
 void CarAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody){
-    double left = getRayCollisionDistance(btVector3(100, 0, -100), _world, _envRigidBody);
-    double right = getRayCollisionDistance(btVector3(100, 0, 100), _world, _envRigidBody);
+    double left = getRayCollisionDistance(btVector3(100, 0, -10), _world, _envRigidBody);
+    double right = getRayCollisionDistance(btVector3(100, 0, 10), _world, _envRigidBody);
 
     //calculate rotation
     if(left < _frontRayDistance && right < _frontRayDistance)
@@ -25,15 +25,8 @@ void CarAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, 
 
         if(right > left)
             torque = btVector3(0, -0.5, 0);
-        else if(left > right)
+        else
             torque = btVector3(0, 0.5, 0);
-        else if(left == right){
-            int choose = generateRandInt();
-
-            if(choose % 2 == 0)
-                torque = btVector3(0, 0.5, 0);
-            else torque = btVector3(0, -0.5, 0);
-        }
         
         btVector3 correctedTorque = mRigidBody->getWorldTransform().getBasis() * torque;
         mRigidBody->applyTorque(correctedTorque);
@@ -59,6 +52,8 @@ void CarAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, 
 
 void CarAgent::update(const vector<double>& _nnOutput){
     assert(_nnOutput.size() >= 2);
+
+    mAvoidanceMode = false;
 
     double angularAcc = _nnOutput[0] - 0.5;
 

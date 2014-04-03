@@ -7,15 +7,15 @@ StarFighterAgent::StarFighterAgent(double _maxLinearVel, double _maxAngularVel){
 }
 
 void StarFighterAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody){
-    double left = getRayCollisionDistance(btVector3(100, 0, -100), _world, _envRigidBody);
-    double right = getRayCollisionDistance(btVector3(100, 0, 100), _world, _envRigidBody);
-    double bot = getRayCollisionDistance(btVector3(100, -100, 0), _world, _envRigidBody);
-    double top = getRayCollisionDistance(btVector3(100, 100, 0), _world, _envRigidBody);
+    double left = getRayCollisionDistance(btVector3(100, 0, -10), _world, _envRigidBody);
+    double right = getRayCollisionDistance(btVector3(100, 0, 10), _world, _envRigidBody);
+    double bot = getRayCollisionDistance(btVector3(100, -10, 0), _world, _envRigidBody);
+    double top = getRayCollisionDistance(btVector3(100, 10, 0), _world, _envRigidBody);
 
     double horizontalTorque, verticleTorque;
 
     //calculate rotation
-    if(left < _frontRayDistance && right < _frontRayDistance)
+    if((left < _frontRayDistance && right < _frontRayDistance) || (top < _frontRayDistance && bot < _frontRayDistance))
         mAvoidanceMode = true;
     
     if(mAvoidanceMode){
@@ -27,27 +27,13 @@ void StarFighterAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPer
     else{
         if(right > left)
             horizontalTorque = -0.75;
-        else if(left > right)
+        else
             horizontalTorque = 0.75;
-        else if(left == right){
-            int choose = generateRandInt();
-
-            if(choose % 2 == 0)
-                horizontalTorque = 0.75;
-            else horizontalTorque = -0.75;
-        }
 
         if(bot > top)
             verticleTorque = -0.75;
-        else if(top > bot)
+        else
             verticleTorque = 0.75;
-        else if(top == bot){
-            int choose = generateRandInt();
-
-            if(choose % 2 == 0)
-                verticleTorque = 0.75;
-            else verticleTorque = -0.75;
-        }
 
         btVector3 torque(0, horizontalTorque, verticleTorque);
         
@@ -77,7 +63,8 @@ void StarFighterAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPer
 void StarFighterAgent::update(const vector<double>& _nnOutput){
     assert(_nnOutput.size() >= 4);
 
-    
+    mAvoidanceMode = false;
+
     btVector3 torque((_nnOutput[0] - 0.5)/2, (_nnOutput[1] - 0.5)/2, (_nnOutput[2] - 0.5)/2);
     btVector3 correctedTorque = mRigidBody->getWorldTransform().getBasis() * torque;
     mRigidBody->applyTorque(correctedTorque);
