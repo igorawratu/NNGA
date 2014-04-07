@@ -102,7 +102,10 @@ Chromosome* ESPSubPopulation::getUnevaluatedChromosome(){
     boost::uniform_int<> dist(0, mUnevaluatedSubpopulation.size() - 1);
     boost::variate_generator<boost::mt19937, boost::uniform_int<>> gen(rng, dist);
 
-    return mUnevaluatedSubpopulation[gen()];
+    int pos = gen();
+    ++mEvaluationCounter[pos];
+
+    return mUnevaluatedSubpopulation[pos];
 }
 
 Chromosome* ESPSubPopulation::getChromosome(uint _position){
@@ -116,7 +119,6 @@ void ESPSubPopulation::setChromosomeFitness(Neuron* _chromosome, double _fitness
         if(_chromosome == dynamic_cast<ESPChromosome*>(mUnevaluatedSubpopulation[k])->getNeuron()){
             mUnevaluatedSubpopulation[k]->fitness() += _fitnessVal;
             mUnevaluatedSubpopulation[k]->realFitness() += _realFitnessVal;
-            ++mEvaluationCounter[k];
             if(mEvaluationCounter[k] == mParameters.sampleEvaluationsPerChromosome){
                 mUnevaluatedSubpopulation[k]->fitness() /= mParameters.sampleEvaluationsPerChromosome;
                 mSubpopulation.push_back(mUnevaluatedSubpopulation[k]);

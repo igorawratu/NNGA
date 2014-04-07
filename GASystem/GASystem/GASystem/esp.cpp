@@ -4,6 +4,16 @@ ESP::ESP(ESPParameters _parameters){
     mParameters = _parameters;
 
     setupSubpopulationStructure();
+
+    MPI_Comm_size(MPI_COMM_WORLD, &mTotalSlaveProcs);
+    --mTotalSlaveProcs;
+    assert(totalSlaveProcs >= 0);
+
+    int totalWork = _parameters.sampleEvaluationsPerChromosome * _parameters.populationSize;
+    mTotalRequests = totalWork > mTotalSlaveProcs ? mTotalSlaveProcs : totalWork;
+
+    mRequests = new MPI_Request[mTotalRequests];
+    mRetrievedFitnesses = new double[mTotalRequests * 2];
 }
 
 ESP::~ESP(){
@@ -12,6 +22,9 @@ ESP::~ESP(){
             delete iter->second.first;
         }
     }
+
+    delete[] mRetrievedFitnesses;
+    delete[] mRequests;
 }
 
 Solution ESP::train(SimulationContainer* _simulationContainer, string _outputFileName){
@@ -51,49 +64,196 @@ Solution ESP::train(SimulationContainer* _simulationContainer, string _outputFil
 
         cout << "Time taken for this generation : " << time(0) - t << endl;
 
-        if(mBestRealFitness <= mParameters.fitnessEpsilonThreshold)
+        if(mBestRealFitness <= mParameters.fitnessEpsilonThreshold){
+            stopSlaves();
             return mBestSolution;
-
-        if((k + 1) % 50 == 0 || k == 0){
-            ofstream outFile;
-            outFile.open(_outputFileName.c_str(), ofstream::app);
-            
-            outFile << (k == 0? k : k + 1) << ": " << mBestSolution.fitness() << " " << mBestSolution.realFitness() << endl;
-            outFile.close();
         }
     }
 
+    stopSlaves();
     return mBestSolution;
+}
+
+void ESP::stopSlaves(){
+    for(uint k = 0; k < mTotalSlaves; ++k){
+        int stopmsg[3]{-1, -1, -1};
+        MPI_Send(&stopmsg[0], 3, MPI_INT, k + 1, 0, MPI_COMM_WORLD);
+    }
 }
 
 void ESP::evaluateFitness(SimulationContainer* _simulationContainer){
     vector<pair<map<uint, Neuron*>, map<uint, Neuron*>>> neuralNetPrimitives;
     bool improved = false;
+
+    //setup initial work for slaves
+    for(uint k = 0; k < mTotalRequests; ++k){
+        //construct solution
+        createNeuralNetworkPrimitives(neuralNetPrimitives);
+        vector<NeuralNetwork> neuralNets;
+
+        for(uint i = 0; k < neuralNetPrimitives.size(); ++i){
+            neuralNets.push_back(NeuralNetwork());
+            neuralNets[i].setStructure(neuralNetPrimitives[i].first, neuralNetPrimitives[k].second);
+        }
+        
+        Solution *solution = new Solution(neuralNets);
+        
+        //construct serialized data to send through
+        int initialDat[3];
+        int *nodes, *format;
+        double* weights;
+
+        solution->serialize(nodes, format, weights, initialDat[0], initialDat[1], initialDat[2]);
+        mSavedSolutions[k] = solution;
+
+        MPI_Send(&initialDat[0], 3, MPI_INT, k + 1, 0, MPI_COMM_WORLD);
+        MPI_Send(nodes, initialDat[0], MPI_INT, k + 1, 0, MPI_COMM_WORLD);
+        MPI_Send(format, initialDat[1], MPI_INT, k + 1, 0, MPI_COMM_WORLD);
+        MPI_Send(weights, initialDat[2], MPI_DOUBLE, k + 1, 0, MPI_COMM_WORLD);
+
+        //setup corresponding nonblocking receive call
+        MPI_Irecv(&mRetrievedFitnesses[k * 2], 2, MPI_DOUBLE, k + 1, 1, MPI_COMM_WORLD, &mRequests[k]);
+
+        //add chromosomes to corresponding map position
+        vector<map<uint, Neuron*>> currUpdateVec;
+        
+        for(uint i = 0; i < neuralNetPrimitives.size(); ++i){
+            currUpdateVec.push_back(map<uint, Neuron*>());
+            for(map<uint, Neuron*>::iterator iter = neuralNetPrimitives[i].first.begin(); iter != neuralNetPrimitives[i].first.end(); ++iter){
+                if(iter->second->getNeuronType() == LEAF)
+                    delete iter->second;
+                else currUpdateVec[i][iter->first] = iter->second;
+            }
+        }
+
+        mUpdateList[k] = currUpdateVec;
+        delete [] nodes;
+        delete [] format;
+        delete [] weights;
+    }
+
+    //create solution and send to free slaves until cant create anymore, then wait for slaves to complete work
     while(createNeuralNetworkPrimitives(neuralNetPrimitives)){
+        //create solution
         vector<NeuralNetwork> neuralNets;
         for(uint k = 0; k < neuralNetPrimitives.size(); ++k){
             neuralNets.push_back(NeuralNetwork());
             neuralNets[k].setStructure(neuralNetPrimitives[k].first, neuralNetPrimitives[k].second);
         }
-        Solution solution(neuralNets);
-        _simulationContainer->runFullSimulation(&solution);
-        _simulationContainer->resetSimulation();
-        
-        if(solution.realFitness() <= mParameters.fitnessEpsilonThreshold || mBestFitness == -1 || (mBestFitness > solution.fitness() && mBestRealFitness > mParameters.fitnessEpsilonThreshold)){
-            mBestFitness = solution.fitness();
-            mBestRealFitness = solution.realFitness();
-            mBestSolution = solution;
-            improved = true;
-        }
+        Solution solution = new Solution(neuralNets);
 
-        for(uint k = 0; k < neuralNetPrimitives.size(); ++k){
-            for(map<uint, Neuron*>::iterator iter = neuralNetPrimitives[k].first.begin(); iter != neuralNetPrimitives[k].first.end(); ++iter){
-                if(iter->second->getNeuronType() == LEAF)
-                    delete iter->second;
-                else
-                    mSubpopulations[k][iter->first].first->setChromosomeFitness(iter->second, solution.fitness(), solution.realFitness());
+        //construct serialized data to send through
+        int initialDat[3];
+        int *nodes, *format;
+        double* weights;
+
+        solution->serialize(nodes, format, weights, initialDat[0], initialDat[1], initialDat[2]);
+
+        bool assigned = false;
+
+        //poll slaves
+        while(!assigned){
+            //sleep here
+
+            for(uint k = 0; k < mTotalRequests, ++k){
+                MPI_Status status;
+                int received;
+
+                MPI_Test(&mRequests[k], &received, &status);
+
+                if(received){
+                    assigned = true;
+                    //update chromosomes with fitness
+                    double realFitness = mRetreivedFitness[k*2];
+                    double fitness = mRetrievedFitnesses[k*2 + 1];
+                    for(uint i = 0; i < mUpdateList[k].size(); ++i){
+                        for(map<uint, Neuron*>::iterator iter = mUpdateList[k][i].begin(); iter != mUpdateList[k][i].end(); ++iter){
+                            mSubpopulations[i][iter->first].first->setChromosomeFitness(iter->second, fitness, realFitness);
+                        }
+                    }
+                    mUpdateList.erase(k);
+
+                    //update stagnation counter and set best solution
+                    if(realFitness <= mParameters.fitnessEpsilonThreshold || mBestFitness > fitness || mBestFitness == -1){
+                        mBestFitness = fitness;
+                        mBestRealFitness = realFitness;
+                        mBestSolution = *mSavedSolutions[k];
+                        improved = true;
+                    }
+
+                    //assign new work
+                    MPI_Send(&initialDat[0], 3, MPI_INT, k + 1, 0, MPI_COMM_WORLD);
+                    MPI_Send(nodes, initialDat[0], MPI_INT, k + 1, 0, MPI_COMM_WORLD);
+                    MPI_Send(format, initialDat[1], MPI_INT, k + 1, 0, MPI_COMM_WORLD);
+                    MPI_Send(weights, initialDat[2], MPI_DOUBLE, k + 1, 0, MPI_COMM_WORLD);
+
+                    //setup corresponding nonblocking receive call
+                    MPI_Irecv(&mRetrievedFitnesses[k * 2], 2, MPI_DOUBLE, k + 1, 1, MPI_COMM_WORLD, &mRequests[k]);
+
+                    //add chromosomes to corresponding map position
+                    vector<map<uint, Neuron*>> currUpdateVec;
+                    
+                    for(uint i = 0; i < neuralNetPrimitives.size(); ++i){
+                        currUpdateVec.push_back(map<uint, Neuron*>());
+                        for(map<uint, Neuron*>::iterator iter = neuralNetPrimitives[i].first.begin(); iter != neuralNetPrimitives[i].first.end(); ++iter){
+                            if(iter->second->getNeuronType() == LEAF)
+                                delete iter->second;
+                            else currUpdateVec[i][iter->first] = iter->second;
+                        }
+                    }
+
+                    mUpdateList[k] = currUpdateVec;
+
+                    //stop looping
+                    break;
+                }
             }
         }
+        delete mSavedSolutions[k];
+        mSavedSolutions.erase(k);
+        mSavedSolutions[k] = solution;
+
+        delete [] nodes;
+        delete [] format;
+        delete [] weights;
+    }
+
+    //finish receiving work
+    for(uint k = 0; k < mTotalRequests, ++k){
+        bool completed = false;
+        //poll the slave until it is complete (technically i can poll all of them at a time but that requires extra work since it requires keeping track of which slaves have finished
+        //processing).... so like.. FUCKIT
+        while(!completed){
+            //sleep
+
+            MPI_Status status;
+            int received;
+
+            MPI_Test(&mRequests[k], &received, &status);
+
+            if(received){
+                assigned = true;
+                //update chromosomes with fitness
+                double realFitness = mRetreivedFitness[k*2];
+                double fitness = mRetrievedFitnesses[k*2 + 1];
+                for(uint i = 0; i < mUpdateList[k].size(); ++i){
+                    for(map<uint, Neuron*>::iterator iter = mUpdateList[k][i].begin(); iter != mUpdateList[k][i].end(); ++iter){
+                        mSubpopulations[i][iter->first].first->setChromosomeFitness(iter->second, fitness, realFitness);
+                    }
+                }
+                mUpdateList.erase(k);
+
+                //update stagnation counter and set best solution
+                if(realFitness <= mParameters.fitnessEpsilonThreshold || mBestFitness > fitness || mBestFitness == -1){
+                    mBestFitness = fitness;
+                    mBestRealFitness = realFitness;
+                    mBestSolution = *mSavedSolutions[k];
+                    improved = true;
+                }
+            }
+        }
+        delete mSavedSolutions[k];
+        mSavedSolutions.erase(k);
     }
 
     mStagnationCounter = improved ? 0 : mStagnationCounter + 1;

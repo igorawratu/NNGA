@@ -752,6 +752,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\slave.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\slave.h"
+				>
+			</File>
+			<File
 				RelativePath=".\solution.cpp"
 				>
 			</File>
@@ -831,10 +839,6 @@
 		<Filter
 			Name="Unit Tests"
 			>
-			<File
-				RelativePath=".\unittester.cpp"
-				>
-			</File>
 			<File
 				RelativePath=".\unittester.h"
 				>

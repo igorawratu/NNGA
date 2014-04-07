@@ -6,8 +6,11 @@
 #include "simulationcontainer.h"
 #include "pugixml.hpp"
 #include "solution.h"
+#include <mpi.h>
 
 #include <fstream>
+#include <map>
+#include <vector>
 
 using namespace std;
 
@@ -26,6 +29,7 @@ private:
     bool createDeltaNeuralNetworkPrimitives(vector<pair<map<uint, Neuron*>, map<uint, Neuron*>>>& _output);
     void evaluateFitness(SimulationContainer* _simulationContainer);
     void runDeltaCodes(SimulationContainer* _simulationContainer);
+    void stopSlaves();
 
 private:
     ESPParameters mParameters;
@@ -33,6 +37,12 @@ private:
     double mBestFitness, mBestRealFitness;
     Solution mBestSolution;
     uint mStagnationCounter;
+
+    map<int, vector<map<uint, Neuron*>>> mUpdateList;
+    MPI_Request* mRequests;
+    double* mRetrievedFitnesses;
+    int mTotalSlaveProcs, mTotalRequests;
+    map<uint, Solution*> mSavedSolutions;
 
 private:
     ESP(const ESP& other){}

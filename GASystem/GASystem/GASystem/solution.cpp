@@ -96,9 +96,9 @@ Solution::Solution(int* _nodes, int* _format, double* _weights, int _formatSize,
     delete [] _weights;
 }
 
-void Solution::serialize(int*& _nodes, int*& _format, double*& _weights, int& _formatSize, int& _weightSize){
-    int nodeSize = mNeuralNets.size() * 3 + 1;
-    _nodes = new int[nodeSize];
+void Solution::serialize(int*& _nodes, int*& _format, double*& _weights, int& _nodeSize, int& _formatSize, int& _weightSize){
+    _nodeSize = mNeuralNets.size() * 3 + 1;
+    _nodes = new int[_nodeSize];
     int nodePos = 0;
     _formatSize = _weightSize = 0;
 

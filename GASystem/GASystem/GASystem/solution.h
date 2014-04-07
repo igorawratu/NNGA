@@ -27,7 +27,7 @@ public:
     double& fitness(){return mFitness;}
     double& realFitness(){return mRealFitness;}
 
-    void serialize(int*& _nodes, int*& _format, double*& _weights, int& _formatSize, int& _weightSize);
+    void serialize(int*& _nodes, int*& _format, double*& _weights, int& _nodeSize, int& _formatSize, int& _weightSize);
 
 private:
     vector<NeuralNetwork> mNeuralNets;
