@@ -6,6 +6,7 @@
 #include "simulationcontainer.h"
 #include "pugixml.hpp"
 #include "solution.h"
+#include "common.h"
 #include <mpi.h>
 
 #include <fstream>

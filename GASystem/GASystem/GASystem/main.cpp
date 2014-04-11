@@ -41,6 +41,7 @@
 #include "esp.h"
 #include "polebalancingsimulation.h"
 #include <boost/lexical_cast.hpp>
+#include "slave.h"
 
 #define TRAIN
 
@@ -688,46 +689,65 @@ void runBridgeMouseSimESP(){
     BridgeSimulation* sim = new BridgeSimulation(2, 30, MOUSE, 300, 5, 30, NULL, engine.getResourceManager(), seed);
     sim->initialise();
 
-    SimulationContainer cont(sim);
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 #ifdef TRAIN
-    ESPParameters params;
-    params.populationSize = 20;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/bridgesimulation/mouse/input6h.xml";
-    params.stagnationThreshold = 400;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "LX";
-    params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 2;
-    params.sampleEvaluationsPerChromosome = 3;
-    params.crossoverParameters["CrossoverProbability"] = 0.6;
+    Solution solution;
 
-    GeneticAlgorithm* ga = new ESP(params);
+    if(rank == 0){
+        SimulationContainer cont(sim);
 
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
+        ESPParameters params;
+        params.populationSize = 20;
+        params.maxGenerations = 200;
+        params.nnFormatFilename = "neuralxmls/bridgesimulation/mouse/input6h.xml";
+        params.stagnationThreshold = 400;
+        params.fitnessEpsilonThreshold = 0;
+        params.mutationAlgorithm = "GaussianMutation";
+        params.mutationParameters["MutationProbability"] = 0.02;
+        params.mutationParameters["Deviation"] = 0.2;
+        params.mutationParameters["MaxConstraint"] = 1;
+        params.mutationParameters["MinConstraint"] = -1;
+        params.crossoverAlgorithm = "LX";
+        params.selectionAlgorithm = "LRankSelection";
+        params.elitismCount = 2;
+        params.sampleEvaluationsPerChromosome = 3;
+        params.crossoverParameters["CrossoverProbability"] = 0.6;
 
-    delete ga;
+        GeneticAlgorithm* ga = new ESP(params);
 
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/bridgesimulation/mouse/output.xml");
+        GAEngine gaengine;
+        solution = gaengine.train(ga, &cont, "");
 
-    cont.resetSimulation();
+        delete ga;
+
+        cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
+        solution.printToFile("neuralxmls/bridgesimulation/mouse/output.xml");
+
+        cont.resetSimulation();
+
+        cont.setSolution(&solution);
+        
+        engine.setSimulation(&cont);
+        
+        engine.renderSimulation();
+    }
+    else{
+        Slave slave(sim);
+
+        slave.run();
+    }
 #else
-    Solution solution("neuralxmls/bridgesimulation/mouse/output.xml");
+    if(rank == 0){
+        Solution solution("neuralxmls/bridgesimulation/mouse/output.xml");
+        cont.setSolution(&solution);
+        
+        engine.setSimulation(&cont);
+        
+        engine.renderSimulation();
+    }
 #endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
 }
 
 void runCorneringSimESP(){

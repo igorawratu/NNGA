@@ -75,9 +75,9 @@ Solution ESP::train(SimulationContainer* _simulationContainer, string _outputFil
 }
 
 void ESP::stopSlaves(){
-    for(uint k = 0; k < mTotalSlaves; ++k){
-        int stopmsg[3]{-1, -1, -1};
-        MPI_Send(&stopmsg[0], 3, MPI_INT, k + 1, 0, MPI_COMM_WORLD);
+    for(uint k = 0; k < mTotalSlaveProcs; ++k){
+        int stopmsg[3] = {-1, -1, -1};
+        MPI_Send(&stopmsg[0], 3, MPI_INT, k + 1, 1, MPI_COMM_WORLD);
     }
 }
 
@@ -91,12 +91,13 @@ void ESP::evaluateFitness(SimulationContainer* _simulationContainer){
         createNeuralNetworkPrimitives(neuralNetPrimitives);
         vector<NeuralNetwork> neuralNets;
 
-        for(uint i = 0; k < neuralNetPrimitives.size(); ++i){
+        for(uint i = 0; i < neuralNetPrimitives.size(); ++i){
             neuralNets.push_back(NeuralNetwork());
-            neuralNets[i].setStructure(neuralNetPrimitives[i].first, neuralNetPrimitives[k].second);
+            neuralNets[i].setStructure(neuralNetPrimitives[i].first, neuralNetPrimitives[i].second);
         }
-        
+
         Solution *solution = new Solution(neuralNets);
+
         
         //construct serialized data to send through
         int initialDat[3];
@@ -106,10 +107,10 @@ void ESP::evaluateFitness(SimulationContainer* _simulationContainer){
         solution->serialize(nodes, format, weights, initialDat[0], initialDat[1], initialDat[2]);
         mSavedSolutions[k] = solution;
 
-        MPI_Send(&initialDat[0], 3, MPI_INT, k + 1, 0, MPI_COMM_WORLD);
-        MPI_Send(nodes, initialDat[0], MPI_INT, k + 1, 0, MPI_COMM_WORLD);
-        MPI_Send(format, initialDat[1], MPI_INT, k + 1, 0, MPI_COMM_WORLD);
-        MPI_Send(weights, initialDat[2], MPI_DOUBLE, k + 1, 0, MPI_COMM_WORLD);
+        MPI_Send(&initialDat[0], 3, MPI_INT, k + 1, 1, MPI_COMM_WORLD);
+        MPI_Send(nodes, initialDat[0], MPI_INT, k + 1, 1, MPI_COMM_WORLD);
+        MPI_Send(format, initialDat[1], MPI_INT, k + 1, 1, MPI_COMM_WORLD);
+        MPI_Send(weights, initialDat[2], MPI_DOUBLE, k + 1, 1, MPI_COMM_WORLD);
 
         //setup corresponding nonblocking receive call
         MPI_Irecv(&mRetrievedFitnesses[k * 2], 2, MPI_DOUBLE, k + 1, 1, MPI_COMM_WORLD, &mRequests[k]);
@@ -140,7 +141,7 @@ void ESP::evaluateFitness(SimulationContainer* _simulationContainer){
             neuralNets.push_back(NeuralNetwork());
             neuralNets[k].setStructure(neuralNetPrimitives[k].first, neuralNetPrimitives[k].second);
         }
-        Solution solution = new Solution(neuralNets);
+        Solution *solution = new Solution(neuralNets);
 
         //construct serialized data to send through
         int initialDat[3];
@@ -154,8 +155,7 @@ void ESP::evaluateFitness(SimulationContainer* _simulationContainer){
         //poll slaves
         while(!assigned){
             //sleep here
-
-            for(uint k = 0; k < mTotalRequests, ++k){
+            for(uint k = 0; k < mTotalRequests; ++k){
                 MPI_Status status;
                 int received;
 
@@ -164,7 +164,7 @@ void ESP::evaluateFitness(SimulationContainer* _simulationContainer){
                 if(received){
                     assigned = true;
                     //update chromosomes with fitness
-                    double realFitness = mRetreivedFitness[k*2];
+                    double realFitness = mRetrievedFitnesses[k*2];
                     double fitness = mRetrievedFitnesses[k*2 + 1];
                     for(uint i = 0; i < mUpdateList[k].size(); ++i){
                         for(map<uint, Neuron*>::iterator iter = mUpdateList[k][i].begin(); iter != mUpdateList[k][i].end(); ++iter){
@@ -182,10 +182,10 @@ void ESP::evaluateFitness(SimulationContainer* _simulationContainer){
                     }
 
                     //assign new work
-                    MPI_Send(&initialDat[0], 3, MPI_INT, k + 1, 0, MPI_COMM_WORLD);
-                    MPI_Send(nodes, initialDat[0], MPI_INT, k + 1, 0, MPI_COMM_WORLD);
-                    MPI_Send(format, initialDat[1], MPI_INT, k + 1, 0, MPI_COMM_WORLD);
-                    MPI_Send(weights, initialDat[2], MPI_DOUBLE, k + 1, 0, MPI_COMM_WORLD);
+                    MPI_Send(&initialDat[0], 3, MPI_INT, k + 1, 1, MPI_COMM_WORLD);
+                    MPI_Send(nodes, initialDat[0], MPI_INT, k + 1, 1, MPI_COMM_WORLD);
+                    MPI_Send(format, initialDat[1], MPI_INT, k + 1, 1, MPI_COMM_WORLD);
+                    MPI_Send(weights, initialDat[2], MPI_DOUBLE, k + 1, 1, MPI_COMM_WORLD);
 
                     //setup corresponding nonblocking receive call
                     MPI_Irecv(&mRetrievedFitnesses[k * 2], 2, MPI_DOUBLE, k + 1, 1, MPI_COMM_WORLD, &mRequests[k]);
@@ -204,14 +204,15 @@ void ESP::evaluateFitness(SimulationContainer* _simulationContainer){
 
                     mUpdateList[k] = currUpdateVec;
 
+                    delete mSavedSolutions[k];
+                    mSavedSolutions.erase(k);
+                    mSavedSolutions[k] = solution;
+
                     //stop looping
                     break;
                 }
             }
         }
-        delete mSavedSolutions[k];
-        mSavedSolutions.erase(k);
-        mSavedSolutions[k] = solution;
 
         delete [] nodes;
         delete [] format;
@@ -219,22 +220,21 @@ void ESP::evaluateFitness(SimulationContainer* _simulationContainer){
     }
 
     //finish receiving work
-    for(uint k = 0; k < mTotalRequests, ++k){
+    for(uint k = 0; k < mTotalRequests; ++k){
         bool completed = false;
         //poll the slave until it is complete (technically i can poll all of them at a time but that requires extra work since it requires keeping track of which slaves have finished
         //processing).... so like.. FUCKIT
         while(!completed){
             //sleep
-
             MPI_Status status;
             int received;
 
             MPI_Test(&mRequests[k], &received, &status);
 
             if(received){
-                assigned = true;
+                completed = true;
                 //update chromosomes with fitness
-                double realFitness = mRetreivedFitness[k*2];
+                double realFitness = mRetrievedFitnesses[k*2];
                 double fitness = mRetrievedFitnesses[k*2 + 1];
                 for(uint i = 0; i < mUpdateList[k].size(); ++i){
                     for(map<uint, Neuron*>::iterator iter = mUpdateList[k][i].begin(); iter != mUpdateList[k][i].end(); ++iter){

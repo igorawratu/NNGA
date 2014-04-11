@@ -95,8 +95,6 @@ void ESPSubPopulation::nextGeneration(){
 Chromosome* ESPSubPopulation::getUnevaluatedChromosome(){
     if(mUnevaluatedSubpopulation.size() == 0)
         return NULL;
-    else if(mUnevaluatedSubpopulation.size() == 1)
-        return mUnevaluatedSubpopulation[0];
 
     boost::mt19937 rng(rand());
     boost::uniform_int<> dist(0, mUnevaluatedSubpopulation.size() - 1);
@@ -105,7 +103,15 @@ Chromosome* ESPSubPopulation::getUnevaluatedChromosome(){
     int pos = gen();
     ++mEvaluationCounter[pos];
 
-    return mUnevaluatedSubpopulation[pos];
+    Chromosome* out = mUnevaluatedSubpopulation[pos];
+
+    if(mEvaluationCounter[pos] == mParameters.sampleEvaluationsPerChromosome){
+        mSubpopulation.push_back(mUnevaluatedSubpopulation[pos]);
+        mUnevaluatedSubpopulation.erase(mUnevaluatedSubpopulation.begin() + pos);
+        mEvaluationCounter.erase(mEvaluationCounter.begin() + pos);
+    }
+
+    return out;
 }
 
 Chromosome* ESPSubPopulation::getChromosome(uint _position){
@@ -117,14 +123,15 @@ Chromosome* ESPSubPopulation::getChromosome(uint _position){
 void ESPSubPopulation::setChromosomeFitness(Neuron* _chromosome, double _fitnessVal, double _realFitnessVal){
     for(uint k = 0; k < mUnevaluatedSubpopulation.size(); ++k){
         if(_chromosome == dynamic_cast<ESPChromosome*>(mUnevaluatedSubpopulation[k])->getNeuron()){
-            mUnevaluatedSubpopulation[k]->fitness() += _fitnessVal;
-            mUnevaluatedSubpopulation[k]->realFitness() += _realFitnessVal;
-            if(mEvaluationCounter[k] == mParameters.sampleEvaluationsPerChromosome){
-                mUnevaluatedSubpopulation[k]->fitness() /= mParameters.sampleEvaluationsPerChromosome;
-                mSubpopulation.push_back(mUnevaluatedSubpopulation[k]);
-                mUnevaluatedSubpopulation.erase(mUnevaluatedSubpopulation.begin() + k);
-                mEvaluationCounter.erase(mEvaluationCounter.begin() + k);
-            }
+            mUnevaluatedSubpopulation[k]->fitness() += _fitnessVal / mParameters.sampleEvaluationsPerChromosome;
+            mUnevaluatedSubpopulation[k]->realFitness() += _realFitnessVal / mParameters.sampleEvaluationsPerChromosome;
+        }
+    }
+
+    for(uint k = 0; k < mSubpopulation.size(); ++k){
+        if(_chromosome == dynamic_cast<ESPChromosome*>(mSubpopulation[k])->getNeuron()){
+            mSubpopulation[k]->fitness() += _fitnessVal / mParameters.sampleEvaluationsPerChromosome;
+            mSubpopulation[k]->realFitness() + _realFitnessVal / mParameters.sampleEvaluationsPerChromosome;
         }
     }
 }
