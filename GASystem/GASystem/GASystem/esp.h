@@ -7,13 +7,15 @@
 #include "pugixml.hpp"
 #include "solution.h"
 #include "common.h"
-#include <mpi.h>
 
+#include <mpi.h>
 #include <fstream>
 #include <map>
 #include <vector>
+#include <windows.h>
 
 using namespace std;
+enum WorkStatus{NOWORK, WORK, COMPLETE};
 
 class ESP : public GeneticAlgorithm
 {
@@ -32,6 +34,8 @@ private:
     void runDeltaCodes(SimulationContainer* _simulationContainer);
     void stopSlaves();
 
+    void hostwork();
+
 private:
     ESPParameters mParameters;
     vector<map<uint, pair<ESPSubPopulation*, uint>>> mSubpopulations;
@@ -44,6 +48,8 @@ private:
     double* mRetrievedFitnesses;
     int mTotalSlaveProcs, mTotalRequests;
     map<uint, Solution*> mSavedSolutions;
+    WorkStatus mWorkStatus;
+    SimulationContainer* mSimulationContainer;
 
 private:
     ESP(const ESP& other){}
