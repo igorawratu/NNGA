@@ -44,7 +44,7 @@
 #include "slave.h"
 #include <boost/tuple/tuple.hpp>
 
-//#define TRAIN
+#define TRAIN
 
 using namespace std;
 
@@ -148,7 +148,7 @@ ESPParameters getESPParameters(int _popsize, int _maxgen, string _nnFormatFile, 
     return params;
 }
 
-void runSim(GraphicsEngine& _engine, Simulation* _sim, GAType _type, string _inputFile, string _outputFile){
+void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inputFile, string _outputFile){
     if(!_sim){
         cout << "Simulation not created" << endl;
         return;
@@ -183,9 +183,9 @@ void runSim(GraphicsEngine& _engine, Simulation* _sim, GAType _type, string _inp
 
         cont.resetSimulation();
         cont.setSolution(&solution);
-        _engine.setSimulation(&cont);
+        _engine->setSimulation(&cont);
         
-        _engine.renderSimulation();
+        _engine->renderSimulation();
 
         delete ga;
     }
@@ -202,29 +202,29 @@ void runSim(GraphicsEngine& _engine, Simulation* _sim, GAType _type, string _inp
         Solution solution(_outputFile);
         cont.setSolution(&solution);
         
-        _engine.setSimulation(&cont);
+        _engine->setSimulation(&cont);
         
-        _engine.renderSimulation();
+        _engine->renderSimulation();
     }
     else delete _sim;
 #endif
 }
 
-SimInfo createSimulation(string _simName, GraphicsEngine& _engine){
+SimInfo createSimulation(string _simName, GraphicsEngine* _engine){
     int seed = 100;
 
-    if (_simName == "BridgeCarSim") return SimInfo(new BridgeSimulation(2, 10, CAR, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/bridgesimulation/car/input6h.xml", "neuralxmls/bridgesimulation/car/output.xml");
-    else if(_simName == "BridgeMouseSim") return SimInfo(new BridgeSimulation(2, 30, MOUSE, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/bridgesimulation/mouse/input6h.xml", "neuralxmls/bridgesimulation/mouse/output.xml");
-    else if(_simName == "CorneringSim") return SimInfo(new CorneringSim(2, 4, 450, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/corneringsimulation/input6h.xml", "neuralxmls/corneringsimulation/output.xml");
-    else if(_simName == "CarCrashSim") return SimInfo(new CarCrashSimulation(1, 10, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/carcrashsimulation/input6h.xml", "neuralxmls/carcrashsimulation/output.xml");
-    else if(_simName == "CarRaceSim") return SimInfo(new CarRaceSimulation(2, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/carracesimulation/input5h.xml", "neuralxmls/carracesimulation/output.xml");
-    else if(_simName == "WarRobotSim") return SimInfo(new WarRobotSimulation(2, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/warrobotsimulation/input5h.xml", "neuralxmls/warrobotsimulation/output.xml");
-    else if(_simName == "MouseEscapeSim") return SimInfo(new MouseEscapeSimulation(2, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/mouseescapesimulation/input6h.xml", "neuralxmls/mouseescapesimulation/output.xml");
-    else if(_simName == "MouseScatterSim") return SimInfo(new MouseScatterSimulation(2, 100, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/mousescattersimulation/input6h.xml", "neuralxmls/mousescattersimulation/output.xml");
-    else if(_simName == "SFObstacleSim") return SimInfo(new SFObstacleSimulation(2, 40, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/sfobstaclesimulation/input6h.xml", "neuralxmls/sfobstaclesimulation/output.xml");
-    else if(_simName == "SFObstacleFieldSim") return SimInfo(new SFObstaclefieldSimulation(2, 40, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/sfobstaclefieldsimulation/input6h.xml", "neuralxmls/sfobstaclefieldsimulation/output.xml");
-    else if(_simName == "SFTurnbackSim") return SimInfo(new SFTurnbackSimulation(2, 30, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/sfturnbacksimulation/input6h.xml", "neuralxmls/sfturnbacksimulation/output.xml");
-    else if(_simName == "PoleBalanceSim") return SimInfo(new PoleBalancingSimulation(900, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/polebalancing/input.xml", "neuralxmls/polebalancing/output.xml");
+    if (_simName == "BridgeCarSim") return SimInfo(new BridgeSimulation(2, 10, CAR, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/bridgesimulation/car/input6h.xml", "neuralxmls/bridgesimulation/car/output.xml");
+    else if(_simName == "BridgeMouseSim") return SimInfo(new BridgeSimulation(2, 30, MOUSE, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/bridgesimulation/mouse/input6h.xml", "neuralxmls/bridgesimulation/mouse/output.xml");
+    else if(_simName == "CorneringSim") return SimInfo(new CorneringSim(2, 4, 450, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/corneringsimulation/input6h.xml", "neuralxmls/corneringsimulation/output.xml");
+    else if(_simName == "CarCrashSim") return SimInfo(new CarCrashSimulation(1, 10, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/carcrashsimulation/input6h.xml", "neuralxmls/carcrashsimulation/output.xml");
+    else if(_simName == "CarRaceSim") return SimInfo(new CarRaceSimulation(2, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/carracesimulation/input5h.xml", "neuralxmls/carracesimulation/output.xml");
+    else if(_simName == "WarRobotSim") return SimInfo(new WarRobotSimulation(2, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/warrobotsimulation/input5h.xml", "neuralxmls/warrobotsimulation/output.xml");
+    else if(_simName == "MouseEscapeSim") return SimInfo(new MouseEscapeSimulation(2, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/mouseescapesimulation/input6h.xml", "neuralxmls/mouseescapesimulation/output.xml");
+    else if(_simName == "MouseScatterSim") return SimInfo(new MouseScatterSimulation(2, 100, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/mousescattersimulation/input6h.xml", "neuralxmls/mousescattersimulation/output.xml");
+    else if(_simName == "SFObstacleSim") return SimInfo(new SFObstacleSimulation(2, 40, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/sfobstaclesimulation/input6h.xml", "neuralxmls/sfobstaclesimulation/output.xml");
+    else if(_simName == "SFObstacleFieldSim") return SimInfo(new SFObstaclefieldSimulation(2, 40, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/sfobstaclefieldsimulation/input6h.xml", "neuralxmls/sfobstaclefieldsimulation/output.xml");
+    else if(_simName == "SFTurnbackSim") return SimInfo(new SFTurnbackSimulation(2, 30, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/sfturnbacksimulation/input6h.xml", "neuralxmls/sfturnbacksimulation/output.xml");
+    else if(_simName == "PoleBalanceSim") return SimInfo(new PoleBalancingSimulation(900, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/polebalancing/input.xml", "neuralxmls/polebalancing/output.xml");
 
     return NULL;
 }
@@ -234,13 +234,15 @@ int main(int argc, char** argv){
 
     srand(time(0));
 
-    string simName = "BridgeMouseSim";
-    GraphicsEngine engine(NULL);
+    string simName = "CorneringSim";
+    GraphicsEngine* engine = new GraphicsEngine(NULL);
 
     SimInfo simInfo = createSimulation(simName, engine);
 
     runSim(engine, simInfo.get<0>(), TYPE_ESP, simInfo.get<1>(), simInfo.get<2>());
     //testCrossoverOp();
+
+    delete engine;
 
     MPI_Finalize();
 
