@@ -42,541 +42,15 @@
 #include "polebalancingsimulation.h"
 #include <boost/lexical_cast.hpp>
 #include "slave.h"
+#include <boost/tuple/tuple.hpp>
 
-#define TRAIN
+//#define TRAIN
 
 using namespace std;
 
-void runBridgeCarSim(){
-    int seed = 50;
-    GraphicsEngine engine(NULL);
+enum GAType{TYPE_STANDARD, TYPE_ESP};
 
-    BridgeSimulation* sim = new BridgeSimulation(2, 10, CAR, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    StandardGAParameters params;
-    params.populationSize = 100;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input6h.xml";
-    params.stagnationThreshold = 0;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 5;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new StandardGA(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/bridgesimulation/car/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/bridgesimulation/car/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-void runBridgeMouseSim(){
-    int seed = 50;
-    GraphicsEngine engine(NULL);
-
-    BridgeSimulation* sim = new BridgeSimulation(2, 30, MOUSE, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    StandardGAParameters params;
-    params.populationSize = 100;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/bridgesimulation/mouse/input6h.xml";
-    params.stagnationThreshold = 10;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.1;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "UNDX";
-    params.selectionAlgorithm = "QuadraticRankSelection";
-    params.elitismCount = 5;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new StandardGA(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/bridgesimulation/mouse/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/bridgesimulation/mouse/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-void runCorneringSim(){
-    int seed = 50;
-    GraphicsEngine engine(NULL);
-
-    CorneringSim* sim = new CorneringSim(2, 4, 450, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    StandardGAParameters params;
-    params.populationSize = 100;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/corneringsimulation/input6h.xml";
-    params.stagnationThreshold = 5;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 5;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new StandardGA(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/corneringsimulation/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/corneringsimulation/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-void runCarCrashSim(){
-    int seed = 110;
-    GraphicsEngine engine(NULL);
-
-    CarCrashSimulation* sim = new CarCrashSimulation(1, 10, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    StandardGAParameters params;
-    params.populationSize = 100;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/carcrashsimulation/input6h.xml";
-    params.stagnationThreshold = 10;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.1;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "QuadraticRankSelection";
-    params.elitismCount = 5;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new StandardGA(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/carcrashsimulation/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/carcrashsimulation/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-void runCarRaceSim(){
-    int seed = 110;
-    GraphicsEngine engine(NULL);
-
-    CarRaceSimulation* sim = new CarRaceSimulation(2, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    StandardGAParameters params;
-    params.populationSize = 100;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/carracesimulation/input5h.xml";
-    params.stagnationThreshold = 0;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "QuadraticRankSelection";
-    params.elitismCount = 5;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new StandardGA(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/carracesimulation/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/carracesimulation/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-void runWarRobotSim(){
-    int seed = 110;
-    GraphicsEngine engine(NULL);
-
-    WarRobotSimulation* sim = new WarRobotSimulation(2, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    StandardGAParameters params;
-    params.populationSize = 50;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/warrobotsimulation/input5h.xml";
-    params.stagnationThreshold = 0;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 5;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new StandardGA(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/warrobotsimulation/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/warrobotsimulation/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-
-void runMouseEscapeSim(){
-    int seed = 110;
-    GraphicsEngine engine(NULL);
-
-    MouseEscapeSimulation* sim = new MouseEscapeSimulation(2, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    StandardGAParameters params;
-    params.populationSize = 50;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/mouseescapesimulation/input6h.xml";
-    params.stagnationThreshold = 0;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 5;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new StandardGA(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/mouseescapesimulation/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/mouseescapesimulation/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-void runMouseScatterSim(){
-    int seed = 110;
-    GraphicsEngine engine(NULL);
-
-    MouseScatterSimulation* sim = new MouseScatterSimulation(2, 100, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    StandardGAParameters params;
-    params.populationSize = 50;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/mousescattersimulation/input6h.xml";
-    params.stagnationThreshold = 0;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 5;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new StandardGA(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/mousescattersimulation/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/mousescattersimulation/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-void runSFObstacleSim(){
-    int seed = 110;
-    GraphicsEngine engine(NULL);
-
-    SFObstacleSimulation* sim = new SFObstacleSimulation(2, 40, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    StandardGAParameters params;
-    params.populationSize = 50;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/sfobstaclesimulation/input6h.xml";
-    params.stagnationThreshold = 0;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 5;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new StandardGA(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/sfobstaclesimulation/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/sfobstaclesimulation/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-void runSFObstacleFieldSim(){
-    int seed = 110;
-    GraphicsEngine engine(NULL);
-
-    SFObstaclefieldSimulation* sim = new SFObstaclefieldSimulation(2, 40, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    StandardGAParameters params;
-    params.populationSize = 50;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/sfobstaclefieldsimulation/input6h.xml";
-    params.stagnationThreshold = 0;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 5;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new StandardGA(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/sfobstaclefieldsimulation/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/sfobstaclefieldsimulation/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-void runSFTurnbackSim(){
-    int seed = 110;
-    GraphicsEngine engine(NULL);
-
-    SFTurnbackSimulation* sim = new SFTurnbackSimulation(2, 30, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    StandardGAParameters params;
-    params.populationSize = 50;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/sfturnbacksimulation/input6h.xml";
-    params.stagnationThreshold = 0;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 5;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new StandardGA(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/sfturnbacksimulation/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/sfturnbacksimulation/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-
+typedef boost::tuples::tuple<Simulation*, string, string> SimInfo;
 
 void testCrossoverOp(){
     srand(time(0));
@@ -633,61 +107,54 @@ void testCrossoverOp(){
 
 }
 
-void runBridgeCarSimESP(){
-    int seed = 50;
-    GraphicsEngine engine(NULL);
-
-    BridgeSimulation* sim = new BridgeSimulation(2, 10, CAR, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    ESPParameters params;
-    params.populationSize = 20;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/bridgesimulation/car/input6h.xml";
-    params.stagnationThreshold = 20;
-    params.fitnessEpsilonThreshold = 0;
+StandardGAParameters getGAParameters(int _popsize, int _maxgen, string _nnFormatFile, double _stag, double _epsilon){
+    StandardGAParameters params;
+    params.populationSize = _popsize;
+    params.maxGenerations = _maxgen;
+    params.nnFormatFilename = _nnFormatFile;
+    params.stagnationThreshold = _stag;
+    params.fitnessEpsilonThreshold = _epsilon;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.2;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
+    params.crossoverAlgorithm = "LX";
     params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 5;
-    params.sampleEvaluationsPerChromosome = 3;
+    params.elitismCount = _popsize/10;
     params.crossoverParameters["CrossoverProbability"] = 0.8;
 
-    GeneticAlgorithm* ga = new ESP(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/bridgesimulation/car/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/bridgesimulation/car/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
+    return params;
 }
 
-void runBridgeMouseSimESP(){
-    int seed = 50;
-    GraphicsEngine engine(NULL);
+ESPParameters getESPParameters(int _popsize, int _maxgen, string _nnFormatFile, double _stag, double _epsilon, int _evals){
+    ESPParameters params;
+    params.populationSize = _popsize;
+    params.maxGenerations = _maxgen;
+    params.nnFormatFilename = _nnFormatFile;
+    params.stagnationThreshold = _stag;
+    params.fitnessEpsilonThreshold = _epsilon;
+    params.mutationAlgorithm = "GaussianMutation";
+    params.mutationParameters["MutationProbability"] = 0.02;
+    params.mutationParameters["Deviation"] = 0.2;
+    params.mutationParameters["MaxConstraint"] = 1;
+    params.mutationParameters["MinConstraint"] = -1;
+    params.crossoverAlgorithm = "LX";
+    params.selectionAlgorithm = "LRankSelection";
+    params.elitismCount = _popsize/10;
+    params.sampleEvaluationsPerChromosome = _evals;
+    params.crossoverParameters["CrossoverProbability"] = 0.8;
 
-    BridgeSimulation* sim = new BridgeSimulation(2, 30, MOUSE, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
+    return params;
+}
+
+void runSim(GraphicsEngine& _engine, Simulation* _sim, GAType _type, string _inputFile, string _outputFile){
+    if(!_sim){
+        cout << "Simulation not created" << endl;
+        return;
+    }
+
+    _sim->initialise();
 
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -696,552 +163,70 @@ void runBridgeMouseSimESP(){
     Solution solution;
 
     if(rank == 0){
-        SimulationContainer cont(sim);
+        GeneticAlgorithm* ga;
 
-        ESPParameters params;
-        params.populationSize = 20;
-        params.maxGenerations = 200;
-        params.nnFormatFilename = "neuralxmls/bridgesimulation/mouse/input6h.xml";
-        params.stagnationThreshold = 400;
-        params.fitnessEpsilonThreshold = 0;
-        params.mutationAlgorithm = "GaussianMutation";
-        params.mutationParameters["MutationProbability"] = 0.02;
-        params.mutationParameters["Deviation"] = 0.2;
-        params.mutationParameters["MaxConstraint"] = 1;
-        params.mutationParameters["MinConstraint"] = -1;
-        params.crossoverAlgorithm = "LX";
-        params.selectionAlgorithm = "LRankSelection";
-        params.elitismCount = 2;
-        params.sampleEvaluationsPerChromosome = 3;
-        params.crossoverParameters["CrossoverProbability"] = 0.6;
-
-        GeneticAlgorithm* ga = new ESP(params);
+        if(_type == TYPE_STANDARD){
+            StandardGAParameters params = getGAParameters(100, 200, _inputFile, 0, 0);
+            ga = new StandardGA(params);
+        }
+        else{
+            ESPParameters params = getESPParameters(20, 200, _inputFile, 400, 0, 3);
+            ga = new ESP(params);
+        }
 
         GAEngine gaengine;
+        SimulationContainer cont(_sim);
         solution = gaengine.train(ga, &cont, "");
 
-        delete ga;
-
         cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-        solution.printToFile("neuralxmls/bridgesimulation/mouse/output.xml");
+        solution.printToFile(_outputFile);
 
         cont.resetSimulation();
-
         cont.setSolution(&solution);
+        _engine.setSimulation(&cont);
         
-        engine.setSimulation(&cont);
-        
-        engine.renderSimulation();
+        _engine.renderSimulation();
+
+        delete ga;
     }
     else{
-        Slave slave(sim);
+        if(_type == TYPE_ESP){
+            Slave slave(_sim);
 
-        slave.run();
+            slave.run();
+        }
     }
 #else
     if(rank == 0){
-        Solution solution("neuralxmls/bridgesimulation/mouse/output.xml");
+        SimulationContainer cont(_sim);
+        Solution solution(_outputFile);
         cont.setSolution(&solution);
         
-        engine.setSimulation(&cont);
+        _engine.setSimulation(&cont);
         
-        engine.renderSimulation();
+        _engine.renderSimulation();
     }
+    else delete _sim;
 #endif
 }
 
-void runCorneringSimESP(){
-    int seed = rand();
-
-    cout << seed << endl;
-
-    GraphicsEngine engine(NULL);
-
-    CorneringSim* sim = new CorneringSim(2, 4, 450, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    ESPParameters params;
-    params.populationSize = 40;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/corneringsimulation/input6h.xml";
-    params.stagnationThreshold = 400;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "LX";
-    params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 2;
-    params.sampleEvaluationsPerChromosome = 5;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new ESP(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/corneringsimulation/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/corneringsimulation/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-void runCarCrashSimESP(){
-    int seed = 110;
-    GraphicsEngine engine(NULL);
-
-    CarCrashSimulation* sim = new CarCrashSimulation(1, 8, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    ESPParameters params;
-    params.populationSize = 20;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/carcrashsimulation/input6h.xml";
-    params.stagnationThreshold = 20;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.1;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "QuadraticRankSelection";
-    params.elitismCount = 5;
-    params.sampleEvaluationsPerChromosome = 3;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new ESP(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/carcrashsimulation/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/carcrashsimulation/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-void runCarRaceSimESP(){
-    int seed = 110;
-    GraphicsEngine engine(NULL);
-
-    CarRaceSimulation* sim = new CarRaceSimulation(2, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    ESPParameters params;
-    params.populationSize = 20;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/carracesimulation/input6h.xml";
-    params.stagnationThreshold = 40;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "QuadraticRankSelection";
-    params.elitismCount = 2;
-    params.sampleEvaluationsPerChromosome = 3;
-    params.crossoverParameters["CrossoverProbability"] = 0.6;
-
-    GeneticAlgorithm* ga = new ESP(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/carracesimulation/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/carracesimulation/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-void runWarRobotSimESP(){
-    int seed = 110;
-    GraphicsEngine engine(NULL);
-
-    WarRobotSimulation* sim = new WarRobotSimulation(2, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    ESPParameters params;
-    params.populationSize = 20;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/warrobotsimulation/input5h.xml";
-    params.stagnationThreshold = 40;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 2;
-    params.sampleEvaluationsPerChromosome = 3;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new ESP(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/warrobotsimulation/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/warrobotsimulation/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-
-void runMouseEscapeSimESP(){
-    int seed = 110;
-    GraphicsEngine engine(NULL);
-
-    MouseEscapeSimulation* sim = new MouseEscapeSimulation(2, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    ESPParameters params;
-    params.populationSize = 20;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/mouseescapesimulation/input6h.xml";
-    params.stagnationThreshold = 20;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 5;
-    params.sampleEvaluationsPerChromosome = 3;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new ESP(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/mouseescapesimulation/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/mouseescapesimulation/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-void runMouseScatterSimESP(){
-    int seed = 110;
-    GraphicsEngine engine(NULL);
-
-    MouseScatterSimulation* sim = new MouseScatterSimulation(2, 100, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    ESPParameters params;
-    params.populationSize = 20;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/mousescattersimulation/input6h.xml";
-    params.stagnationThreshold = 20;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 5;
-    params.sampleEvaluationsPerChromosome = 3;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new ESP(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/mousescattersimulation/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/mousescattersimulation/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-void runSFObstacleSimESP(){
-    int seed = rand();
-    GraphicsEngine engine(NULL);
-
-    SFObstacleSimulation* sim = new SFObstacleSimulation(2, 40, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    ESPParameters params;
-    params.populationSize = 20;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/sfobstaclesimulation/input6h.xml";
-    params.stagnationThreshold = 20;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 5;
-    params.sampleEvaluationsPerChromosome = 3;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new ESP(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/sfobstaclesimulation/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/sfobstaclesimulation/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-void runSFObstacleFieldSimESP(){
-    int seed = 110;
-    GraphicsEngine engine(NULL);
-
-    SFObstaclefieldSimulation* sim = new SFObstaclefieldSimulation(2, 40, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    ESPParameters params;
-    params.populationSize = 20;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/sfobstaclefieldsimulation/input6h.xml";
-    params.stagnationThreshold = 20;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 5;
-    params.sampleEvaluationsPerChromosome = 3;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new ESP(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/sfobstaclefieldsimulation/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/sfobstaclefieldsimulation/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-void runSFTurnbackSimESP(){
-    int seed = 110;
-    GraphicsEngine engine(NULL);
-
-    SFTurnbackSimulation* sim = new SFTurnbackSimulation(2, 30, 300, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    ESPParameters params;
-    params.populationSize = 20;
-    params.maxGenerations = 200;
-    params.nnFormatFilename = "neuralxmls/sfturnbacksimulation/input6h.xml";
-    params.stagnationThreshold = 20;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 5;
-    params.sampleEvaluationsPerChromosome = 3;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new ESP(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/sfturnbacksimulation/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/sfturnbacksimulation/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
-}
-
-void runPBESP(){
-    int seed = 10;
-    GraphicsEngine engine(NULL);
-
-    PoleBalancingSimulation* sim = new PoleBalancingSimulation(900, 5, 30, NULL, engine.getResourceManager(), seed);
-    sim->initialise();
-
-    SimulationContainer cont(sim);
-
-#ifdef TRAIN
-    ESPParameters params;
-    params.populationSize = 40;
-    params.maxGenerations = 1000;
-    params.nnFormatFilename = "neuralxmls/polebalancing/input.xml";
-    params.stagnationThreshold = 20;
-    params.fitnessEpsilonThreshold = 0;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
-    params.selectionAlgorithm = "NLRankSelection";
-    params.elitismCount = 5;
-    params.sampleEvaluationsPerChromosome = 3;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    GeneticAlgorithm* ga = new ESP(params);
-
-    GAEngine gaengine;
-    Solution solution = gaengine.train(ga, &cont, "");
-
-    delete ga;
-
-    cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-    solution.printToFile("neuralxmls/polebalancing/output.xml");
-
-    cont.resetSimulation();
-#else
-    Solution solution("neuralxmls/polebalancing/output.xml");
-#endif
-
-    cont.setSolution(&solution);
-    
-    engine.setSimulation(&cont);
-    
-    engine.renderSimulation();
+SimInfo createSimulation(string _simName, GraphicsEngine& _engine){
+    int seed = 100;
+
+    if (_simName == "BridgeCarSim") return SimInfo(new BridgeSimulation(2, 10, CAR, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/bridgesimulation/car/input6h.xml", "neuralxmls/bridgesimulation/car/output.xml");
+    else if(_simName == "BridgeMouseSim") return SimInfo(new BridgeSimulation(2, 30, MOUSE, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/bridgesimulation/mouse/input6h.xml", "neuralxmls/bridgesimulation/mouse/output.xml");
+    else if(_simName == "CorneringSim") return SimInfo(new CorneringSim(2, 4, 450, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/corneringsimulation/input6h.xml", "neuralxmls/corneringsimulation/output.xml");
+    else if(_simName == "CarCrashSim") return SimInfo(new CarCrashSimulation(1, 10, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/carcrashsimulation/input6h.xml", "neuralxmls/carcrashsimulation/output.xml");
+    else if(_simName == "CarRaceSim") return SimInfo(new CarRaceSimulation(2, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/carracesimulation/input5h.xml", "neuralxmls/carracesimulation/output.xml");
+    else if(_simName == "WarRobotSim") return SimInfo(new WarRobotSimulation(2, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/warrobotsimulation/input5h.xml", "neuralxmls/warrobotsimulation/output.xml");
+    else if(_simName == "MouseEscapeSim") return SimInfo(new MouseEscapeSimulation(2, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/mouseescapesimulation/input6h.xml", "neuralxmls/mouseescapesimulation/output.xml");
+    else if(_simName == "MouseScatterSim") return SimInfo(new MouseScatterSimulation(2, 100, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/mousescattersimulation/input6h.xml", "neuralxmls/mousescattersimulation/output.xml");
+    else if(_simName == "SFObstacleSim") return SimInfo(new SFObstacleSimulation(2, 40, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/sfobstaclesimulation/input6h.xml", "neuralxmls/sfobstaclesimulation/output.xml");
+    else if(_simName == "SFObstacleFieldSim") return SimInfo(new SFObstaclefieldSimulation(2, 40, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/sfobstaclefieldsimulation/input6h.xml", "neuralxmls/sfobstaclefieldsimulation/output.xml");
+    else if(_simName == "SFTurnbackSim") return SimInfo(new SFTurnbackSimulation(2, 30, 300, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/sfturnbacksimulation/input6h.xml", "neuralxmls/sfturnbacksimulation/output.xml");
+    else if(_simName == "PoleBalanceSim") return SimInfo(new PoleBalancingSimulation(900, 5, 30, NULL, _engine.getResourceManager(), seed), "neuralxmls/polebalancing/input.xml", "neuralxmls/polebalancing/output.xml");
+
+    return NULL;
 }
 
 int main(int argc, char** argv){
@@ -1249,33 +234,12 @@ int main(int argc, char** argv){
 
     srand(time(0));
 
-    //testANNSerialization();
-    //testSolutionSerialization();
+    string simName = "BridgeMouseSim";
+    GraphicsEngine engine(NULL);
 
-    //runBridgeMouseSim();
-    //runBridgeCarSim();
-    //runCarCrashSim();
-    //runCarRaceSim();
-    //runWarRobotSim();
-    //runCorneringSim();
-    //runMouseEscapeSim();
-    //runMouseScatterSim();
-    //runSFObstacleSim();
-    //runSFTurnbackSim();
-    //runSFObstacleFieldSim();
-    runBridgeMouseSimESP();
-    //runBridgeCarSimESP();
-    //runCarCrashSimESP();
-    //runCarRaceSimESP();
-    //runWarRobotSimESP();
-    //runCorneringSimESP();
-    //runMouseEscapeSimESP();
-    //runMouseScatterSimESP();
-    //runSFObstacleSimESP();
-    //runSFTurnbackSimESP();
-    //runSFObstacleFieldSimESP();
-    //runPBESP();
+    SimInfo simInfo = createSimulation(simName, engine);
 
+    runSim(engine, simInfo.get<0>(), TYPE_ESP, simInfo.get<1>(), simInfo.get<2>());
     //testCrossoverOp();
 
     MPI_Finalize();
