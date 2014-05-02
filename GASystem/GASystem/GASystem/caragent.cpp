@@ -55,6 +55,7 @@ void CarAgent::update(const vector<double>& _nnOutput){
 
     mAvoidanceMode = false;
 
+    //double angularAcc = (_nnOutput[0] - 0.5) * (0.5 + (mMaxLinearVel - mCurrVel) / (mMaxLinearVel * 2));
     double angularAcc = _nnOutput[0] - 0.5;
 
     mRigidBody->applyTorque(btVector3(0, angularAcc/2, 0));

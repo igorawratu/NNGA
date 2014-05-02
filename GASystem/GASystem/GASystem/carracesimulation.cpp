@@ -21,9 +21,9 @@ void CarRaceSimulation::iterate(){
 
     if(mCycleCounter % mCyclesPerDecision == 0){
         
-        for(uint k = 1; k < mAgents.size(); k++)
-            applyUpdateRules(mAgents[k], 1);
-        applyUpdateRules(mAgents[0], 0);
+        for(uint k = 0; k < mAgents.size(); k++)
+            applyUpdateRules(mAgents[k], k);
+        //applyUpdateRules(mAgents[0], 0);
     }
 
     mCycleCounter++;
@@ -97,7 +97,7 @@ bool CarRaceSimulation::initialise(){
     if(!mWorldEntities[mAgents[0]]->initialise("carone.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(-7.5, 0, 38), 0.01, mSeed))
         return false;
     mWorld->addRigidBody(mWorldEntities[mAgents[0]]->getRigidBody());
-    mWorldEntities[mAgents[0]]->setVelocity(vector3(0, 0, 0.5));
+    //mWorldEntities[mAgents[0]]->setVelocity(vector3(5, 0, 0));
 
     for(uint k = 1; k < mAgents.size(); k++){
         vector3 pos;
@@ -117,7 +117,7 @@ bool CarRaceSimulation::initialise(){
             return false;
         mWorldEntities[mAgents[k]]->setVelocity(vector3(0, 0, 0.5));
         mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());
-        mWorldEntities[mAgents[k]]->setVelocity(vector3(5, 0, 0));
+        //mWorldEntities[mAgents[k]]->setVelocity(vector3(5, 0, 0));
     }
     
     mWorldEntities["environment"] = new StaticWorldAgent(0.5, 0.1);
@@ -221,7 +221,7 @@ void CarRaceSimulation::applyUpdateRules(string _agentName, uint _groupNum){
         mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
     else{
         mWorldEntities[_agentName]->avoided();
-        vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
+        vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
         mWorldEntities[_agentName]->update(output);
     }
 

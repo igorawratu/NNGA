@@ -169,7 +169,7 @@ bool CarCrashSimulation::initialise(){
     }
 
     mWorldEntities["environment"] = new StaticWorldAgent(0.5, 0.1);
-    if(!mWorldEntities["environment"]->initialise("corridor.mesh", vector3(21, 20, 25), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(-2, 2, 0), 0, mSeed))
+    if(!mWorldEntities["environment"]->initialise("corridor.mesh", vector3(20, 20, 20), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(-2, 2, 0), 0, mSeed))
         return false;
     mWorld->addRigidBody(mWorldEntities["environment"]->getRigidBody());
 
@@ -234,13 +234,13 @@ void CarCrashSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     input[15] = agentVel.x;
     input[16] = agentVel.z;
 
-    if(frontDist < 5)
+    /*if(frontDist < 5)
         mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
-    else{
+    else{*/
         mWorldEntities[_agentName]->avoided();
         vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
         mWorldEntities[_agentName]->update(output);
-    }
+    //}
 
     Line finishLine = _groupNum == 1 ? mGroupOneFinish : mGroupTwoFinish;
     bool checkCollisions = calcCrossVal(finishLine.p1, finishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0;
