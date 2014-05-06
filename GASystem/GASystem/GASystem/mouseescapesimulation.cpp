@@ -79,11 +79,6 @@ double MouseEscapeSimulation::fitness(){
     
     finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
 
-    dblAcc["LowerBound"] = mRobotAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;
-    dblAcc["UpperBound"] = mRobotAgents.size() * (mNumCycles/mCyclesPerDecision) * 10;
-    dblAcc["Value"] = mVelocityAcc;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : mRobotAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;
-
     //change max val
     dblAcc["Collisions"] = mRangefinderVals + mCollisions; 
     dblAcc["ColFitnessWeight"] = 1;
@@ -187,11 +182,6 @@ double MouseEscapeSimulation::realFitness(){
     
     finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
 
-    dblAcc["LowerBound"] = mRobotAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;
-    dblAcc["UpperBound"] = mRobotAgents.size() * (mNumCycles/mCyclesPerDecision) * 10;
-    dblAcc["Value"] = mVelocityAcc;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : mRobotAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;
-
     //change max val
     dblAcc["Collisions"] = mCollisions; 
     dblAcc["ColFitnessWeight"] = 1;
@@ -238,9 +228,6 @@ void MouseEscapeSimulation::checkRayObject(int _groupNum, const btCollisionObjec
 }
 
 void MouseEscapeSimulation::applyUpdateRules(string _agentName, uint _groupNum){
-    if(crossed(_agentName))
-        return;
-
     btTransform trans;
     mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
     const btCollisionObject* obj;

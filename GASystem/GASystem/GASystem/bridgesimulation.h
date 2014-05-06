@@ -40,7 +40,7 @@ public:
 
 private:
     double calcCrossVal(vector3 a, vector3 b, vector3 c){
-        return (b.x - a.z)*(c.z - a.z) - (b.z - a.z)*(c.x - a.x);
+        return (b.x - a.x)*(c.z - a.z) - (b.z - a.z)*(c.x - a.x);
     }
     void applyUpdateRules(string _agentName);
 private:
