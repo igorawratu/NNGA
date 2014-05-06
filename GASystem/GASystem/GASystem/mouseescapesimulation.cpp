@@ -67,7 +67,7 @@ double MouseEscapeSimulation::fitness(){
 
     for(uint k = 0; k < mMouseAgents.size(); k++)
         pos[mMouseAgents[k]] = getPositionInfo(mMouseAgents[k]);
-    intAcc["Positive"] = 0;
+    intAcc["Positive"] = 1;
     pos["LineP1"] = mFinishLine.p1;
     pos["LineP2"] = mFinishLine.p2;
 
@@ -175,7 +175,7 @@ double MouseEscapeSimulation::realFitness(){
 
     for(uint k = 0; k < mMouseAgents.size(); k++)
         pos[mMouseAgents[k]] = getPositionInfo(mMouseAgents[k]);
-    intAcc["Positive"] = 0;
+    intAcc["Positive"] = 1;
     pos["LineP1"] = mFinishLine.p1;
     pos["LineP2"] = mFinishLine.p2;
 
@@ -363,7 +363,7 @@ void MouseEscapeSimulation::applyUpdateRules(string _agentName, uint _groupNum){
         mVelocityAcc += mWorldEntities[_agentName]->getVelocity().calcDistance(vector3(0, 0, 0));
 
     //rangefinder vals
-    if(!crossed(_agentName) && mCycleCounter > 10){
+    if(crossed(_agentName) && mCycleCounter > 10){
         for(uint k = 1; k <= 8; k++)
             if(input[k] * 50 < mRangefinderRadius)
                 mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;

@@ -170,7 +170,7 @@ void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inp
             ga = new StandardGA(params);
         }
         else{
-            ESPParameters params = getESPParameters(30, 400, _inputFile, 9999, 0, 30);
+            ESPParameters params = getESPParameters(40, 200, _inputFile, 9999, 0, 5);
             ga = new ESP(params);
         }
 
@@ -213,7 +213,7 @@ void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inp
 SimInfo createSimulation(string _simName, GraphicsEngine* _engine){
     int seed = 100;
 
-    if (_simName == "BridgeCarSim") return SimInfo(new BridgeSimulation(2, 20, CAR, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/bridgesimulation/car/input6h.xml", "neuralxmls/bridgesimulation/car/output.xml");
+    if (_simName == "BridgeCarSim") return SimInfo(new BridgeSimulation(2, 10, CAR, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/bridgesimulation/car/input6h.xml", "neuralxmls/bridgesimulation/car/output.xml");
     else if(_simName == "BridgeMouseSim") return SimInfo(new BridgeSimulation(2, 30, MOUSE, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/bridgesimulation/mouse/input6h.xml", "neuralxmls/bridgesimulation/mouse/output.xml");
     else if(_simName == "CorneringSim") return SimInfo(new CorneringSim(2, 4, 450, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/corneringsimulation/input6h.xml", "neuralxmls/corneringsimulation/output.xml");
     else if(_simName == "CarCrashSim") return SimInfo(new CarCrashSimulation(2, 10, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/carcrashsimulation/input6h.xml", "neuralxmls/carcrashsimulation/output.xml");
@@ -234,7 +234,7 @@ int main(int argc, char** argv){
 
     srand(time(0));
 
-    string simName = "CarRaceSim";
+    string simName = "MouseEscapeSim";
     GraphicsEngine* engine = new GraphicsEngine(NULL);
 
     SimInfo simInfo = createSimulation(simName, engine);

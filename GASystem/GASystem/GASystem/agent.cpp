@@ -95,3 +95,9 @@ btCollisionWorld::AllHitsRayResultCallback Agent::calculateRay(const btVector3& 
 void Agent::setVelocity(vector3 _velocity){
     mRigidBody->setLinearVelocity(btVector3(_velocity.x, _velocity.y, _velocity.z));
 }
+
+vector3 Agent::getAngularVelocity(){
+    btVector3 angVel = mRigidBody->getAngularVelocity();
+
+    return vector3(angVel.getX(), angVel.getY(), angVel.getZ());
+}

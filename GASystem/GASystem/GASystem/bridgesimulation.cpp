@@ -7,6 +7,7 @@ BridgeSimulation::BridgeSimulation(double _rangefinderRadius, uint _numAgents, A
     mSeed = _seed;
     mRangefinderRadius = _rangefinderRadius;
     mRangefinderVals = 0;
+    mAngularVelAcc = 0;
 
     for(uint k = 0; k < _numAgents; k++)
         mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
@@ -19,6 +20,7 @@ BridgeSimulation::BridgeSimulation(const BridgeSimulation& other) : Simulation(o
     mSeed = other.mSeed;
     mRangefinderRadius = other.mRangefinderRadius;
     mRangefinderVals = 0;
+    mAngularVelAcc = 0;
 
     for(uint k = 0; k < other.mAgents.size(); k++)
         mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
@@ -46,7 +48,7 @@ double BridgeSimulation::fitness(){
     map<string, vector3> pos;
     map<string, long> intAcc;
     map<string, double> dblAcc;
-    dblAcc["Collisions"] = mRangefinderVals + mCollisions; 
+    dblAcc["Collisions"] = mCollisions; 
     dblAcc["FLFitnessWeight"] = 1;
     dblAcc["ColFitnessWeight"] = 1;
     intAcc["Positive"] = 0;
@@ -57,6 +59,7 @@ double BridgeSimulation::fitness(){
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
     finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
+    finalFitness += finalFitness == 0 ? mAngularVelAcc + mRangefinderVals : mAgents.size() * mNumCycles / mCyclesPerDecision + 500;
 
     return finalFitness;
 }
@@ -111,6 +114,7 @@ double BridgeSimulation::realFitness(){
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
     finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
+    finalFitness += finalFitness == 0? mAngularVelAcc : mAgents.size() * mNumCycles / mCyclesPerDecision + 500;
 
     return finalFitness;
 }
@@ -235,6 +239,9 @@ void BridgeSimulation::applyUpdateRules(string _agentName){
     input[15] = agentVel.x;
     input[16] = agentVel.z;
 
+    double angVel = mWorldEntities[_agentName]->getAngularVelocity().y;
+    input[17] = angVel;
+
     /*Line d1Line, d2Line;
     btVector3 correctedp1 = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * btVector3(0, 0, agentBox->getHalfExtentsWithMargin().getZ());
     btVector3 correctedp2 = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * btVector3(0, 0, -agentBox->getHalfExtentsWithMargin().getZ());
@@ -268,8 +275,9 @@ void BridgeSimulation::applyUpdateRules(string _agentName){
         mWorldEntities[_agentName]->update(output);
     }
 
-
     if(calcCrossVal(mFinishLine.p1, mFinishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0 && mCycleCounter > 10){
+        mAngularVelAcc += fabs(angVel);
+
         for(uint k = 1; k <= 8; k++)
             if(input[k] * 50 < mRangefinderRadius)
                 mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;

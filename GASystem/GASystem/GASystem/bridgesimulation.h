@@ -2,6 +2,7 @@
 #define BRIDGESIMULATION_H
 
 #include <vector>
+#include <math.h>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/random.hpp>
@@ -51,6 +52,7 @@ private:
     double mRangefinderRadius;
     double mRangefinderVals;
     vector<Line> mLines;
+    double mAngularVelAcc;
 };
 
 #endif

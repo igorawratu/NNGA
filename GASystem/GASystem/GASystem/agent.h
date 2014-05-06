@@ -42,6 +42,8 @@ public:
 
     void avoided();
 
+    vector3 getAngularVelocity();
+
 protected:
     virtual btCollisionShape* getCollisionShape(ResourceManager* _rm)=0;
     virtual void setRigidbodyProperties()=0;
