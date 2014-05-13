@@ -73,8 +73,8 @@ double MouseEscapeSimulation::fitness(){
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
-    dblAcc["LowerBound"] = 19;
-    dblAcc["UpperBound"] = 21;
+    dblAcc["LowerBound"] = 1;
+    dblAcc["UpperBound"] = 3;
     dblAcc["Value"] = mMouseAgents.size();
     
     finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
@@ -176,8 +176,8 @@ double MouseEscapeSimulation::realFitness(){
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
-    dblAcc["LowerBound"] = 19;
-    dblAcc["UpperBound"] = 21;
+    dblAcc["LowerBound"] = 1;
+    dblAcc["UpperBound"] = 3;
     dblAcc["Value"] = mMouseAgents.size();
     
     finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
@@ -327,7 +327,7 @@ void MouseEscapeSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     }
 
     //shooting logic here
-    if(frontTeamInd == 1 && _groupNum == 1 && !crossed(colliderName)){
+    if(frontTeamInd == 1 && _groupNum == 1 && calcCrossVal(mFinishLine.p1, mFinishLine.p2, getPositionInfo(_agentName)) < 0){
         Line ray;
         //first ray point
         ray.p1 = getPositionInfo(_agentName);
@@ -339,10 +339,10 @@ void MouseEscapeSimulation::applyUpdateRules(string _agentName, uint _groupNum){
         }
     }
 
-    if(_groupNum == 0){
+    /*if(_groupNum == 0){
         if(calcCrossVal(mFinishLine.p1, mFinishLine.p2, getPositionInfo(_agentName)) > 0)
             mCrossed.push_back(_agentName);
-    }
+    }*/
 
     //fitness eval code
     //try make aggresors move more/faster
@@ -350,7 +350,7 @@ void MouseEscapeSimulation::applyUpdateRules(string _agentName, uint _groupNum){
         mVelocityAcc += mWorldEntities[_agentName]->getVelocity().calcDistance(vector3(0, 0, 0));
 
     //rangefinder vals
-    if(crossed(_agentName) && mCycleCounter > 10){
+    if((calcCrossVal(mFinishLine.p1, mFinishLine.p2, getPositionInfo(_agentName)) > 0) && mCycleCounter > 10){
         for(uint k = 1; k <= 8; k++)
             if(input[k] * 50 < mRangefinderRadius)
                 mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;

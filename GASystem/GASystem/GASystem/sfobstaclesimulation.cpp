@@ -23,10 +23,10 @@ bool SFObstacleSimulation::initialise(){
     if(mInitialised)
         return true;
 
-    mGoalpoint = vector3(40, 0, 0);
+    mGoalpoint = vector3(80, 0, 0);
     mGoalRadius = 5;
 
-    vector3 minDim(-50, -20, -10), maxDim(-30, 20, 10);
+    vector3 minDim(-100, -20, -10), maxDim(-80, 20, 10);
 
     boost::mt19937 rng(mSeed);
     boost::mt19937 rngy(mSeed * 2);

@@ -43,7 +43,7 @@ void SFSimulation::iterate(){
 
     mCycleCounter++;
 
-    mWorld->stepSimulation(1/(float)mCyclesPerSecond, 1, 1/(float)mCyclesPerSecond);
+    mWorld->stepSimulation(1/(float)mCyclesPerSecond, 5, 1/((float)mCyclesPerSecond * 5));
 }
 
 double SFSimulation::fitness(){

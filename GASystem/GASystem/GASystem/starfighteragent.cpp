@@ -42,7 +42,7 @@ void StarFighterAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPer
     }
 
     //calculate velocity
-    double decisionsPerSecond = _cyclesPerSecond / _cyclesPerDecision;
+    /*double decisionsPerSecond = _cyclesPerSecond / _cyclesPerDecision;
     double deceleration = (-(mCurrVel * mCurrVel) / (2*_frontRayDistance - 3)) / decisionsPerSecond;
     deceleration = deceleration < 0 ? deceleration : 0;
 
@@ -56,7 +56,7 @@ void StarFighterAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPer
     btVector3 correctedVel = rot * relativeVel;
     correctedVel.setY(0);
 
-    mRigidBody->setLinearVelocity(correctedVel);
+    mRigidBody->setLinearVelocity(correctedVel);*/
 }
 
 
@@ -69,7 +69,7 @@ void StarFighterAgent::update(const vector<double>& _nnOutput){
     btVector3 correctedTorque = mRigidBody->getWorldTransform().getBasis() * torque;
     mRigidBody->applyTorque(correctedTorque);
 
-    double currAcc = (_nnOutput[3] - 0.5) * 5;
+    double currAcc = (_nnOutput[3]) * 2.5;
 
     mCurrVel += currAcc * 10;
     if(mCurrVel > mMaxLinearVel)

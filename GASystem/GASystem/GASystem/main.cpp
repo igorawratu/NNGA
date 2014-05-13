@@ -221,7 +221,7 @@ SimInfo createSimulation(string _simName, GraphicsEngine* _engine){
     else if(_simName == "WarRobotSim") return SimInfo(new WarRobotSimulation(2, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/warrobotsimulation/input5h.xml", "neuralxmls/warrobotsimulation/output.xml");
     else if(_simName == "MouseEscapeSim") return SimInfo(new MouseEscapeSimulation(2, 450, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/mouseescapesimulation/input6h.xml", "neuralxmls/mouseescapesimulation/output.xml");
     else if(_simName == "MouseScatterSim") return SimInfo(new MouseScatterSimulation(2, 100, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/mousescattersimulation/input6h.xml", "neuralxmls/mousescattersimulation/output.xml");
-    else if(_simName == "SFObstacleSim") return SimInfo(new SFObstacleSimulation(2, 40, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/sfobstaclesimulation/input6h.xml", "neuralxmls/sfobstaclesimulation/output.xml");
+    else if(_simName == "SFObstacleSim") return SimInfo(new SFObstacleSimulation(2, 40, 450, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/sfobstaclesimulation/input6h.xml", "neuralxmls/sfobstaclesimulation/output.xml");
     else if(_simName == "SFObstacleFieldSim") return SimInfo(new SFObstaclefieldSimulation(2, 40, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/sfobstaclefieldsimulation/input6h.xml", "neuralxmls/sfobstaclefieldsimulation/output.xml");
     else if(_simName == "SFTurnbackSim") return SimInfo(new SFTurnbackSimulation(2, 30, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/sfturnbacksimulation/input6h.xml", "neuralxmls/sfturnbacksimulation/output.xml");
     else if(_simName == "PoleBalanceSim") return SimInfo(new PoleBalancingSimulation(900, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/polebalancing/input.xml", "neuralxmls/polebalancing/output.xml");
@@ -234,7 +234,7 @@ int main(int argc, char** argv){
 
     srand(time(0));
 
-    string simName = "MouseEscapeSim";
+    string simName = "SFObstacleSim";
     GraphicsEngine* engine = new GraphicsEngine(NULL);
 
     SimInfo simInfo = createSimulation(simName, engine);
