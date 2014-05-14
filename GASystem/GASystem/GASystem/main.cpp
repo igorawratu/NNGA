@@ -234,7 +234,7 @@ int main(int argc, char** argv){
 
     srand(time(0));
 
-    string simName = "SFObstacleSim";
+    string simName = "MouseScatterSim";
     GraphicsEngine* engine = new GraphicsEngine(NULL);
 
     SimInfo simInfo = createSimulation(simName, engine);
