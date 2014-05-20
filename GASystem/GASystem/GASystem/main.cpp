@@ -234,7 +234,11 @@ int main(int argc, char** argv){
 
     srand(time(0));
 
+<<<<<<< HEAD
     string simName = "WarRobotSim";
+=======
+    string simName = "MouseScatterSim";
+>>>>>>> 92e892db511c72652a80444d43a2d56d58d9d32d
     GraphicsEngine* engine = new GraphicsEngine(NULL);
 
     SimInfo simInfo = createSimulation(simName, engine);
