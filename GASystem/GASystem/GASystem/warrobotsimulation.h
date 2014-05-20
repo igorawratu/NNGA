@@ -44,6 +44,7 @@ public:
 
 private:
     double getRayCollisionDistance(string _agentName, const btVector3& _ray, const btCollisionObject*& _collidedObject, vector3& _hitpos);
+    double getRayCollisionDistanceNonEnv(string _agentName, const btVector3& _ray, const btCollisionObject*& _collidedObject, vector3& _hitpos);
     void applyUpdateRules(string _agentName, uint _agentNum);
     void checkRayObject(int _groupNum, const btCollisionObject* _obj, int& _team, string& _entityName);
 

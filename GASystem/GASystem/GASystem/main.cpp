@@ -170,7 +170,7 @@ void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inp
             ga = new StandardGA(params);
         }
         else{
-            ESPParameters params = getESPParameters(40, 200, _inputFile, 9999, 0, 5);
+            ESPParameters params = getESPParameters(20, 200, _inputFile, 9999, 0, 5);
             ga = new ESP(params);
         }
 
@@ -234,7 +234,7 @@ int main(int argc, char** argv){
 
     srand(time(0));
 
-    string simName = "SFObstacleSim";
+    string simName = "WarRobotSim";
     GraphicsEngine* engine = new GraphicsEngine(NULL);
 
     SimInfo simInfo = createSimulation(simName, engine);
