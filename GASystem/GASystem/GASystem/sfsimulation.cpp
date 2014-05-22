@@ -37,8 +37,10 @@ void SFSimulation::iterate(){
         return;
 
     if(mCycleCounter % mCyclesPerDecision == 0){
-        for(int k = 0; k < mAgents.size(); k++)
-            applyUpdateRules(mAgents[k]);
+        for(int k = 0; k < mAgents.size(); k++){
+            int group = k / 10;
+            applyUpdateRules(mAgents[k], group);
+        }
     }
 
     mCycleCounter++;
@@ -103,7 +105,7 @@ double SFSimulation::realFitness(){
     return finalFitness;
 }
 
-void SFSimulation::applyUpdateRules(string _agentName){
+void SFSimulation::applyUpdateRules(string _agentName, int _groupNum){
     btTransform trans;
     mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
     double frontVal = -1;
@@ -153,7 +155,7 @@ void SFSimulation::applyUpdateRules(string _agentName){
         mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
     else{
         mWorldEntities[_agentName]->avoided();
-        vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
+        vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
         mWorldEntities[_agentName]->update(output);
     }
 

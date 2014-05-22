@@ -34,7 +34,7 @@ public:
     }
 
 protected:
-    void applyUpdateRules(string _agentName);
+    void applyUpdateRules(string _agentName, int _groupNum);
     bool reached(string _agentName);
 
 protected:

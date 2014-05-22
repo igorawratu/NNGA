@@ -33,8 +33,10 @@ void BridgeSimulation::iterate(){
         return;
 
     if(mCycleCounter % mCyclesPerDecision == 0){
-        for(int k = 0; k < mAgents.size(); k++)
-            applyUpdateRules(mAgents[k]);
+        for(int k = 0; k < mAgents.size(); k++){
+            int group = k / 10;
+            applyUpdateRules(mAgents[k], group);
+        }
     }
 
     mCycleCounter++;
@@ -58,8 +60,8 @@ double BridgeSimulation::fitness(){
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
-    finalFitness += finalFitness == 0 ? mAngularVelAcc + mRangefinderVals : mAgents.size() * mNumCycles / mCyclesPerDecision + 500;
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) + mRangefinderVals : 1000;
+    //finalFitness += finalFitness == 0 ? mAngularVelAcc : mAgents.size() * mNumCycles / mCyclesPerDecision + 500;
 
     return finalFitness;
 }
@@ -114,7 +116,7 @@ double BridgeSimulation::realFitness(){
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
     finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
-    finalFitness += finalFitness == 0? mAngularVelAcc : mAgents.size() * mNumCycles / mCyclesPerDecision + 500;
+    //finalFitness += finalFitness == 0? mAngularVelAcc : mAgents.size() * mNumCycles / mCyclesPerDecision + 500;
 
     return finalFitness;
 }
@@ -180,7 +182,7 @@ bool BridgeSimulation::initialise(){
     return true;
 }
 
-void BridgeSimulation::applyUpdateRules(string _agentName){
+void BridgeSimulation::applyUpdateRules(string _agentName, int _groupNum){
     map<uint, double> input;
     btTransform trans;
     mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
@@ -269,7 +271,7 @@ void BridgeSimulation::applyUpdateRules(string _agentName){
         mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
     else{
         mWorldEntities[_agentName]->avoided();
-        vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
+        vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
         output.push_back(frontVal);
 
         mWorldEntities[_agentName]->update(output);

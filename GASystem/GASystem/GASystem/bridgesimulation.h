@@ -42,7 +42,7 @@ private:
     double calcCrossVal(vector3 a, vector3 b, vector3 c){
         return (b.x - a.x)*(c.z - a.z) - (b.z - a.z)*(c.x - a.x);
     }
-    void applyUpdateRules(string _agentName);
+    void applyUpdateRules(string _agentName, int _groupNum);
 private:
     Line mFinishLine;
     vector<string> mAgents; 
