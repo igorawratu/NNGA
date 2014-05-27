@@ -44,7 +44,7 @@
 #include "slave.h"
 #include <boost/tuple/tuple.hpp>
 
-#define TRAIN
+//#define TRAIN
 
 using namespace std;
 
@@ -225,6 +225,7 @@ SimInfo createSimulation(string _simName, GraphicsEngine* _engine){
     else if(_simName == "SFObstacleFieldSim") return SimInfo(new SFObstaclefieldSimulation(2, 40, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/sfobstaclefieldsimulation/input6h.xml", "neuralxmls/sfobstaclefieldsimulation/output.xml");
     else if(_simName == "SFTurnbackSim") return SimInfo(new SFTurnbackSimulation(2, 40, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/sfturnbacksimulation/input6h.xml", "neuralxmls/sfturnbacksimulation/output.xml");
     else if(_simName == "PoleBalanceSim") return SimInfo(new PoleBalancingSimulation(900, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/polebalancing/input.xml", "neuralxmls/polebalancing/output.xml");
+    else if(_simName == "Dummy") return SimInfo(new DummySimulation(300, 5, 30, _engine->getResourceManager()), "", "");
 
     return NULL;
 }
@@ -234,7 +235,7 @@ int main(int argc, char** argv){
 
     srand(time(0));
 
-    string simName = "SFObstacleSim";
+    string simName = "Dummy";
 
     GraphicsEngine* engine = new GraphicsEngine(NULL);
 

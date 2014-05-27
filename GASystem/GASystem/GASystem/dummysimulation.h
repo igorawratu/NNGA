@@ -43,10 +43,10 @@ public:
         if(mInitialised)
             return true;    
         
-        mWorldEntities["Cube"] = new CubeAgent(vector3(10, 10, 10), vector3(10, 10, 10));
-        if(!mWorldEntities["Cube"]->initialise("cube.mesh", vector3(1, 1, 1), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 0, 0), 0, 0))
+        mWorldEntities["Human"] = new CubeAgent(vector3(10, 10, 10), vector3(10, 10, 10));
+        if(!mWorldEntities["Human"]->initialise("human.mesh", vector3(1, 1, 1), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 0, 0), 0, 0))
             return false;
-        mWorld->addRigidBody(mWorldEntities["Cube"]->getRigidBody());
+        //mWorld->addRigidBody(mWorldEntities["Cube"]->getRigidBody());
         
         mInitialised = true;
         

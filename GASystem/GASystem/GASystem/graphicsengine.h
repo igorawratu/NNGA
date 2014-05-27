@@ -55,6 +55,7 @@ private:
     Ogre::SceneManager* mSceneManager;
     ResourceManager* mResourceManager;
     double mUpdateInterval, mTimer;
+    Ogre::AnimationState* animationState;
 
     vector<pair<string, Line>> mLinesInUse;
     vector<string> mLinePool;

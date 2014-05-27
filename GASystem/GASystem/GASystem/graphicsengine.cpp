@@ -112,6 +112,13 @@ void GraphicsEngine::renderSimulation(){
         
     }
 
+    
+    cout << "started" << endl;
+    Ogre::Entity* ent = mSceneManager->getEntity("Human");
+    animationState = ent->getAnimationState("Run");
+    animationState->setLoop(true);
+    animationState->setEnabled(true);
+
     //setup initial line pool
     mLinePool.push_back(createLineObject(0));
 
@@ -139,6 +146,8 @@ bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
     if(mWindowManager->isWindowClosed())
         return false;
     
+    animationState->addTime(event.timeSinceLastFrame);
+
     mWindowManager->getInputManager()->capture();
     
     if(mWindowManager->getInputManager()->isKeyDown(OIS::KC_ESCAPE))
