@@ -17,6 +17,14 @@ public:
 
     virtual void iterate(){
         mWorld->stepSimulation(1/24.f, 24, 1/24.f);
+
+        if(mWorldEntities["Human"]->getAnimationLoop()){
+            if((mCycleCounter / 120) % 2 == 0)
+                mWorldEntities["Human"]->setAnimationInfo("Walk", true);
+            else mWorldEntities["Human"]->setAnimationInfo("Run", true);
+        }
+
+        mCycleCounter++;
     }
 
     virtual double fitness(){
@@ -48,6 +56,8 @@ public:
             return false;
         //mWorld->addRigidBody(mWorldEntities["Cube"]->getRigidBody());
         
+        mWorldEntities["Human"]->setAnimationInfo("Shove", false);
+
         mInitialised = true;
         
         return true;

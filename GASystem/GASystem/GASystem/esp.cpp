@@ -6,7 +6,7 @@ ESP::ESP(ESPParameters _parameters){
     setupSubpopulationStructure();
 
     MPI_Comm_size(MPI_COMM_WORLD, &mTotalSlaveProcs);
-    assert(totalSlaveProcs > 0);
+    assert(mTotalSlaveProcs > 0);
 
     int totalWork = _parameters.sampleEvaluationsPerChromosome * _parameters.populationSize;
     mTotalRequests = totalWork > mTotalSlaveProcs ? mTotalSlaveProcs : totalWork;

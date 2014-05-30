@@ -44,6 +44,11 @@ public:
 
     vector3 getAngularVelocity();
 
+    string getAnimationName();
+    bool getAnimationLoop();
+
+    void setAnimationInfo(string _animationName, bool _loop);
+
 protected:
     virtual btCollisionShape* getCollisionShape(ResourceManager* _rm)=0;
     virtual void setRigidbodyProperties()=0;
@@ -62,6 +67,9 @@ protected:
     boost::uniform_int<> mDist;
     boost::variate_generator<boost::mt19937, boost::uniform_int<>> generateRandInt;
     bool mAvoidanceMode;
+
+    string mAnimationName;
+    bool mAnimationLoop;
 };
 
 #endif

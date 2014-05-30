@@ -112,13 +112,6 @@ void GraphicsEngine::renderSimulation(){
         
     }
 
-    
-    cout << "started" << endl;
-    Ogre::Entity* ent = mSceneManager->getEntity("Human");
-    animationState = ent->getAnimationState("Run");
-    animationState->setLoop(true);
-    animationState->setEnabled(true);
-
     //setup initial line pool
     mLinePool.push_back(createLineObject(0));
 
@@ -145,8 +138,6 @@ void GraphicsEngine::destroyAllAttachedMovableObjects(Ogre::SceneNode* _sceneNod
 bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
     if(mWindowManager->isWindowClosed())
         return false;
-    
-    animationState->addTime(event.timeSinceLastFrame);
 
     mWindowManager->getInputManager()->capture();
     
@@ -255,12 +246,48 @@ bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
         
         if(node->numAttachedObjects() == 0)
             node->attachObject(mSceneManager->getEntity(entityName));
-        
+            
         btQuaternion rot = entityBody->getWorldTransform().getRotation();
         btVector3 pos = entityBody->getWorldTransform().getOrigin();
         
         node->setPosition(Ogre::Vector3(pos.getX(), pos.getY(), pos.getZ()));
         node->setOrientation(Ogre::Quaternion(rot.w(), rot.x(), rot.y(), rot.z()));
+
+        //animation logic
+
+        //agent has animations
+        if(iter->second->getAnimationName() != ""){
+            cout << iter->second->getAnimationName() << endl;
+            Ogre::Entity* ent = dynamic_cast<Ogre::Entity*>(node->getAttachedObject(entityName));
+            //check if a new animation needs to be played
+            if(mLastAnimationPlayed.find(entityName) == mLastAnimationPlayed.end()){
+                mLastAnimationPlayed[entityName] = iter->second->getAnimationName();
+                ent->getAnimationState(iter->second->getAnimationName())->setEnabled(true);
+                ent->getAnimationState(iter->second->getAnimationName())->setLoop(iter->second->getAnimationLoop());
+                ent->getAnimationState(iter->second->getAnimationName())->setTimePosition(0);
+            }
+            else if(mLastAnimationPlayed[entityName] != iter->second->getAnimationName()){
+                ent->getAnimationState(mLastAnimationPlayed[entityName])->setEnabled(false);
+                ent->getAnimationState(mLastAnimationPlayed[entityName])->setWeight(0);
+
+                mLastAnimationPlayed[entityName] = iter->second->getAnimationName();
+                ent->getAnimationState(iter->second->getAnimationName())->setEnabled(true);
+                ent->getAnimationState(iter->second->getAnimationName())->setLoop(iter->second->getAnimationLoop());
+                ent->getAnimationState(iter->second->getAnimationName())->setTimePosition(0);
+                ent->getAnimationState(iter->second->getAnimationName())->setWeight(1);
+            }
+            else{
+                //check for looping/nonlooping
+                cout << ent->getAnimationState(mLastAnimationPlayed[entityName])->hasEnded() << endl;
+                if(!iter->second->getAnimationLoop()){
+                    if(ent->getAnimationState(mLastAnimationPlayed[entityName])->hasEnded())
+                        iter->second->setAnimationInfo("", true);
+                }
+            }
+
+            //step animation
+            ent->getAnimationState(mLastAnimationPlayed[entityName])->addTime(event.timeSinceLastFrame);
+        }
     }
     if(mWindowManager->getInputManager()->isMousebuttonDown(OIS::MB_Left)){
         Ogre::SceneNode* cam = mSceneManager->getSceneNode("CameraNode");

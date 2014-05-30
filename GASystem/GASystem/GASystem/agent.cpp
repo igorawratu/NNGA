@@ -1,8 +1,12 @@
 #include "agent.h"
 
-Agent::Agent() : mRNG(0), mDist(0, 1), generateRandInt(mRNG, mDist), mAvoidanceMode(false){}
+Agent::Agent() : mRNG(0), mDist(0, 1), generateRandInt(mRNG, mDist), mAvoidanceMode(false){
+}
 
 bool Agent::initialise(const string& _modelName, const vector3& _scale, const btQuaternion& _rotation, ResourceManager* _rm, const vector3& _position, const double& _mass, int _seed){
+    mAnimationName = "";
+    mAnimationLoop = true;
+
     mModelName = _modelName;
     mScale = _scale;
 
@@ -50,6 +54,19 @@ string Agent::getModelName(){
 vector3 Agent::getScale(){
     return mScale;
 }
+
+string Agent::getAnimationName(){
+    return mAnimationName;
+}
+
+bool Agent::getAnimationLoop(){
+    return mAnimationLoop;
+}
+
+void Agent::setAnimationInfo(string _animationName, bool _loop){
+    mAnimationName = _animationName;
+    mAnimationLoop = _loop;
+}   
 
 double Agent::getRayCollisionDistance(const btVector3& _ray, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody){
     double dist = 100;
