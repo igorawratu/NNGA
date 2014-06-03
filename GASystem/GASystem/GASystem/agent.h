@@ -47,7 +47,7 @@ public:
     string getAnimationName();
     bool getAnimationLoop();
 
-    void setAnimationInfo(string _animationName, bool _loop);
+    virtual void setAnimationInfo(string _animationName, bool _loop);
 
 protected:
     virtual btCollisionShape* getCollisionShape(ResourceManager* _rm)=0;
