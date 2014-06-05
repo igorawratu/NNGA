@@ -6,6 +6,7 @@
 #include "staticworldagent.h"
 #include "common.h"
 #include "finishlinefitness.h"
+#include "collisionfitness.h"
 
 #include <vector>
 #include <iostream>

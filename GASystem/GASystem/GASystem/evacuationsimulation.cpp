@@ -48,12 +48,15 @@ double EvacuationSimulation::fitness(){
     map<string, double> dblAcc;
     dblAcc["FLFitnessWeight"] = 1;
     intAcc["Positive"] = 0;
+    dblAcc["ColFitnessWeight"] = 1;
+    dblAcc["Collisions"] = mRangefinderVals; 
     pos["LineP1"] = mExit.p1;
     pos["LineP2"] = mExit.p2;
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
+    //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
 
     return finalFitness;
 }
@@ -68,10 +71,13 @@ double EvacuationSimulation::realFitness(){
     intAcc["Positive"] = 0;
     pos["LineP1"] = mExit.p1;
     pos["LineP2"] = mExit.p2;
+    dblAcc["ColFitnessWeight"] = 1;
+    dblAcc["Collisions"] = mCollisions; 
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
+    //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
 
     return finalFitness;
 }
@@ -92,6 +98,7 @@ bool EvacuationSimulation::initialise(){
         return true;
 
     mFitnessFunctions.push_back(new FinishLineFitness());
+    mFitnessFunctions.push_back(new CollisionFitness());
 
     //change
     mExit.p1 = vector3(-15, 0, -50);
