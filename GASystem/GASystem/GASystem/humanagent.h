@@ -2,6 +2,7 @@
 #define HUMANAGENT_H
 
 #include "agent.h"
+#include <iostream>
 
 enum HumanState{IDLE, WALK, RUN, PUSH, STAGGER};
 
@@ -22,7 +23,7 @@ public:
 
     virtual void avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody);
 
-    virtual void setAnimationInfo(string _animationName, bool _loop)
+    virtual void setAnimationInfo(string _animationName, bool _loop);
 
 protected:
     virtual btCollisionShape* getCollisionShape(ResourceManager* _rm);

@@ -16,7 +16,7 @@ EvacuationSimulation::~EvacuationSimulation(){
     
 }
 
-EvacuationSimulation::EvacuationSimulation(const EvacuationSimulation& other){
+EvacuationSimulation::EvacuationSimulation(const EvacuationSimulation& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager){
     mWorld->setInternalTickCallback(EvacuationSimulation::tickCallBack, this, true);
     mCollisions = 0;
     mSeed = other.mSeed;
@@ -83,6 +83,10 @@ Simulation* EvacuationSimulation::getNewCopy(){
     return sim;
 }
 
+vector<Line> EvacuationSimulation::getLines(){
+    return mLines;
+}
+
 bool EvacuationSimulation::initialise(){
     if(mInitialised)
         return true;
@@ -90,29 +94,61 @@ bool EvacuationSimulation::initialise(){
     mFitnessFunctions.push_back(new FinishLineFitness());
 
     //change
-    mFinishLine.p1 = vector3(-10, 0, -25);
-    mFinishLine.p2 = vector3(10, 0, -25);
+    mExit.p1 = vector3(-15, 0, -50);
+    mExit.p2 = vector3(15, 0, -50);
 
-    mLines.push_back(mFinishLine);
+    mLines.push_back(mExit);
 
     //set the vals
-    vector3 minDim(-20, 0, 25), maxDim(25, 0, 40);
+    vector3 a1minDim(-40, 0, -40), a1maxDim(-20, 0, 40);
+    vector3 a2minDim(20, 0, -40), a2maxDim(40, 0, 40);
+    vector3 a3minDim(-20, 0, 20), a3maxDim(20, 0, 40);
+    vector3 a4minDim(-20, 0, -40), a4maxDim(20, 0, -20);
 
     boost::mt19937 rng(mSeed);
     boost::mt19937 rngz(mSeed + mSeed / 2);
+    boost::mt19937 rnga(mSeed*2);
 
-    boost::uniform_real<double> distx(minDim.x, maxDim.x);
-    boost::uniform_real<double> distz(minDim.z, maxDim.z);
+    boost::uniform_real<double> distxa1(a1minDim.x, a1maxDim.x);
+    boost::uniform_real<double> distza1(a1minDim.z, a1maxDim.z);
+    boost::uniform_real<double> distxa2(a2minDim.x, a2maxDim.x);
+    boost::uniform_real<double> distza2(a2minDim.z, a2maxDim.z);
+    boost::uniform_real<double> distxa3(a3minDim.x, a3maxDim.x);
+    boost::uniform_real<double> distza3(a3minDim.z, a3maxDim.z);
+    boost::uniform_real<double> distxa4(a4minDim.x, a4maxDim.x);
+    boost::uniform_real<double> distza4(a4minDim.z, a4maxDim.z);
+    boost::uniform_int<> area(0, 3);
 
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genx(rng, distx);
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genz(rngz, distz);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genxa1(rng, distxa1);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genza1(rngz, distza1);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genxa2(rng, distxa2);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genza2(rngz, distza2);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genxa3(rng, distxa3);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genza3(rngz, distza3);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genxa4(rng, distxa4);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genza4(rngz, distza4);
+    boost::variate_generator<boost::mt19937, boost::uniform_int<>> genarea(rnga, area);
 
     btQuaternion rot(0, 0, 0, 1);
     rot.setEuler(PI/2, 0, 0);
 
     for(uint k = 0; k < mAgents.size(); k++){
-        mWorldEntities[mAgents[k]] = new HumanAgent(5, 10, 0, 1);
-        vector3 pos(genx(), 0, genz());
+        mWorldEntities[mAgents[k]] = new HumanAgent(5, 10, -1, 1);
+        int area = genarea();
+        vector3 pos;
+        switch(area){
+            case 0: pos = vector3(genxa1(), 0, genza1());
+                break;
+            case 1: pos = vector3(genxa2(), 0, genza2());
+                break;
+            case 2: pos = vector3(genxa3(), 0, genza3());
+                break;
+            case 3: pos = vector3(genxa4(), 0, genza4());
+                break;
+            default: pos = vector3(0, 0, 0);
+                break;
+        }
+        
         if(!mWorldEntities[mAgents[k]]->initialise("human.mesh", vector3(1, 1, 1), rot, mResourceManager, pos, 0.01, mSeed))
             return false;
         mWorldEntities[mAgents[k]]->setAnimationInfo("idle", true);
@@ -122,7 +158,7 @@ bool EvacuationSimulation::initialise(){
 
 
     mWorldEntities["environment"] = new StaticWorldAgent(0.5, 0.1);
-    if(!mWorldEntities["environment"]->initialise("evacuationenvironment.mesh", vector3(50, 50, 50), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, -1, 0), 0, mSeed))
+    if(!mWorldEntities["environment"]->initialise("humanevacenv.mesh", vector3(50, 50, 50), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 5, 0), 0, mSeed))
         return false;
     mWorld->addRigidBody(mWorldEntities["environment"]->getRigidBody());
 
@@ -135,10 +171,13 @@ void EvacuationSimulation::tick(){
     for(int k = 0; k < mAgents.size(); k++){
         mWorldEntities[mAgents[k]]->tick();
 
-        /*btTransform trans;
+        if(mCycleCounter < 10)
+            continue;
+
+        btTransform trans;
         mWorldEntities[mAgents[k]]->getRigidBody()->getMotionState()->getWorldTransform(trans);
 
-        if(calcCrossVal(mFinishLine.p1, mFinishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0 && mCycleCounter > 10){
+        if(calcCrossVal(mExit.p1, mExit.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0){
             int numManifolds = mWorld->getDispatcher()->getNumManifolds();
 	        for (int i=0;i<numManifolds;i++)
 	        {
@@ -149,19 +188,62 @@ void EvacuationSimulation::tick(){
 		        const btCollisionObject* obA = contactManifold->getBody0();
 		        const btCollisionObject* obB = contactManifold->getBody1();
                 
-                if((mWorldEntities[mAgents[k]]->getRigidBody() == obA || mWorldEntities[mAgents[k]]->getRigidBody() == obB))
+                Agent* currAgent = mWorldEntities[mAgents[k]];
+
+                if((currAgent->getRigidBody() == obA || currAgent->getRigidBody() == obB)){
                     mCollisions++;
+                    if(!currAgent->getAnimationLoop())
+                        continue;
+
+                    if((mWorldEntities["environment"]->getRigidBody() == obA || mWorldEntities["environment"]->getRigidBody() == obB))
+                        currAgent->setAnimationInfo("stagger", false);
+                    else{
+                        const btCollisionObject* other = currAgent->getRigidBody() == obA ? obB : obA;
+                        bool found = false;
+                        for(int j = 0; j < mAgents.size(); ++j){
+                            if(mWorldEntities[mAgents[j]]->getRigidBody() == other){
+                                //get orientation of agent for dot product
+                                vector3 orientation = currAgent->getVelocity();
+                                vector3 position = getPositionInfo(mAgents[k]);
+                                vector3 otherPosition = getPositionInfo(mAgents[j]);
+
+                                //check if agent is stationary
+                                if(orientation.calcDistance(vector3(0, 0, 0)) == 0){
+                                    mWorldEntities[mAgents[j]]->setAnimationInfo("shove", false);
+                                    currAgent->setAnimationInfo("stagger", false);
+                                }
+                                else{
+                                    vector3 resultant = otherPosition - position;
+                                    double dot = resultant.dotValue(orientation);
+
+                                    if(dot > 0){
+                                        mWorldEntities[mAgents[j]]->setAnimationInfo("stagger", false);
+                                        currAgent->setAnimationInfo("shove", false);
+                                    }
+                                    else{
+                                        mWorldEntities[mAgents[j]]->setAnimationInfo("shove", false);
+                                        currAgent->setAnimationInfo("stagger", false);
+                                    }
+                                }
+                                found = true;
+                                break;
+                            }
+                        }
+                        if(!found){
+                            cout << "Error: shit collided with some unknown object" << endl;
+                            currAgent->setAnimationInfo("stagger", false);
+                        }
+                    }
+                }
             }
-        }*/
+        }
     }
 }
 
-void EvacuationSimulation::applyUpdateRules(string _agentName){
+void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
     //do nothing if agent still busy with non looping animation
     if(!mWorldEntities[_agentName]->getAnimationLoop())
         return;
-
-    //check for pushing/staggering here
 
     //query ANN
     map<uint, double> input;
@@ -194,11 +276,11 @@ void EvacuationSimulation::applyUpdateRules(string _agentName){
     double angVel = mWorldEntities[_agentName]->getAngularVelocity().y;
     input[17] = angVel;
 
-    vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
+    vector<double> output = mSolution->evaluateNeuralNetwork(_group, input);
 
     mWorldEntities[_agentName]->update(output);
 
-    if(calcCrossVal(mFinishLine.p1, mFinishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0 && mCycleCounter > 10){
+    if(calcCrossVal(mExit.p1, mExit.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0 && mCycleCounter > 10){
         mAngularVelAcc += fabs(angVel);
 
         for(uint k = 1; k <= 8; k++)

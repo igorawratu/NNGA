@@ -38,6 +38,7 @@
 #include "sfobstaclesimulation.h"
 #include "sfturnbacksimulation.h"
 #include "sfobstaclefieldsimulation.h"
+#include "evacuationsimulation.h"
 #include "esp.h"
 #include "polebalancingsimulation.h"
 #include <boost/lexical_cast.hpp>
@@ -226,6 +227,7 @@ SimInfo createSimulation(string _simName, GraphicsEngine* _engine){
     else if(_simName == "SFTurnbackSim") return SimInfo(new SFTurnbackSimulation(2, 40, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/sfturnbacksimulation/input6h.xml", "neuralxmls/sfturnbacksimulation/output.xml");
     else if(_simName == "PoleBalanceSim") return SimInfo(new PoleBalancingSimulation(900, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/polebalancing/input.xml", "neuralxmls/polebalancing/output.xml");
     else if(_simName == "Dummy") return SimInfo(new DummySimulation(300, 5, 30, _engine->getResourceManager()), "", "");
+    else if(_simName == "EvacuationSimulation") return SimInfo(new EvacuationSimulation(2, 100, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/evacuationsimulation/input6h.xml", "neuralxmls/evacuationsimulation/output.xml");
 
     return NULL;
 }
@@ -235,7 +237,7 @@ int main(int argc, char** argv){
 
     srand(time(0));
 
-    string simName = "Dummy";
+    string simName = "EvacuationSimulation";
 
     GraphicsEngine* engine = new GraphicsEngine(NULL);
 

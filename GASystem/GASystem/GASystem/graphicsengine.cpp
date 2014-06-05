@@ -257,7 +257,6 @@ bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
 
         //agent has animations
         if(iter->second->getAnimationName() != ""){
-            cout << iter->second->getAnimationName() << endl;
             Ogre::Entity* ent = dynamic_cast<Ogre::Entity*>(node->getAttachedObject(entityName));
             //check if a new animation needs to be played
             if(mLastAnimationPlayed.find(entityName) == mLastAnimationPlayed.end()){
@@ -278,7 +277,6 @@ bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
             }
             else{
                 //check for looping/nonlooping
-                cout << ent->getAnimationState(mLastAnimationPlayed[entityName])->hasEnded() << endl;
                 if(!iter->second->getAnimationLoop()){
                     if(ent->getAnimationState(mLastAnimationPlayed[entityName])->hasEnded())
                         iter->second->setAnimationInfo("", true);

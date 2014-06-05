@@ -20,8 +20,8 @@ public:
 
         if(mWorldEntities["Human"]->getAnimationLoop()){
             if((mCycleCounter / 120) % 2 == 0)
-                mWorldEntities["Human"]->setAnimationInfo("Walk", true);
-            else mWorldEntities["Human"]->setAnimationInfo("Run", true);
+                mWorldEntities["Human"]->setAnimationInfo("walk", true);
+            else mWorldEntities["Human"]->setAnimationInfo("run", true);
         }
 
         mCycleCounter++;
@@ -56,7 +56,7 @@ public:
             return false;
         //mWorld->addRigidBody(mWorldEntities["Cube"]->getRigidBody());
         
-        mWorldEntities["Human"]->setAnimationInfo("Shove", false);
+        mWorldEntities["Human"]->setAnimationInfo("shove", false);
 
         mInitialised = true;
         

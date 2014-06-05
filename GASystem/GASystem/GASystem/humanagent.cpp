@@ -1,10 +1,12 @@
 #include "humanagent.h"
 
+using namespace std;
+
 HumanAgent::HumanAgent(double _walkVelocity, double _runVelocity, double _staggerVelocity, double _maxAngularVelocity){
     mWalkVelocity = _walkVelocity;
     mRunVelocity = _runVelocity;
     mStaggerVelocity = _staggerVelocity;
-    mMaxAngularVelocity = _maxAngularVelocity;
+    mMaxAngularVel = _maxAngularVelocity;
     mCurrState = IDLE;
 }
 
@@ -17,10 +19,10 @@ void HumanAgent::update(const vector<double>& _nnOutput){
 
     double currAcc = _nnOutput[1] - 0.5;
     if(_nnOutput[1] < 0.3)
-        mCurrState = IDLE;
+        setAnimationInfo("idle", true);
     else if(_nnOutput[1] >= 0.3 && _nnOutput[1] < 0.7)
-        mCurrState = WALK;
-    else mCurrState = RUN;
+        setAnimationInfo("walk", true);
+    else setAnimationInfo("run", true);
 }
 
 void HumanAgent::setState(HumanState _state){
@@ -56,6 +58,12 @@ void HumanAgent::tick(){
     correctedVel.setY(0);
 
     mRigidBody->setLinearVelocity(correctedVel);
+
+    btVector3 currAngVel = mRigidBody->getAngularVelocity();
+    if(vector3(0, 0, 0).calcDistance(vector3(currAngVel.getX(), currAngVel.getY(), currAngVel.getZ())) > mMaxAngularVel){
+        vector3 newAngVel = vector3(currAngVel.getX(), currAngVel.getY(), currAngVel.getZ()).normalize() * mMaxAngularVel;
+        mRigidBody->setAngularVelocity(btVector3(newAngVel.x, newAngVel.y, newAngVel.z));
+    }
 }
 
 vector3 HumanAgent::getVelocity(){
@@ -94,7 +102,7 @@ void HumanAgent::setAnimationInfo(string _animationName, bool _loop){
         mCurrState = RUN;
     else if(_animationName == "stagger")
         mCurrState = STAGGER;
-    else if(_animationName == "push")
+    else if(_animationName == "shove")
         mCurrState = PUSH;
 
     mAnimationName = _animationName;

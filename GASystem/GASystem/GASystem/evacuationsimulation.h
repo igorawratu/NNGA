@@ -25,20 +25,18 @@ public:
     virtual bool initialise();
     void tick();
     static void tickCallBack(btDynamicsWorld* world, btScalar timeStep){
-        CorneringSim* sim = (CorneringSim*)world->getWorldUserInfo();
+        EvacuationSimulation* sim = (EvacuationSimulation*)world->getWorldUserInfo();
         sim->tick();
+    }
+    virtual vector<Line> getLines();
+
+private:
+    void applyUpdateRules(string _agentName, uint _group);
+    double calcCrossVal(vector3 a, vector3 b, vector3 c){
+        return (b.x - a.x)*(c.z - a.z) - (b.z - a.z)*(c.x - a.x);
     }
 
 private:
-    void applyUpdateRules(string _agentName);
-
-private:
-    Line mExit;
-    vector<string> mAgents;
-    long mCollisions;
-    int mSeed;
-    double mRangefinderVals, mRangefinderRadius;
-
     Line mExit;
     vector<string> mAgents; 
     long mCollisions;
