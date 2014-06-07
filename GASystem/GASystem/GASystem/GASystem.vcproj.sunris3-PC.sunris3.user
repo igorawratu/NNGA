@@ -11,7 +11,7 @@
 			<DebugSettings
 				Command="C:\Program Files\Microsoft HPC Pack 2008 SDK\Bin\mpiexec.exe"
 				WorkingDirectory="$(OGRE_HOME)\bin\$(ConfigurationName)"
-				CommandArguments="-n 1 &quot;$(OGRE_HOME)\bin\$(ConfigurationName)\$(ProjectName).exe&quot;"
+				CommandArguments="-n 4 &quot;$(OGRE_HOME)\bin\$(ConfigurationName)\$(ProjectName).exe&quot;"
 				Attach="false"
 				DebuggerType="3"
 				Remote="1"
@@ -39,7 +39,7 @@
 			<DebugSettings
 				Command="C:\Program Files\Microsoft HPC Pack 2008 SDK\Bin\mpiexec.exe"
 				WorkingDirectory="$(OGRE_HOME)\bin\$(ConfigurationName)"
-				CommandArguments="-n 1 &quot;$(OGRE_HOME)\bin\$(ConfigurationName)\$(ProjectName).exe&quot;"
+				CommandArguments="-n 4 &quot;$(OGRE_HOME)\bin\$(ConfigurationName)\$(ProjectName).exe&quot;"
 				Attach="false"
 				DebuggerType="3"
 				Remote="1"

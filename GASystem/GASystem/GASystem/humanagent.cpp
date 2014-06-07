@@ -43,7 +43,9 @@ void HumanAgent::tick(){
             break;
         case RUN: vel = mRunVelocity;
             break;
-        case STAGGER: vel = mStaggerVelocity;
+        case STAGGER_FORWARD: vel = mStaggerVelocity;
+            break;
+        case STAGGER_BACK: vel = -mStaggerVelocity;
             break;
         case PUSH: vel = 0;
             break;
@@ -100,8 +102,10 @@ void HumanAgent::setAnimationInfo(string _animationName, bool _loop){
         mCurrState = WALK;
     else if(_animationName == "run")
         mCurrState = RUN;
-    else if(_animationName == "stagger")
-        mCurrState = STAGGER;
+    else if(_animationName == "staggerforward")
+        mCurrState = STAGGER_FORWARD;
+    else if(_animationName == "staggerback")
+        mCurrState = STAGGER_BACK;
     else if(_animationName == "shove")
         mCurrState = PUSH;
 

@@ -37,7 +37,7 @@ void EvacuationSimulation::iterate(){
 
     mCycleCounter++;
 
-    mWorld->stepSimulation(1/(float)mCyclesPerSecond, 1, 1/(float)mCyclesPerSecond);
+    mWorld->stepSimulation(1/(float)mCyclesPerSecond, 5, 1/((float)mCyclesPerSecond * 5));
 }
 
 double EvacuationSimulation::fitness(){
@@ -133,7 +133,7 @@ bool EvacuationSimulation::initialise(){
     rot.setEuler(PI/2, 0, 0);
 
     for(uint k = 0; k < mAgents.size(); k++){
-        mWorldEntities[mAgents[k]] = new HumanAgent(5, 10, -1, 1);
+        mWorldEntities[mAgents[k]] = new HumanAgent(5, 10, 1, 1);
         int area = genarea();
         vector3 pos;
         switch(area){
@@ -196,7 +196,7 @@ void EvacuationSimulation::tick(){
                         continue;
 
                     if((mWorldEntities["environment"]->getRigidBody() == obA || mWorldEntities["environment"]->getRigidBody() == obB))
-                        currAgent->setAnimationInfo("stagger", false);
+                        currAgent->setAnimationInfo("staggerback", false);
                     else{
                         const btCollisionObject* other = currAgent->getRigidBody() == obA ? obB : obA;
                         bool found = false;
@@ -204,25 +204,34 @@ void EvacuationSimulation::tick(){
                             if(mWorldEntities[mAgents[j]]->getRigidBody() == other){
                                 //get orientation of agent for dot product
                                 vector3 orientation = currAgent->getVelocity();
+                                vector3 otherorientation = mWorldEntities[mAgents[j]]->getVelocity();
                                 vector3 position = getPositionInfo(mAgents[k]);
                                 vector3 otherPosition = getPositionInfo(mAgents[j]);
 
                                 //check if agent is stationary
                                 if(orientation.calcDistance(vector3(0, 0, 0)) == 0){
-                                    mWorldEntities[mAgents[j]]->setAnimationInfo("shove", false);
-                                    currAgent->setAnimationInfo("stagger", false);
+                                    if(mWorldEntities[mAgents[j]]->getAnimationLoop())
+                                        mWorldEntities[mAgents[j]]->setAnimationInfo("shove", false);
+                                    if(orientation.dotValue(otherorientation) < 0)
+                                        currAgent->setAnimationInfo("staggerback", false);
+                                    else currAgent->setAnimationInfo("staggerforward", false);
                                 }
                                 else{
                                     vector3 resultant = otherPosition - position;
                                     double dot = resultant.dotValue(orientation);
 
                                     if(dot > 0){
-                                        mWorldEntities[mAgents[j]]->setAnimationInfo("stagger", false);
+                                        if(mWorldEntities[mAgents[j]]->getAnimationLoop()){
+                                            if(orientation.dotValue(otherorientation) < 0)
+                                                mWorldEntities[mAgents[j]]->setAnimationInfo("staggerback", false);
+                                            else mWorldEntities[mAgents[j]]->setAnimationInfo("staggerforward", false);
+                                        }
                                         currAgent->setAnimationInfo("shove", false);
                                     }
                                     else{
-                                        mWorldEntities[mAgents[j]]->setAnimationInfo("shove", false);
-                                        currAgent->setAnimationInfo("stagger", false);
+                                        if(mWorldEntities[mAgents[j]]->getAnimationLoop())
+                                            mWorldEntities[mAgents[j]]->setAnimationInfo("shove", false);
+                                        currAgent->setAnimationInfo("staggerforward", false);
                                     }
                                 }
                                 found = true;
@@ -231,7 +240,7 @@ void EvacuationSimulation::tick(){
                         }
                         if(!found){
                             cout << "Error: shit collided with some unknown object" << endl;
-                            currAgent->setAnimationInfo("stagger", false);
+                            currAgent->setAnimationInfo("staggerback", false);
                         }
                     }
                 }

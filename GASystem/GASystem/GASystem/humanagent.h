@@ -4,7 +4,7 @@
 #include "agent.h"
 #include <iostream>
 
-enum HumanState{IDLE, WALK, RUN, PUSH, STAGGER};
+enum HumanState{IDLE, WALK, RUN, PUSH, STAGGER_BACK, STAGGER_FORWARD};
 
 class HumanAgent : public Agent
 {
