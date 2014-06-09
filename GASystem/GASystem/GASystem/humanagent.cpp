@@ -13,6 +13,8 @@ HumanAgent::HumanAgent(double _walkVelocity, double _runVelocity, double _stagge
 void HumanAgent::update(const vector<double>& _nnOutput){
     assert(_nnOutput.size() >= 2);
 
+    mAvoidanceMode = false;
+
     double angularAcc = _nnOutput[0] - 0.5;
 
     mRigidBody->applyTorque(btVector3(0, angularAcc/2, 0));
@@ -36,21 +38,35 @@ HumanState HumanAgent::getState(){
 void HumanAgent::tick(){
     double vel;
 
-    switch(mCurrState){
-        case IDLE: vel = 0;
-            break;
-        case WALK: vel = mWalkVelocity;
-            break;
-        case RUN: vel = mRunVelocity;
-            break;
-        case STAGGER_FORWARD: vel = mStaggerVelocity;
-            break;
-        case STAGGER_BACK: vel = -mStaggerVelocity;
-            break;
-        case PUSH: vel = 0;
-            break;
-        default: vel = 0;
-            break;
+    if(mAvoidanceMode){
+        switch(mCurrState){
+            case STAGGER_FORWARD: vel = mStaggerVelocity;
+                break;
+            case STAGGER_BACK: vel = -mStaggerVelocity;
+                break;
+            case PUSH: vel = 0;
+                break;
+            default:
+                return;
+        }
+    }
+    else{
+        switch(mCurrState){
+            case IDLE: vel = 0;
+                break;
+            case WALK: vel = mWalkVelocity;
+                break;
+            case RUN: vel = mRunVelocity;
+                break;
+            case STAGGER_FORWARD: vel = mStaggerVelocity;
+                break;
+            case STAGGER_BACK: vel = -mStaggerVelocity;
+                break;
+            case PUSH: vel = 1;
+                break;
+            default: vel = 0;
+                break;
+        }
     }
 
     btVector3 relativeVel(vel, 0, 0);
@@ -74,7 +90,45 @@ vector3 HumanAgent::getVelocity(){
 }
 
 void HumanAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody){
-    //try first with no ca
+    double left = getRayCollisionDistance(btVector3(100, 0, -10), _world, _envRigidBody);
+    double right = getRayCollisionDistance(btVector3(100, 0, 10), _world, _envRigidBody);
+
+    double currVel = getVelocity().calcDistance(vector3(0, 0, 0));
+
+    //calculate rotation
+    mAvoidanceMode = true;
+    if(currVel > mWalkVelocity)
+        mAnimationName = "run";
+    else if(currVel > 0 && currVel <= mWalkVelocity)
+        mAnimationName = "walk";
+    else mAnimationName = "idle";
+    
+    btVector3 torque;
+
+    if(right > left)
+        torque = btVector3(0, -0.5, 0);
+    else
+        torque = btVector3(0, 0.5, 0);
+    
+    btVector3 correctedTorque = mRigidBody->getWorldTransform().getBasis() * torque;
+    mRigidBody->applyTorque(correctedTorque);
+
+    //calculate velocity
+    double decisionsPerSecond = _cyclesPerSecond / _cyclesPerDecision;
+    double deceleration = (-(currVel * currVel) / (2*_frontRayDistance - 3)) / decisionsPerSecond;
+    deceleration = deceleration < 0 ? deceleration : 0;
+
+    currVel += deceleration;
+    if(currVel < 0)
+        currVel = 0;
+
+    btVector3 relativeVel = btVector3(currVel, 0, 0);
+
+    btMatrix3x3& rot = mRigidBody->getWorldTransform().getBasis();
+    btVector3 correctedVel = rot * relativeVel;
+    correctedVel.setY(0);
+
+    mRigidBody->setLinearVelocity(correctedVel);
 }
 
 btCollisionShape* HumanAgent::getCollisionShape(ResourceManager* _rm){
@@ -108,7 +162,11 @@ void HumanAgent::setAnimationInfo(string _animationName, bool _loop){
         mCurrState = STAGGER_BACK;
     else if(_animationName == "shove")
         mCurrState = PUSH;
+    else if(mAvoidanceMode)
+        mCurrState = IDLE;
 
-    mAnimationName = _animationName;
+    if(mAnimationName == "" && mAvoidanceMode)
+        mAnimationName = "idle";
+    else mAnimationName = _animationName;
     mAnimationLoop = _loop;
 }

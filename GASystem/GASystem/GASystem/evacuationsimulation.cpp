@@ -46,17 +46,17 @@ double EvacuationSimulation::fitness(){
     map<string, vector3> pos;
     map<string, long> intAcc;
     map<string, double> dblAcc;
-    dblAcc["FLFitnessWeight"] = 1;
+    dblAcc["FLFitnessWeight"] = 15;
     intAcc["Positive"] = 0;
     dblAcc["ColFitnessWeight"] = 1;
-    dblAcc["Collisions"] = mRangefinderVals; 
+    dblAcc["Collisions"] = mCollisions + mRangefinderVals; 
     pos["LineP1"] = mExit.p1;
     pos["LineP2"] = mExit.p2;
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
-    //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
 
     return finalFitness;
 }
@@ -67,7 +67,7 @@ double EvacuationSimulation::realFitness(){
     map<string, vector3> pos;
     map<string, long> intAcc;
     map<string, double> dblAcc;
-    dblAcc["FLFitnessWeight"] = 1;
+    dblAcc["FLFitnessWeight"] = 15;
     intAcc["Positive"] = 0;
     pos["LineP1"] = mExit.p1;
     pos["LineP2"] = mExit.p2;
@@ -77,7 +77,7 @@ double EvacuationSimulation::realFitness(){
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
-    //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
 
     return finalFitness;
 }
@@ -140,7 +140,7 @@ bool EvacuationSimulation::initialise(){
     rot.setEuler(PI/2, 0, 0);
 
     for(uint k = 0; k < mAgents.size(); k++){
-        mWorldEntities[mAgents[k]] = new HumanAgent(5, 10, 1, 1);
+        mWorldEntities[mAgents[k]] = new HumanAgent(5, 10, 3, 1);
         int area = genarea();
         vector3 pos;
         switch(area){
@@ -266,35 +266,51 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
     btTransform trans;
     mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
 
-    input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 105), AGENT) / 50;
-    input[2] = getRayCollisionDistance(_agentName, btVector3(100, 0, 75), AGENT) / 50;
-    input[3] = getRayCollisionDistance(_agentName, btVector3(100, 0, 45), AGENT) / 50;
-    input[4] = getRayCollisionDistance(_agentName, btVector3(100, 0, 15), AGENT) / 50;
-    input[5] = getRayCollisionDistance(_agentName, btVector3(100, 0, -15), AGENT) / 50;
-    input[6] = getRayCollisionDistance(_agentName, btVector3(100, 0, -45), AGENT) / 50;
-    input[7] = getRayCollisionDistance(_agentName, btVector3(100, 0, -75), AGENT) / 50;
-    input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0, -105), AGENT) / 50;
+    btBoxShape* agentBox = dynamic_cast<btBoxShape*>(mWorldEntities[_agentName]->getRigidBody()->getCollisionShape());
+    if(agentBox == 0){
+        cout << "Error: unable to get box to agent, will not apply update" << endl;
+        return;
+    }
 
-    //agent position
-    input[9] = trans.getOrigin().getX() / 50;
-    input[10] = trans.getOrigin().getZ() / 50;
-    
-    //goal line
-    input[11] = mExit.p1.x / 50;
-    input[12] = mExit.p1.z / 50;
-    input[13] = mExit.p2.x / 50;
-    input[14] = mExit.p2.z / 50;
+    double d1 = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, 0, agentBox->getHalfExtentsWithMargin().getZ()));
+    double d2 = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), ENVIRONMENT, vector3(0, 0, -agentBox->getHalfExtentsWithMargin().getZ()));
 
-    vector3 agentVel = mWorldEntities[_agentName]->getVelocity();
-    input[15] = agentVel.x;
-    input[16] = agentVel.z;
+    double frontDist = d1 > d2 ? d2 : d1;
 
     double angVel = mWorldEntities[_agentName]->getAngularVelocity().y;
-    input[17] = angVel;
 
-    vector<double> output = mSolution->evaluateNeuralNetwork(_group, input);
+    if(frontDist < 10)
+        mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
+    else{
+        input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 105), AGENT) / 50;
+        input[2] = getRayCollisionDistance(_agentName, btVector3(100, 0, 75), AGENT) / 50;
+        input[3] = getRayCollisionDistance(_agentName, btVector3(100, 0, 45), AGENT) / 50;
+        input[4] = getRayCollisionDistance(_agentName, btVector3(100, 0, 15), AGENT) / 50;
+        input[5] = getRayCollisionDistance(_agentName, btVector3(100, 0, -15), AGENT) / 50;
+        input[6] = getRayCollisionDistance(_agentName, btVector3(100, 0, -45), AGENT) / 50;
+        input[7] = getRayCollisionDistance(_agentName, btVector3(100, 0, -75), AGENT) / 50;
+        input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0, -105), AGENT) / 50;
 
-    mWorldEntities[_agentName]->update(output);
+        //agent position
+        input[9] = trans.getOrigin().getX() / 50;
+        input[10] = trans.getOrigin().getZ() / 50;
+        
+        //goal line
+        input[11] = mExit.p1.x / 50;
+        input[12] = mExit.p1.z / 50;
+        input[13] = mExit.p2.x / 50;
+        input[14] = mExit.p2.z / 50;
+
+        vector3 agentVel = mWorldEntities[_agentName]->getVelocity();
+        input[15] = agentVel.x;
+        input[16] = agentVel.z;
+     
+        input[17] = angVel;
+
+        vector<double> output = mSolution->evaluateNeuralNetwork(_group, input);
+
+        mWorldEntities[_agentName]->update(output);
+    }
 
     if(calcCrossVal(mExit.p1, mExit.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0 && mCycleCounter > 10){
         mAngularVelAcc += fabs(angVel);
