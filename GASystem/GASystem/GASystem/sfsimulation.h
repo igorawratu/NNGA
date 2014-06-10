@@ -36,6 +36,7 @@ public:
 protected:
     void applyUpdateRules(string _agentName, int _groupNum);
     bool reached(string _agentName);
+    vector3 calculateCentroid();
 
 protected:
     vector3 mGoalpoint;
@@ -45,6 +46,7 @@ protected:
     double mRangefinderRadius;
     double mRangefinderVals;
     double mGoalRadius;
+    double mCrowdingRadius;
 };
 
 #endif

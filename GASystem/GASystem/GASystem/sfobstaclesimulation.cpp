@@ -25,6 +25,7 @@ bool SFObstacleSimulation::initialise(){
 
     mGoalpoint = vector3(80, 0, 0);
     mGoalRadius = 5;
+    mCrowdingRadius = 15;
 
     vector3 minDim(-100, -20, -10), maxDim(-80, 20, 10);
 

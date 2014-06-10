@@ -20,7 +20,9 @@ double GoalPointFitness::evaluateFitness(map<string, vector3> _pos, map<string, 
         if(iter->first == "GoalPoint")
             continue;
 
-        fitness += goalPoint.calcDistance(iter->second) - radius;
+        double dist = goalPoint.calcDistance(iter->second);
+
+        fitness += dist <= radius ? 0 : dist - radius;
     }
 
     return fitness * weight;

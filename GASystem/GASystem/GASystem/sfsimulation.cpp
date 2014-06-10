@@ -11,7 +11,6 @@ SFSimulation::SFSimulation(double _rangefinderRadius, uint _numAgents, uint _num
         mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 
     mFitnessFunctions.push_back(new GoalPointFitness());
-    //evf?
     mFitnessFunctions.push_back(new CollisionFitness());
 }
 
@@ -26,7 +25,6 @@ SFSimulation::SFSimulation(const SFSimulation& other) : Simulation(other.mNumCyc
         mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 
     mFitnessFunctions.push_back(new GoalPointFitness());
-    //evf?
     mFitnessFunctions.push_back(new CollisionFitness());
 }
 
@@ -39,13 +37,30 @@ void SFSimulation::iterate(){
     if(mCycleCounter % mCyclesPerDecision == 0){
         for(int k = 0; k < mAgents.size(); k++){
             int group = k / 10;
-            applyUpdateRules(mAgents[k], group);
+            applyUpdateRules(mAgents[k], 0);
         }
     }
 
     mCycleCounter++;
 
     mWorld->stepSimulation(1/(float)mCyclesPerSecond, 5, 1/((float)mCyclesPerSecond * 5));
+}
+
+vector3 SFSimulation::calculateCentroid(){
+    vector3 result(0, 0, 0);
+
+    for(int k = 0; k < mAgents.size(); ++k){
+        vector3 agentPos = getPositionInfo(mAgents[k]);
+        result.x += agentPos.x;
+        result.y += agentPos.y;
+        result.z += agentPos.z;
+    }
+
+    result.x /= mAgents.size();
+    result.y /= mAgents.size();
+    result.z /= mAgents.size();
+
+    return result;
 }
 
 double SFSimulation::fitness(){
@@ -61,15 +76,17 @@ double SFSimulation::fitness(){
     doubleAcc["GPWeight"] = 1;
     doubleAcc["GoalRadius"] = mGoalRadius;
     pos["GoalPoint"] = mGoalpoint;
+    pos["Agent0"] = calculateCentroid();
     
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
+
+    doubleAcc["GoalRadius"] = mCrowdingRadius;
 
     for(uint k = 0; k < mAgents.size(); k++)
         if(!reached(mAgents[k]))
             pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
-    //NB: add crowding ff, can use expected value fitness
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 1000; //change this amount
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc) + mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 10000;
 
     return finalFitness;
 }
@@ -85,22 +102,24 @@ double SFSimulation::realFitness(){
     map<string, vector3> pos;
     map<string, long> intAcc;
     map<string, double> doubleAcc;
-    doubleAcc["Collisions"] = mCollisions; 
+    doubleAcc["Collisions"] = mRangefinderVals + mCollisions; 
     doubleAcc["ColFitnessWeight"] = 1;
     intAcc["Positive"] = 0;
 
     doubleAcc["GPWeight"] = 1;
     doubleAcc["GoalRadius"] = mGoalRadius;
     pos["GoalPoint"] = mGoalpoint;
+    pos["Agent0"] = calculateCentroid();
     
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
+
+    doubleAcc["GoalRadius"] = mCrowdingRadius;
 
     for(uint k = 0; k < mAgents.size(); k++)
         if(!reached(mAgents[k]))
             pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
-    //NB: add crowding ff, can use expected value fitness
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 1000; //change this amount
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc) + mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 10000;
 
     return finalFitness;
 }
