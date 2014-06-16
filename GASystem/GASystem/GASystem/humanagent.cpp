@@ -2,16 +2,14 @@
 
 using namespace std;
 
-HumanAgent::HumanAgent(double _walkVelocity, double _runVelocity, double _staggerVelocity, double _maxAngularVelocity){
-    mWalkVelocity = _walkVelocity;
-    mRunVelocity = _runVelocity;
-    mStaggerVelocity = _staggerVelocity;
-    mMaxAngularVel = _maxAngularVelocity;
-    mCurrState = IDLE;
+HumanAgent::HumanAgent(double _maxLinearVel, double _maxAngularVel){
+    mMaxLinearVel = _maxLinearVel;
+    mMaxAngularVel = _maxAngularVel;
+    mCurrVel = 0;
 }
 
 void HumanAgent::update(const vector<double>& _nnOutput){
-    assert(_nnOutput.size() >= 2);
+    assert(_nnOutput.size() >= 3);
 
     mAvoidanceMode = false;
 
@@ -20,56 +18,15 @@ void HumanAgent::update(const vector<double>& _nnOutput){
     mRigidBody->applyTorque(btVector3(0, angularAcc/2, 0));
 
     double currAcc = _nnOutput[1] - 0.5;
-    if(_nnOutput[1] < 0.3)
-        setAnimationInfo("idle", true);
-    else if(_nnOutput[1] >= 0.3 && _nnOutput[1] < 0.7)
-        setAnimationInfo("walk", true);
-    else setAnimationInfo("run", true);
-}
 
-void HumanAgent::setState(HumanState _state){
-    mCurrState = _state;
-}
+    mCurrVel += currAcc * 10;
+    if(mCurrVel > mMaxLinearVel)
+        mCurrVel = mMaxLinearVel;
+    else if(mCurrVel < 0) mCurrVel = 0;
 
-HumanState HumanAgent::getState(){
-    return mCurrState;
-}
+    //mCurrVel *= _nnOutput[2];
 
-void HumanAgent::tick(){
-    double vel;
-
-    if(mAvoidanceMode){
-        switch(mCurrState){
-            case STAGGER_FORWARD: vel = mStaggerVelocity;
-                break;
-            case STAGGER_BACK: vel = -mStaggerVelocity;
-                break;
-            case PUSH: vel = 0;
-                break;
-            default:
-                return;
-        }
-    }
-    else{
-        switch(mCurrState){
-            case IDLE: vel = 0;
-                break;
-            case WALK: vel = mWalkVelocity;
-                break;
-            case RUN: vel = mRunVelocity;
-                break;
-            case STAGGER_FORWARD: vel = mStaggerVelocity;
-                break;
-            case STAGGER_BACK: vel = -mStaggerVelocity;
-                break;
-            case PUSH: vel = 1;
-                break;
-            default: vel = 0;
-                break;
-        }
-    }
-
-    btVector3 relativeVel(vel, 0, 0);
+    btVector3 relativeVel = btVector3(mCurrVel, 0, 0);
 
     btMatrix3x3& rot = mRigidBody->getWorldTransform().getBasis();
     btVector3 correctedVel = rot * relativeVel;
@@ -77,11 +34,24 @@ void HumanAgent::tick(){
 
     mRigidBody->setLinearVelocity(correctedVel);
 
+    if(mCurrVel == 0)
+        setAnimationInfo("idle", true);
+    else if(mCurrVel < 4)
+        setAnimationInfo("walk", true);
+    else setAnimationInfo("run", true);
+}
+
+void HumanAgent::tick(){
     btVector3 currAngVel = mRigidBody->getAngularVelocity();
+
     if(vector3(0, 0, 0).calcDistance(vector3(currAngVel.getX(), currAngVel.getY(), currAngVel.getZ())) > mMaxAngularVel){
         vector3 newAngVel = vector3(currAngVel.getX(), currAngVel.getY(), currAngVel.getZ()).normalize() * mMaxAngularVel;
         mRigidBody->setAngularVelocity(btVector3(newAngVel.x, newAngVel.y, newAngVel.z));
     }
+
+    btVector3 currLinVel = mRigidBody->getLinearVelocity();
+
+    mCurrVel = vector3(0, 0, 0).calcDistance(vector3(currLinVel.getX(), currLinVel.getY(), currLinVel.getZ()));
 }
 
 vector3 HumanAgent::getVelocity(){
@@ -93,15 +63,13 @@ void HumanAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond
     double left = getRayCollisionDistance(btVector3(100, 0, -10), _world, _envRigidBody);
     double right = getRayCollisionDistance(btVector3(100, 0, 10), _world, _envRigidBody);
 
-    double currVel = getVelocity().calcDistance(vector3(0, 0, 0));
-
     //calculate rotation
     mAvoidanceMode = true;
-    if(currVel > mWalkVelocity)
-        mAnimationName = "run";
-    else if(currVel > 0 && currVel <= mWalkVelocity)
+    if(mCurrVel == 0)
+        mAnimationName = "idle";
+    else if(mCurrVel < 4)
         mAnimationName = "walk";
-    else mAnimationName = "idle";
+    else mAnimationName = "run";
     
     btVector3 torque;
 
@@ -115,14 +83,14 @@ void HumanAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond
 
     //calculate velocity
     double decisionsPerSecond = _cyclesPerSecond / _cyclesPerDecision;
-    double deceleration = (-(currVel * currVel) / (2*_frontRayDistance - 3)) / decisionsPerSecond;
+    double deceleration = (-(mCurrVel * mCurrVel) / (2*_frontRayDistance - 3)) / decisionsPerSecond;
     deceleration = deceleration < 0 ? deceleration : 0;
 
-    currVel += deceleration;
-    if(currVel < 0)
-        currVel = 0;
+    mCurrVel += deceleration;
+    if(mCurrVel < 0)
+        mCurrVel = 0;
 
-    btVector3 relativeVel = btVector3(currVel, 0, 0);
+    btVector3 relativeVel = btVector3(mCurrVel, 0, 0);
 
     btMatrix3x3& rot = mRigidBody->getWorldTransform().getBasis();
     btVector3 correctedVel = rot * relativeVel;
@@ -150,23 +118,6 @@ btVector3 HumanAgent::calculateInertia(double _mass, btCollisionShape* _shape){
 }
 
 void HumanAgent::setAnimationInfo(string _animationName, bool _loop){
-    if(_animationName == "idle")
-        mCurrState = IDLE;
-    else if(_animationName == "walk")
-        mCurrState = WALK;
-    else if(_animationName == "run")
-        mCurrState = RUN;
-    else if(_animationName == "staggerforward")
-        mCurrState = STAGGER_FORWARD;
-    else if(_animationName == "staggerback")
-        mCurrState = STAGGER_BACK;
-    else if(_animationName == "shove")
-        mCurrState = PUSH;
-    else if(mAvoidanceMode)
-        mCurrState = IDLE;
-
-    if(mAnimationName == "" && mAvoidanceMode)
-        mAnimationName = "idle";
-    else mAnimationName = _animationName;
+    mAnimationName = _animationName;
     mAnimationLoop = _loop;
 }

@@ -9,7 +9,7 @@ enum HumanState{IDLE, WALK, RUN, PUSH, STAGGER_BACK, STAGGER_FORWARD, AVOIDING};
 class HumanAgent : public Agent
 {
 public:
-    HumanAgent(double _walkVelocity, double _runVelocity, double _staggerVelocity, double _maxAngularVelocity);
+    HumanAgent(double _maxLinearVel, double _maxAngularVel);
 
     virtual void update(const vector<double>& _nnOutput);
 
@@ -33,8 +33,9 @@ protected:
     virtual btVector3 calculateInertia(double _mass, btCollisionShape* _shape);
 
 private:
-    double mMaxAngularVel, mWalkVelocity, mRunVelocity, mStaggerVelocity;
-    HumanState mCurrState;
+    double mMaxLinearVel;
+    double mMaxAngularVel;
+    double mCurrVel;
 };
 
 #endif

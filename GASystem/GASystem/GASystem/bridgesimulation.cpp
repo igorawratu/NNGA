@@ -186,7 +186,7 @@ void BridgeSimulation::applyUpdateRules(string _agentName, int _groupNum){
     map<uint, double> input;
     btTransform trans;
     mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
-    double frontVal = -1;
+    double frontVal = 0;
 
     btBoxShape* agentBox = dynamic_cast<btBoxShape*>(mWorldEntities[_agentName]->getRigidBody()->getCollisionShape());
     if(agentBox == 0){
