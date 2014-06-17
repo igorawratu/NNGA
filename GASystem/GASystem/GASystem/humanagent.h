@@ -21,7 +21,7 @@ public:
 
     virtual vector3 getVelocity();
 
-    virtual void avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody);
+    virtual void avoidCollisions(double _distanceLeft, double _distanceRight, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody);
 
     virtual void setAnimationInfo(string _animationName, bool _loop);
 
@@ -36,6 +36,7 @@ private:
     double mMaxLinearVel;
     double mMaxAngularVel;
     double mCurrVel;
+    btVector3 mAvoidanceTorque;
 };
 
 #endif

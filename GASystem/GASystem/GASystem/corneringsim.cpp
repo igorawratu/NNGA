@@ -202,7 +202,7 @@ void CorneringSim::applyUpdateRules(string _agentName){
     input[14] = trans.getOrigin().getZ() / 50;
 
     if(frontDist < 10)
-        mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
+        mWorldEntities[_agentName]->avoidCollisions(frontDist, 0, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
     else{
         mWorldEntities[_agentName]->avoided();
         vector<double> output = mSolution->evaluateNeuralNetwork(0, input);

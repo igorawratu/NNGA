@@ -107,7 +107,7 @@ bool EvacuationSimulation::initialise(){
     mLines.push_back(mExit);
 
     //set the vals
-    vector3 a1minDim(-40, 0, -40), a1maxDim(40, 0, 40);
+    vector3 a1minDim(-40, 0, -30), a1maxDim(40, 0, 40);
     /*vector3 a1minDim(-40, 0, -40), a1maxDim(-20, 0, 40);
     vector3 a2minDim(20, 0, -40), a2maxDim(40, 0, 40);
     vector3 a3minDim(-20, 0, 20), a3maxDim(20, 0, 40);
@@ -280,8 +280,9 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
 
     double angVel = mWorldEntities[_agentName]->getAngularVelocity().y;
 
-    if(frontDist < 5)
-        mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
+    if(frontDist < 10){
+        mWorldEntities[_agentName]->avoidCollisions(d1, d2, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
+    }
     else{
         double frontVal = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 0), AGENT) > 5 ? 1 : 0;
 

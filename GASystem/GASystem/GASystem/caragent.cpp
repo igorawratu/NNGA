@@ -6,7 +6,7 @@ CarAgent::CarAgent(double _maxLinearVel, double _maxAngularVel){
     mCurrVel = 0;
 }
 
-void CarAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody){
+void CarAgent::avoidCollisions(double _frontRayDistance, double _other, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody){
     double left = getRayCollisionDistance(btVector3(100, 0, -10), _world, _envRigidBody);
     double right = getRayCollisionDistance(btVector3(100, 0, 10), _world, _envRigidBody);
 

@@ -7,7 +7,7 @@ CubeAgent::CubeAgent(vector3 _maxVel, vector3 _minVel){
 
 CubeAgent::~CubeAgent(){}
 
-void CubeAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody){
+void CubeAgent::avoidCollisions(double _distanceLeft, double _distanceRight, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody){
     cout << "Error: Collision avoidance not enabled on cube agents" << endl;
 }
 

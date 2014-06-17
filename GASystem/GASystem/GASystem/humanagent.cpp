@@ -59,26 +59,30 @@ vector3 HumanAgent::getVelocity(){
     return vector3(vel.getX(), vel.getY(), vel.getZ());
 }
 
-void HumanAgent::avoidCollisions(double _frontRayDistance, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody){
-    double left = getRayCollisionDistance(btVector3(100, 0, -10), _world, _envRigidBody);
-    double right = getRayCollisionDistance(btVector3(100, 0, 10), _world, _envRigidBody);
+void HumanAgent::avoidCollisions(double _distanceLeft, double _distanceRight, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody){
+    double left = _distanceLeft;
+    double right = _distanceRight;
+    double _frontRayDistance = left < right ? left : right;
 
-    //calculate rotation
-    mAvoidanceMode = true;
     if(mCurrVel == 0)
         mAnimationName = "idle";
     else if(mCurrVel < 4)
         mAnimationName = "walk";
     else mAnimationName = "run";
     
-    btVector3 torque;
-
-    if(right > left)
-        torque = btVector3(0, -0.5, 0);
-    else
-        torque = btVector3(0, 0.5, 0);
+    //calculate rotation
+    if(!mAvoidanceMode){
+        if(left > right){
+            mAvoidanceTorque = btVector3(0, -0.5, 0);
+        }
+        else{
+            mAvoidanceTorque = btVector3(0, 0.5, 0);
+        }
+    }
     
-    btVector3 correctedTorque = mRigidBody->getWorldTransform().getBasis() * torque;
+    mAvoidanceMode = true;
+
+    btVector3 correctedTorque = mRigidBody->getWorldTransform().getBasis() * mAvoidanceTorque;
     mRigidBody->applyTorque(correctedTorque);
 
     //calculate velocity

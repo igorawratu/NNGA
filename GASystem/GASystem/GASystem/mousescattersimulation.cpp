@@ -235,7 +235,7 @@ void MouseScatterSimulation::applyUpdateRules(string _agentName){
     //possibly add nearest exit?
 
     if(frontDist < 10)
-        mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
+        mWorldEntities[_agentName]->avoidCollisions(frontDist, 0, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
     else{
         mWorldEntities[_agentName]->avoided();
         vector<double> output = mSolution->evaluateNeuralNetwork(0, input);

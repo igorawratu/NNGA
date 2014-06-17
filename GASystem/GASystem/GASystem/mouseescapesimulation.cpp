@@ -317,7 +317,7 @@ void MouseEscapeSimulation::applyUpdateRules(string _agentName, uint _groupNum){
 
 
     if(frontDist < 10)
-        mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
+        mWorldEntities[_agentName]->avoidCollisions(frontDist, 0, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
     else{
         mWorldEntities[_agentName]->avoided();
         vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
