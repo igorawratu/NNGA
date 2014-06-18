@@ -280,41 +280,44 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
 
     double angVel = mWorldEntities[_agentName]->getAngularVelocity().y;
 
-    if(frontDist < 10){
-        mWorldEntities[_agentName]->avoidCollisions(d1, d2, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
-    }
-    else{
-        double frontVal = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 0), AGENT) > 5 ? 1 : 0;
+    if(calcCrossVal(mExit.p1, mExit.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0)
+    {
+        if(frontDist < 10){
+            mWorldEntities[_agentName]->avoidCollisions(d1, d2, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
+        }
+        else{
+            double frontVal = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 0), AGENT) > 5 ? 1 : 0;
 
-        input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 105), AGENT) / 50;
-        input[2] = getRayCollisionDistance(_agentName, btVector3(100, 0, 75), AGENT) / 50;
-        input[3] = getRayCollisionDistance(_agentName, btVector3(100, 0, 45), AGENT) / 50;
-        input[4] = getRayCollisionDistance(_agentName, btVector3(100, 0, 15), AGENT) / 50;
-        input[5] = getRayCollisionDistance(_agentName, btVector3(100, 0, -15), AGENT) / 50;
-        input[6] = getRayCollisionDistance(_agentName, btVector3(100, 0, -45), AGENT) / 50;
-        input[7] = getRayCollisionDistance(_agentName, btVector3(100, 0, -75), AGENT) / 50;
-        input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0, -105), AGENT) / 50;
+            input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 105), AGENT) / 50;
+            input[2] = getRayCollisionDistance(_agentName, btVector3(100, 0, 75), AGENT) / 50;
+            input[3] = getRayCollisionDistance(_agentName, btVector3(100, 0, 45), AGENT) / 50;
+            input[4] = getRayCollisionDistance(_agentName, btVector3(100, 0, 15), AGENT) / 50;
+            input[5] = getRayCollisionDistance(_agentName, btVector3(100, 0, -15), AGENT) / 50;
+            input[6] = getRayCollisionDistance(_agentName, btVector3(100, 0, -45), AGENT) / 50;
+            input[7] = getRayCollisionDistance(_agentName, btVector3(100, 0, -75), AGENT) / 50;
+            input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0, -105), AGENT) / 50;
 
-        //agent position
-        input[9] = trans.getOrigin().getX() / 50;
-        input[10] = trans.getOrigin().getZ() / 50;
-        
-        //goal line
-        input[11] = mExit.p1.x / 50;
-        input[12] = mExit.p1.z / 50;
-        input[13] = mExit.p2.x / 50;
-        input[14] = mExit.p2.z / 50;
+            //agent position
+            input[9] = trans.getOrigin().getX() / 50;
+            input[10] = trans.getOrigin().getZ() / 50;
+            
+            //goal line
+            input[11] = mExit.p1.x / 50;
+            input[12] = mExit.p1.z / 50;
+            input[13] = mExit.p2.x / 50;
+            input[14] = mExit.p2.z / 50;
 
-        vector3 agentVel = mWorldEntities[_agentName]->getVelocity();
-        input[15] = agentVel.x;
-        input[16] = agentVel.z;
-     
-        input[17] = angVel;
+            vector3 agentVel = mWorldEntities[_agentName]->getVelocity();
+            input[15] = agentVel.x;
+            input[16] = agentVel.z;
+         
+            input[17] = angVel;
 
-        vector<double> output = mSolution->evaluateNeuralNetwork(_group, input);
-        output.push_back(frontVal);
+            vector<double> output = mSolution->evaluateNeuralNetwork(_group, input);
+            output.push_back(frontVal);
 
-        mWorldEntities[_agentName]->update(output);
+            mWorldEntities[_agentName]->update(output);
+        }
     }
 
     if(calcCrossVal(mExit.p1, mExit.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0 && mCycleCounter > 10){
