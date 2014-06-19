@@ -286,7 +286,7 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
             mWorldEntities[_agentName]->avoidCollisions(d1, d2, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
         }
         else{
-            double frontVal = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 0), AGENT) > 5 ? 1 : 0;
+            double frontVal = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 0), AGENT) > 2 ? 1 : 0;
 
             input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 105), AGENT) / 50;
             input[2] = getRayCollisionDistance(_agentName, btVector3(100, 0, 75), AGENT) / 50;

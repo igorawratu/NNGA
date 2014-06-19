@@ -24,7 +24,7 @@ void HumanAgent::update(const vector<double>& _nnOutput){
         mCurrVel = mMaxLinearVel;
     else if(mCurrVel < 0) mCurrVel = 0;
 
-    //mCurrVel *= _nnOutput[2];
+    mCurrVel *= _nnOutput[2];
 
     btVector3 relativeVel = btVector3(mCurrVel, 0, 0);
 
