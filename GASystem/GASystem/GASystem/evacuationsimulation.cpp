@@ -141,7 +141,7 @@ bool EvacuationSimulation::initialise(){
     rot.setEuler(PI/2, 0, 0);
 
     for(uint k = 0; k < mAgents.size(); k++){
-        mWorldEntities[mAgents[k]] = new HumanAgent(10, 1);
+        mWorldEntities[mAgents[k]] = new HumanAgent(10, 2);
         /*int area = genarea();
         vector3 pos;
         switch(area){
