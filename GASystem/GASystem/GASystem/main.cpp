@@ -237,7 +237,7 @@ int main(int argc, char** argv){
 
     srand(time(0));
 
-    string simName = "EvacuationSimulation";
+    string simName = "SFObstacleFieldSim";
 
     GraphicsEngine* engine = new GraphicsEngine(NULL);
 

@@ -223,3 +223,48 @@ btCollisionWorld::AllHitsRayResultCallback Simulation::calculateAllhitsRay(strin
 
     return ray;
 }
+
+double Simulation::getRayCollisionDistanceNonEnv(string _agentName, const btVector3& _ray, const btCollisionObject*& _collidedObject, vector3& _hitpos){
+    double dist = 200;
+
+    vector3 from = getPositionInfo(_agentName);
+    btCollisionWorld::AllHitsRayResultCallback ray = calculateAllhitsRay(_agentName, _ray);
+
+    vector<double> hitDistances;
+    bool found = false;
+    btVector3 hitpoint;
+    for(uint k = 0; k < ray.m_collisionObjects.size(); ++k){
+        if(ray.m_collisionObjects[k] != mWorldEntities["environment"]->getRigidBody()){
+            found = true;
+            vector3 currHitpoint(ray.m_hitPointWorld[k].getX(), ray.m_hitPointWorld[k].getY(), ray.m_hitPointWorld[k].getZ());
+            double newHitDistance = from.calcDistance(currHitpoint);
+
+            if(dist > newHitDistance){
+                _collidedObject = ray.m_collisionObjects[k];
+                _hitpos = currHitpoint;
+                dist = newHitDistance;
+            }
+        }
+    }
+
+    if(!found)
+        _hitpos = vector3(100, 0, 100);
+
+    return dist;
+}
+
+double Simulation::getRayCollisionDistance(string _agentName, const btVector3& _ray, const btCollisionObject*& _collidedObject, vector3& _hitpos){
+    double dist = 200;
+
+    btCollisionWorld::ClosestRayResultCallback ray = calculateRay(_agentName, _ray);
+
+    vector3 from = getPositionInfo(_agentName);
+    if(ray.hasHit()){
+        dist = from.calcDistance(vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
+        _collidedObject = ray.m_collisionObject;
+        _hitpos = vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ());
+    }
+    else _collidedObject = 0;
+
+    return dist;
+}

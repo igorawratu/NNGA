@@ -29,11 +29,11 @@ void WarRobotSimulation::iterate(){
         mRaysShot.clear();
         for(uint k = 0; k < mGroupOneAgents.size(); ++k){
             int group = k / 10;
-            applyUpdateRules(mGroupOneAgents[k], group);
+            applyUpdateRules(mGroupOneAgents[k], 0);
         }
         for(uint k = 0; k < mGroupTwoAgents.size(); ++k){
             int group = k / 10 + 4;
-            applyUpdateRules(mGroupTwoAgents[k], group);
+            applyUpdateRules(mGroupTwoAgents[k], 1);
         }
 
         //remove dead agents from simulation
@@ -198,22 +198,6 @@ double WarRobotSimulation::realFitness(){
     return finalFitness;
 }
 
-double WarRobotSimulation::getRayCollisionDistance(string _agentName, const btVector3& _ray, const btCollisionObject*& _collidedObject, vector3& _hitpos){
-    double dist = 200;
-
-    btCollisionWorld::ClosestRayResultCallback ray = calculateRay(_agentName, _ray);
-
-    vector3 from = getPositionInfo(_agentName);
-    if(ray.hasHit()){
-        dist = from.calcDistance(vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
-        _collidedObject = ray.m_collisionObject;
-        _hitpos = vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ());
-    }
-    else _collidedObject = 0;
-
-    return dist;
-}
-
 void WarRobotSimulation::checkRayObject(int _groupNum, const btCollisionObject* _obj, int& _team, string& _entityName){
     for(uint k = 0; k < mGroupOneAgents.size(); k++){
         if(_obj == mWorldEntities[mGroupOneAgents[k]]->getRigidBody()){
@@ -349,34 +333,4 @@ void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum){
                 mCollisions++;
         }
     }
-}
-
-double WarRobotSimulation::getRayCollisionDistanceNonEnv(string _agentName, const btVector3& _ray, const btCollisionObject*& _collidedObject, vector3& _hitpos){
-    double dist = 200;
-
-    vector3 from = getPositionInfo(_agentName);
-    btCollisionWorld::AllHitsRayResultCallback ray = calculateAllhitsRay(_agentName, _ray);
-
-    vector<double> hitDistances;
-    vector<const btCollisionObject*> colObjects;
-    bool found = false;
-    btVector3 hitpoint;
-    for(uint k = 0; k < ray.m_collisionObjects.size(); ++k){
-        if(ray.m_collisionObjects[k] != mWorldEntities["environment"]->getRigidBody()){
-            found = true;
-            vector3 currHitpoint(ray.m_hitPointWorld[k].getX(), ray.m_hitPointWorld[k].getY(), ray.m_hitPointWorld[k].getZ());
-            double newHitDistance = from.calcDistance(currHitpoint);
-
-            if(dist > newHitDistance){
-                _collidedObject = ray.m_collisionObjects[k];
-                _hitpos = currHitpoint;
-                dist = newHitDistance;
-            }
-        }
-    }
-
-    if(!found)
-        _hitpos = vector3(100, 0, 100);
-
-    return dist;
 }

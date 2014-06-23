@@ -190,22 +190,6 @@ double MouseEscapeSimulation::realFitness(){
     return finalFitness;
 }
 
-double MouseEscapeSimulation::getRayCollisionDistance(string _agentName, const btVector3& _ray, const btCollisionObject*& _collidedObject, vector3& _hitpos){
-    double dist = 200;
-
-    btCollisionWorld::ClosestRayResultCallback ray = calculateRay(_agentName, _ray);
-
-    vector3 from = getPositionInfo(_agentName);
-    if(ray.hasHit()){
-        dist = from.calcDistance(vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ()));
-        _collidedObject = ray.m_collisionObject;
-        _hitpos = vector3(ray.m_hitPointWorld.getX(), ray.m_hitPointWorld.getY(), ray.m_hitPointWorld.getZ());
-    }
-    else _collidedObject = 0;
-
-    return dist;
-}
-
 void MouseEscapeSimulation::checkRayObject(int _groupNum, const btCollisionObject* _obj, int& _team, string& _entityName){
     for(uint k = 0; k < mMouseAgents.size(); k++){
         if(_obj == mWorldEntities[mMouseAgents[k]]->getRigidBody()){

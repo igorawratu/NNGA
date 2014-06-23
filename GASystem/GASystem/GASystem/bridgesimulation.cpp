@@ -35,7 +35,7 @@ void BridgeSimulation::iterate(){
     if(mCycleCounter % mCyclesPerDecision == 0){
         for(int k = 0; k < mAgents.size(); k++){
             int group = k / 10;
-            applyUpdateRules(mAgents[k], group);
+            applyUpdateRules(mAgents[k], 0);
         }
     }
 
@@ -131,7 +131,7 @@ bool BridgeSimulation::initialise(){
     mFinishLine.p1 = vector3(-10, 0, -25);
     mFinishLine.p2 = vector3(10, 0, -25);
 
-    mLines.push_back(mFinishLine);
+    //mLines.push_back(mFinishLine);
 
     //set the vals
     vector3 minDim(-20, -7.1, 25), maxDim(25, -7, 40);

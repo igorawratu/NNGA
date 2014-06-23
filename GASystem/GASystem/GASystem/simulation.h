@@ -57,6 +57,8 @@ protected:
     vector3 getPositionInfo(string _entityName);
     double getRayCollisionDistance(string _agentName, const btVector3& _ray, RaycastLevel _rclevel);
     double getRayCollisionDistance(string _agentName, const btVector3& _ray, RaycastLevel _rclevel, vector3 _offset);
+    double getRayCollisionDistance(string _agentName, const btVector3& _ray, const btCollisionObject*& _collidedObject, vector3& _hitpos);
+    double getRayCollisionDistanceNonEnv(string _agentName, const btVector3& _ray, const btCollisionObject*& _collidedObject, vector3& _hitpos);
     btCollisionWorld::ClosestRayResultCallback calculateRay(string _agentName, const btVector3& _ray);
     btCollisionWorld::ClosestRayResultCallback calculateRay(string _agentName, const btVector3& _ray, vector3 _offset);
     btCollisionWorld::AllHitsRayResultCallback calculateAllhitsRay(string _agentName, const btVector3& _ray);
