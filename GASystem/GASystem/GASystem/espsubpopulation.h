@@ -51,6 +51,9 @@ public:
     void setDeltaCodeFitness(Neuron* _neuron, double _fitnessVal, double _realFitnessVal);
     void integrateDeltaCodes();
 
+    uint getTeamID();
+    void setTeamID(uint _id);
+
 private:
     void quicksort(vector<Chromosome*>& elements, int left, int right);
 
@@ -65,6 +68,8 @@ private:
     vector<Chromosome*> mUnevaluatedDeltaCodes;
     vector<Chromosome*> mDeltaCodes;
     vector<uint> mDCEvaluationCounter;
+
+    uint mTeamID;
 };
 
 #endif

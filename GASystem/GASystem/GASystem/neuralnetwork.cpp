@@ -462,3 +462,10 @@ bool NeuralNetwork::operator==(const NeuralNetwork& _other)const{
 
     return true;
 }
+void NeuralNetwork::setTeamID(uint _id){
+    mTeamID = _id;
+}
+
+uint NeuralNetwork::getTeamID(){
+    return mTeamID;
+}

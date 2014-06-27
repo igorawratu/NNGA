@@ -229,3 +229,11 @@ void ESPSubPopulation::integrateDeltaCodes(){
 
     delete crossoverAlgorithm;
 }
+
+uint ESPSubPopulation::getTeamID(){
+    return mTeamID;
+}
+
+void ESPSubPopulation::setTeamID(uint _id){
+    mTeamID = _id;
+}

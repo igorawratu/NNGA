@@ -197,3 +197,11 @@ void ESPChromosome::setStructure(vector<map<uint, NeuronInfo>>& structure){
 Chromosome* ESPChromosome::clone(){
     return new ESPChromosome(*this);
 }
+
+void ESPChromosome::setTeamID(uint _id){
+    mTeamID = _id;
+}
+
+uint ESPChromosome::getTeamID(){
+    return mTeamID;
+}

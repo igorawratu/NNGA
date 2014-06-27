@@ -42,6 +42,9 @@ public:
 
     bool operator==(const NeuralNetwork& _other)const;
 
+    void setTeamID(uint _id);
+    uint getTeamID();
+
 private:
     bool constructNNStructure(pugi::xml_node* _file, bool _checkLoops);
 
@@ -49,6 +52,7 @@ private:
     map<uint, Neuron*> mOutput;
     map<uint, Neuron*> mNeuronCache;
     long mCounter;
+    uint mTeamID;
 };
 
 #endif

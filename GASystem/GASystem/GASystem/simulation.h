@@ -47,6 +47,7 @@ public:
     void runFullSimulation();
 
     virtual double fitness()=0;
+    virtual vector<double> competitiveFitness();
     virtual Simulation* getNewCopy()=0;
 
     const map<string, Agent*>& getSimulationState();

@@ -55,6 +55,8 @@ struct Line
 {
     bool operator==(const Line& rhs);
 
+    vector3 getMidpoint();
+
     vector3 p1;
     vector3 p2;
 };

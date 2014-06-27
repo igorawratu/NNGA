@@ -444,6 +444,13 @@ void ESP::setupSubpopulationStructure(){
 
     for(pugi::xml_node currNetwork = root.first_child(); currNetwork; currNetwork = currNetwork.next_sibling()){
         map<uint, pair<ESPSubPopulation*, uint>> currNetworkSubpopulations;
+        uint teamID;
+        if(currNetwork.attribute("TeamID").empty()){
+            cerr << "Error: node does not have ID" << endl;
+            //return;
+        }
+        else teamID = atoi(currNetwork.attribute("TeamID").value());
+
         for(pugi::xml_node node = currNetwork.first_child(); node; node = node.next_sibling()){
             if(node.attribute("ID").empty()){
                 cerr << "Error: node does not have ID" << endl;

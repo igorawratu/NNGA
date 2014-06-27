@@ -36,6 +36,8 @@ private:
     double calcCrossVal(vector3 a, vector3 b, vector3 c){
         return (b.x - a.x)*(c.z - a.z) - (b.z - a.z)*(c.x - a.x);
     }
+    vector3 calculateAverageVelocity(string _agentName, double _radius);
+    double calculateDensity(string _agentName, double _radius);
 
 private:
     Line mExit;

@@ -9,7 +9,7 @@ HumanAgent::HumanAgent(double _maxLinearVel, double _maxAngularVel){
 }
 
 void HumanAgent::update(const vector<double>& _nnOutput){
-    assert(_nnOutput.size() >= 3);
+    assert(_nnOutput.size() >= 4);
 
     mAvoidanceMode = false;
 
@@ -24,7 +24,7 @@ void HumanAgent::update(const vector<double>& _nnOutput){
         mCurrVel = mMaxLinearVel;
     else if(mCurrVel < 0) mCurrVel = 0;
 
-    mCurrVel *= _nnOutput[2];
+    mCurrVel *= _nnOutput[3];
 
     btVector3 relativeVel = btVector3(mCurrVel, 0, 0);
 
@@ -34,11 +34,13 @@ void HumanAgent::update(const vector<double>& _nnOutput){
 
     mRigidBody->setLinearVelocity(correctedVel);
 
-    if(mCurrVel == 0)
-        setAnimationInfo("idle", true);
-    else if(mCurrVel < 4)
-        setAnimationInfo("walk", true);
-    else setAnimationInfo("run", true);
+    if(mAnimationLoop){
+        if(mCurrVel == 0)
+            setAnimationInfo("idle", true);
+        else if(mCurrVel < 4)
+            setAnimationInfo("walk", true);
+        else setAnimationInfo("run", true);
+    }
 }
 
 void HumanAgent::tick(){
@@ -64,11 +66,13 @@ void HumanAgent::avoidCollisions(double _distanceLeft, double _distanceRight, ui
     double right = _distanceRight;
     double _frontRayDistance = left < right ? left : right;
 
-    if(mCurrVel == 0)
-        mAnimationName = "idle";
-    else if(mCurrVel < 4)
-        mAnimationName = "walk";
-    else mAnimationName = "run";
+    if(mAnimationLoop){
+        if(mCurrVel == 0)
+            mAnimationName = "idle";
+        else if(mCurrVel < 4)
+            mAnimationName = "walk";
+        else mAnimationName = "run";
+    }
     
     //calculate rotation
     if(!mAvoidanceMode){

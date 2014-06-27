@@ -63,3 +63,7 @@ bool Line::operator==(const Line& rhs){
 
     return one || two;
 }
+
+vector3 Line::getMidpoint(){
+    return vector3((p1.x + p2.x)/2, (p1.y + p2.y)/2, (p1.z + p2.z)/2);
+}

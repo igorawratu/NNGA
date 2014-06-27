@@ -286,8 +286,12 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
             mWorldEntities[_agentName]->avoidCollisions(d1, d2, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
         }
         else{
-            double frontVal = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 0), AGENT) > 1 ? 1 : 0;
+            vector3 hitpos;
+            const btCollisionObject* frontObject;
+            string frontObjectName = "";
 
+            double frontVal = getRayCollisionDistanceNonEnv(_agentName, btVector3(100, 0.1, 0), frontObject, hitpos) > 1 ? 1 : 0;
+           
             input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 105), AGENT) / 50;
             input[2] = getRayCollisionDistance(_agentName, btVector3(100, 0, 75), AGENT) / 50;
             input[3] = getRayCollisionDistance(_agentName, btVector3(100, 0, 45), AGENT) / 50;
@@ -313,8 +317,43 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
          
             input[17] = angVel;
 
+            //for pushing behavior
+            double density = calculateDensity(_agentName, 10);
+            vector3 avgVel = calculateAverageVelocity(_agentName, 10);
+            vector3 pos = getPositionInfo(_agentName); pos.y = 0;
+            vector3 goalmid = mExit.getMidpoint(); goalmid.y = 0;
+            double distance = pos.calcDistance(goalmid) / 50;
+
+            input[18] = distance;
+            input[19] = avgVel.x;
+            input[20] = avgVel.z;
+            input[21] = density;
+
             vector<double> output = mSolution->evaluateNeuralNetwork(_group, input);
             output.push_back(frontVal);
+
+            if(frontVal == 0 && output[2] > 0.5){
+                for(uint k = 0; k < mAgents.size(); k++){
+                    if(frontObject == mWorldEntities[mAgents[k]]->getRigidBody()){
+                        frontObjectName = mAgents[k];
+                        break;
+                    }
+                }
+
+                if(frontObjectName == "")
+                    cout << "some shitty bug" << endl;
+                else{
+                    btVector3 uncorrectedForce(2, 0, 0);
+                    btVector3 relPos = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getOrigin();
+                    btMatrix3x3& rot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis();
+                    btVector3 force = rot * uncorrectedForce;
+                    force.setY(0);
+
+                    mWorldEntities[frontObjectName]->getRigidBody()->applyForce(force, relPos);
+                }
+
+                mWorldEntities[_agentName]->setAnimationInfo("shove", false);
+            }
 
             mWorldEntities[_agentName]->update(output);
         }
@@ -327,4 +366,61 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
             if(input[k] * 50 < mRangefinderRadius)
                 mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;
     }
+}
+
+vector3 EvacuationSimulation::calculateAverageVelocity(string _agentName, double _radius){
+    vector3 averageVel;
+    int numAgents = 0;
+    vector3 currAgentPos = getPositionInfo(_agentName);
+    btVector3 orig(1, 0, 0);
+    btMatrix3x3& rot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis();
+    btVector3 orient = rot * orig;
+    vector3 agentOrientation(orient.getX(), orient.getY(), orient.getZ());
+ 
+    for(uint k = 0; k < mAgents.size(); ++k){
+        if(_agentName == mAgents[k])
+            continue;
+
+        vector3 agentPos = getPositionInfo(mAgents[k]);
+        vector3 dirVec = agentPos - currAgentPos;
+        if(agentPos.calcDistance(currAgentPos) <= _radius && dirVec.dotValue(vector3(orient.getX(), orient.getY(), orient.getZ())) > 0){
+            vector3 bAgentVel = mWorldEntities[_agentName]->getVelocity();
+            
+            averageVel.x += bAgentVel.x;
+            averageVel.z += bAgentVel.z;
+
+            numAgents++;
+        }
+    }
+
+    if(numAgents != 0){
+        averageVel.x /= numAgents;
+        averageVel.z /= numAgents;
+    }
+
+    return averageVel;
+}
+
+double EvacuationSimulation::calculateDensity(string _agentName, double _radius){
+    int numAgents = 0;
+    vector3 currAgentPos = getPositionInfo(_agentName);
+    btVector3 orig(1, 0, 0);
+    btMatrix3x3& rot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis();
+    btVector3 orient = rot * orig;
+    vector3 agentOrientation(orient.getX(), orient.getY(), orient.getZ());
+
+    for(uint k = 0; k < mAgents.size(); ++k){
+        if(_agentName == mAgents[k])
+            continue;
+
+        vector3 agentPos = getPositionInfo(mAgents[k]);
+        vector3 dirVec = agentPos - currAgentPos;
+
+        if(agentPos.calcDistance(currAgentPos) <= _radius && dirVec.dotValue(vector3(orient.getX(), orient.getY(), orient.getZ())) > 0)
+            numAgents++;
+    }
+
+    double density = (double)numAgents / (double)mAgents.size();
+
+    return density;
 }
