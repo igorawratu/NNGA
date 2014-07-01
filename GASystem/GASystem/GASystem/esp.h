@@ -31,6 +31,7 @@ private:
     bool createNeuralNetworkPrimitives(vector<pair<map<uint, Neuron*>, map<uint, Neuron*>>>& _output);
     bool createDeltaNeuralNetworkPrimitives(vector<pair<map<uint, Neuron*>, map<uint, Neuron*>>>& _output);
     void evaluateFitness(SimulationContainer* _simulationContainer);
+    void evaluateCompetitiveFitness(SimulationContainer* _simulationContainer);
     void runDeltaCodes(SimulationContainer* _simulationContainer);
     void stopSlaves();
 
@@ -41,11 +42,12 @@ private:
     vector<map<uint, pair<ESPSubPopulation*, uint>>> mSubpopulations;
     double mBestFitness, mBestRealFitness;
     Solution mBestSolution;
-    uint mStagnationCounter;
+    uint mStagnationCounter, mNumTeams;
 
     map<int, vector<map<uint, Neuron*>>> mUpdateList;
     MPI_Request* mRequests;
-    double* mRetrievedFitnesses;
+    double* mRetrievedFitnesses, mRetrievedCompetitiveFitnesses;
+    int* mRetrievedTeamIDs;
     int mTotalSlaveProcs, mTotalRequests;
     map<uint, Solution*> mSavedSolutions;
     WorkStatus mWorkStatus;

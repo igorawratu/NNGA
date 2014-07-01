@@ -18,6 +18,7 @@
 #include <BulletCollision/CollisionShapes/btBoxShape.h>
 
 typedef boost::tuples::tuple<btRigidBody*, string, vector3> ObjectInfo;
+typedef boost::tuples::tuple<uint, double> CompetitiveFitness;
 
 using namespace std;
 
@@ -47,7 +48,7 @@ public:
     void runFullSimulation();
 
     virtual double fitness()=0;
-    virtual vector<double> competitiveFitness();
+    virtual vector<CompetitiveFitness> competitiveFitness();
     virtual Simulation* getNewCopy()=0;
 
     const map<string, Agent*>& getSimulationState();

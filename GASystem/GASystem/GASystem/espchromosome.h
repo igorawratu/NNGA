@@ -34,13 +34,8 @@ public:
     Neuron* getNeuron(){return mNeuron;}
     virtual bool addDelta(vector<map<uint, vector<double>>> _weights);
     virtual void reInitialize();
-
-    void setTeamID(uint _id);
-    uint getTeamID();
-
 private:
     NonLeafNeuron* mNeuron;
-    uint mTeamID;
 
 };
 
