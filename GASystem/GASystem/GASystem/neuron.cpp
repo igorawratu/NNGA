@@ -1,11 +1,12 @@
 #include "neuron.h"
 
-Neuron::Neuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, ActivationFunction _activationFunction){
+Neuron::Neuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, ActivationFunction _activationFunction, uint _teamID){
     mNeuronCache = _neuronCache;
     mWeights = _weights;
     mActivationFunction = _activationFunction;
     mLastOutput = 0;
     mCurrentCounter = -1;
+	mTeamID = _teamID;
 }
 
 Neuron::Neuron(const Neuron& _other){}
@@ -46,3 +47,11 @@ double Neuron::calculateActivationEnergy(double _netSignal){
 }
 
 Neuron::Neuron(){}
+
+uint Neuron::getTeamID(){
+	return mTeamID;
+}	
+
+void Neuron::setTeamID(uint _teamID){
+	mTeamID = _teamID;
+}

@@ -12,6 +12,8 @@
 
 using namespace std;
 
+typedef pair<uint, double> CompetitiveFitness;
+
 class Solution
 {
 public:
@@ -26,12 +28,14 @@ public:
 
     double& fitness(){return mFitness;}
     double& realFitness(){return mRealFitness;}
+	vector<CompetitiveFitness>& competitiveFitness(){return mCompFitness;}
 
     void serialize(int*& _nodes, int*& _format, double*& _weights, int& _nodeSize, int& _formatSize, int& _weightSize);
 
 private:
     vector<NeuralNetwork> mNeuralNets;
     double mFitness, mRealFitness;
+	vector<CompetitiveFitness> mCompFitness;
 };
 
 #endif

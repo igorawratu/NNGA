@@ -46,12 +46,13 @@ private:
 
     map<int, vector<map<uint, Neuron*>>> mUpdateList;
     MPI_Request* mRequests;
-    double* mRetrievedFitnesses, mRetrievedCompetitiveFitnesses;
+    double* mRetrievedFitnesses, *mRetrievedCompetitiveFitnesses;
     int* mRetrievedTeamIDs;
     int mTotalSlaveProcs, mTotalRequests;
     map<uint, Solution*> mSavedSolutions;
     WorkStatus mWorkStatus;
     SimulationContainer* mSimulationContainer;
+	uint mStages, mStage;
 
 private:
     ESP(const ESP& other){}

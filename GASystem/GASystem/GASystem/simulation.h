@@ -18,7 +18,6 @@
 #include <BulletCollision/CollisionShapes/btBoxShape.h>
 
 typedef boost::tuples::tuple<btRigidBody*, string, vector3> ObjectInfo;
-typedef boost::tuples::tuple<uint, double> CompetitiveFitness;
 
 using namespace std;
 

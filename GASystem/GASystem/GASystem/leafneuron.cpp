@@ -1,18 +1,20 @@
 #include "leafneuron.h"
 
-LeafNeuron::LeafNeuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights) : Neuron(_neuronCache, _weights, SIGMOID){
+LeafNeuron::LeafNeuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, uint _teamID) : Neuron(_neuronCache, _weights, SIGMOID, _teamID){
 }
 
 LeafNeuron::LeafNeuron(const LeafNeuron& _other){
     mNeuronCache = _other.mNeuronCache;
     mWeights = _other.mWeights;
     mActivationFunction = _other.mActivationFunction;
+	mTeamID = _other.mTeamID;
 }
 
 LeafNeuron& LeafNeuron::operator = (const LeafNeuron& _other){
     mNeuronCache = _other.mNeuronCache;
     mWeights = _other.mWeights;
     mActivationFunction = _other.mActivationFunction;
+	mTeamID = _other.mTeamID;
 
     return *this;
 }

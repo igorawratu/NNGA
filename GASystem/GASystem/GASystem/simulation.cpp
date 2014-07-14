@@ -270,5 +270,5 @@ double Simulation::getRayCollisionDistance(string _agentName, const btVector3& _
 }
 
 vector<CompetitiveFitness> Simulation::competitiveFitness(){
-    return vector<double>();
+    return vector<CompetitiveFitness>();
 }

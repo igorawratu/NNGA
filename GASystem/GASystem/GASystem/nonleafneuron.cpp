@@ -1,6 +1,6 @@
 #include "nonleafneuron.h"
 
-NonLeafNeuron::NonLeafNeuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, ActivationFunction _activationFunction) : Neuron(_neuronCache, _weights, _activationFunction){
+NonLeafNeuron::NonLeafNeuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, ActivationFunction _activationFunction, uint _teamID) : Neuron(_neuronCache, _weights, _activationFunction, _teamID){
 }
 
 NonLeafNeuron::NonLeafNeuron(const NonLeafNeuron& _other){
@@ -8,6 +8,7 @@ NonLeafNeuron::NonLeafNeuron(const NonLeafNeuron& _other){
     mWeights = _other.mWeights;
     mActivationFunction = _other.mActivationFunction;
     mPredecessors = _other.mPredecessors;
+	mTeamID = _other.mTeamID;
 }
 
 NonLeafNeuron& NonLeafNeuron::operator = (const NonLeafNeuron& _other){
@@ -17,6 +18,7 @@ NonLeafNeuron& NonLeafNeuron::operator = (const NonLeafNeuron& _other){
     mPredecessors = _other.mPredecessors;
     mLastOutput = 0;
     mCurrentCounter = -1;
+	mTeamID = _other.mTeamID;
 
     return *this;
 }

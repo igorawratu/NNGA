@@ -34,7 +34,7 @@ struct ESPParameters
 class ESPSubPopulation
 {
 public:
-    ESPSubPopulation(ESPParameters _parameters, pugi::xml_node* _root);
+    ESPSubPopulation(ESPParameters _parameters, pugi::xml_node* _root, uint _teamID);
     ~ESPSubPopulation();
     ESPSubPopulation(const ESPSubPopulation& _other);
     ESPSubPopulation& operator = (const ESPSubPopulation& _other);

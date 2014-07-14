@@ -21,12 +21,13 @@ struct NeuronInfo
     ActivationFunction activationFunction;
     set<uint> predecessors;
     vector<double> weights;
+	uint teamID;
 };
 
 class Neuron
 {
 public:
-    Neuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, ActivationFunction _activationFunction);
+    Neuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, ActivationFunction _activationFunction, uint _teamID);
     Neuron(const Neuron& _other);
     virtual ~Neuron();
 
@@ -47,6 +48,9 @@ public:
 
     virtual Neuron* clone()=0;
 
+	uint getTeamID();
+	void setTeamID(uint _teamID);
+
     ActivationFunction getActivationFunction();
 
     virtual NeuronType getNeuronType()=0;
@@ -62,6 +66,7 @@ protected:
     double mLastOutput;
     long mCurrentCounter;
     vector<double> mWeights;
+	uint mTeamID;
 };
 
 #endif

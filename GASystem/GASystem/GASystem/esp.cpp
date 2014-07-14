@@ -16,7 +16,7 @@ ESP::ESP(ESPParameters _parameters){
 
     if(mNumTeams > 1){
         mRetrievedCompetitiveFitnesses = new double[mTotalRequests * mNumTeams];
-        mRetrievedTeamIDs = new double[mTotalRequests * mNumTeams];
+        mRetrievedTeamIDs = new int[mTotalRequests * mNumTeams];
     }
 }
 
@@ -116,8 +116,8 @@ void ESP::hostwork(){
             else{
                 vector<CompetitiveFitness> compFitnesses = solution->competitiveFitness();
                 for(uint k = 0; k < compFitnesses.size(); ++k){
-                    mRetrievedTeamIDs[k] = compFitnesses[k].get<0>();
-                    mRetrievedCompetitiveFitnesses[k] = compFitnesses[k].get<1>();
+                    mRetrievedTeamIDs[k] = compFitnesses[k].first;
+                    mRetrievedCompetitiveFitnesses[k] = compFitnesses[k].second;
                 }
             }
 
@@ -126,7 +126,7 @@ void ESP::hostwork(){
     }
 }
 
-void evaluateCompetitiveFitness(SimulationContainer* _simulationContainer){
+void ESP::evaluateCompetitiveFitness(SimulationContainer* _simulationContainer){
     vector<pair<map<uint, Neuron*>, map<uint, Neuron*>>> neuralNetPrimitives;
     
     //setup initial work for slaves
@@ -211,7 +211,7 @@ void evaluateCompetitiveFitness(SimulationContainer* _simulationContainer){
                                 uint currFitnessTeamID = mSubpopulations[i][iter->first].first->getTeamID();
                                 double fitness = 0;
                                 for(uint i = k; i < k + mNumTeams; ++i){
-                                    if(mTeamIDs[i] == currFitnessTeamID){
+                                    if(mRetrievedTeamIDs[i] == currFitnessTeamID){
                                         fitness = mRetrievedCompetitiveFitnesses[i];
                                         break;
                                     }
@@ -266,7 +266,7 @@ void evaluateCompetitiveFitness(SimulationContainer* _simulationContainer){
                                 uint currFitnessTeamID = mSubpopulations[i][iter->first].first->getTeamID();
                                 double fitness = 0;
                                 for(uint i = k; i < k + mNumTeams; ++i){
-                                    if(mTeamIDs[i] == currFitnessTeamID){
+                                    if(mRetrievedTeamIDs[i] == currFitnessTeamID){
                                         fitness = mRetrievedCompetitiveFitnesses[i];
                                         break;
                                     }
@@ -349,7 +349,7 @@ void evaluateCompetitiveFitness(SimulationContainer* _simulationContainer){
                             uint currFitnessTeamID = mSubpopulations[i][iter->first].first->getTeamID();
                             double fitness = 0;
                             for(uint i = k; i < k + mNumTeams; ++i){
-                                if(mTeamIDs[i] == currFitnessTeamID){
+                                if(mRetrievedTeamIDs[i] == currFitnessTeamID){
                                     fitness = mRetrievedCompetitiveFitnesses[i];
                                     break;
                                 }
@@ -632,9 +632,17 @@ bool ESP::createNeuralNetworkPrimitives(vector<pair<map<uint, Neuron*>, map<uint
         map<uint, Neuron*> output;
         map<uint, Neuron*> neuronCache;
 
+		int teamID = -1;
+		for(map<uint, pair<ESPSubPopulation*, uint>>::iterator iter = mSubpopulations[k].begin(); iter != mSubpopulations[k].end(); ++iter){
+			if(iter->second.second != 0){
+				teamID = iter->second.first->getTeamID();
+				break;
+			}
+		}
+
         for(map<uint, pair<ESPSubPopulation*, uint>>::iterator iter = mSubpopulations[k].begin(); iter != mSubpopulations[k].end(); ++iter){
             if(iter->second.second == 0)
-                neuronCache[iter->first] = new LeafNeuron(NULL, vector<double>());
+                neuronCache[iter->first] = new LeafNeuron(NULL, vector<double>(), teamID);
             else{
                 Chromosome* chrom = iter->second.first->getUnevaluatedChromosome();
                 if(chrom == NULL){
@@ -669,9 +677,17 @@ bool ESP::createDeltaNeuralNetworkPrimitives(vector<pair<map<uint, Neuron*>, map
         map<uint, Neuron*> output;
         map<uint, Neuron*> neuronCache;
 
+		int teamID = -1;
+		for(map<uint, pair<ESPSubPopulation*, uint>>::iterator iter = mSubpopulations[k].begin(); iter != mSubpopulations[k].end(); ++iter){
+			if(iter->second.second != 0){
+				teamID = iter->second.first->getTeamID();
+				break;
+			}
+		}
+
         for(map<uint, pair<ESPSubPopulation*, uint>>::iterator iter = mSubpopulations[k].begin(); iter != mSubpopulations[k].end(); ++iter){
             if(iter->second.second == 0)
-                neuronCache[iter->first] = new LeafNeuron(NULL, vector<double>());
+                neuronCache[iter->first] = new LeafNeuron(NULL, vector<double>(), teamID);
             else{
                 Chromosome* chrom = iter->second.first->getUnevaluatedDeltaCode();
                 if(chrom == NULL){
@@ -741,8 +757,7 @@ void ESP::setupSubpopulationStructure(){
             else if(strcmp(node.attribute("Type").value(), "Output") == 0)
                 neuronType = 2;
 
-            ESPSubPopulation* subpop = neuronType == 0 ? NULL : new ESPSubPopulation(mParameters, &node);
-            subpop->setTeamID(teamID);
+            ESPSubPopulation* subpop = neuronType == 0 ? NULL : new ESPSubPopulation(mParameters, &node, teamID);
             currNetworkSubpopulations[neuronID] = make_pair(subpop, neuronType);
         }
 

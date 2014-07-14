@@ -19,7 +19,7 @@ using namespace std;
 class ESPChromosome : public Chromosome
 {
 public:
-    ESPChromosome();
+    ESPChromosome(uint _teamID);
     ESPChromosome(const ESPChromosome& other);
     virtual ~ESPChromosome();
     ESPChromosome& operator = (const ESPChromosome& other);
@@ -36,6 +36,7 @@ public:
     virtual void reInitialize();
 private:
     NonLeafNeuron* mNeuron;
+	uint mTeamID;
 
 };
 

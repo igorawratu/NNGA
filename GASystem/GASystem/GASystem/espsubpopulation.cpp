@@ -1,12 +1,13 @@
 #include "espsubpopulation.h"
 
-ESPSubPopulation::ESPSubPopulation(ESPParameters _parameters, pugi::xml_node* _root){
+ESPSubPopulation::ESPSubPopulation(ESPParameters _parameters, pugi::xml_node* _root, uint _teamID){
+	mTeamID = _teamID;
     mParameters = _parameters;
     mCrossoverAlgorithm = CrossoverFactory::instance().create(mParameters.crossoverAlgorithm);
     mSelectionAlgorithm = SelectionFactory::instance().create(mParameters.selectionAlgorithm);
 
     for(uint k = 0; k < mParameters.populationSize; ++k){
-        mUnevaluatedSubpopulation.push_back(new ESPChromosome());
+        mUnevaluatedSubpopulation.push_back(new ESPChromosome(mTeamID));
         if(!mUnevaluatedSubpopulation[k]->initialize(_root))
             cout << "Error initializing ESP Subpopulation" << endl;
         mEvaluationCounter.push_back(0);

@@ -53,6 +53,34 @@ enum GAType{TYPE_STANDARD, TYPE_ESP};
 
 typedef boost::tuples::tuple<Simulation*, string, string> SimInfo;
 
+
+void testANNSerialization(){
+    xmldoc doc;
+    pugi::xml_parse_result result = doc.load_file("neuralxmls\\inputoutput\\input.xml");
+    pugi::xml_node root = doc.child("NeuralNetworks");
+    pugi::xml_node nnRoot = root.first_child();
+    NeuralNetwork test;
+    test.initialize(&nnRoot, true);
+
+    int weightSize, formatSize;
+    int *nodes, *format;
+    double* weights;
+    test.serialize(nodes, format, weights, formatSize, weightSize);
+
+    NeuralNetwork outANN(nodes, format, weights, formatSize, weightSize);
+
+    xmldoc outser;
+    pugi::xml_node outRootSer = outser.append_child("NeuralNetworks");
+    outANN.getXMLStructure(outRootSer);
+
+    xmldoc out;
+    pugi::xml_node outRoot = out.append_child("NeuralNetworks");
+    test.getXMLStructure(outRoot);
+
+	out.save_file("neuralxmls\\inputoutput\\out_ser.xml");
+}
+
+
 void testCrossoverOp(){
     srand(time(0));
     Crossover* crossoverAlgorithm = CrossoverFactory::instance().create("LX");
@@ -164,6 +192,7 @@ void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inp
     Solution solution;
 
     if(rank == 0){
+		testANNSerialization();
         GeneticAlgorithm* ga;
 
         if(_type == TYPE_STANDARD){
@@ -237,7 +266,7 @@ int main(int argc, char** argv){
 
     srand(time(0));
 
-    string simName = "EvacuationSimulation";
+    string simName = "BridgeMouseSim";
 
     GraphicsEngine* engine = new GraphicsEngine(NULL);
 

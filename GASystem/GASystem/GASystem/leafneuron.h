@@ -13,7 +13,7 @@ using namespace std;
 class LeafNeuron : public Neuron
 {
 public:
-    LeafNeuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights);
+    LeafNeuron(map<uint, Neuron*> *_neuronCache, vector<double> _weights, uint _teamID);
     LeafNeuron(const LeafNeuron& _other);
     LeafNeuron& operator = (const LeafNeuron& _other);
     ~LeafNeuron();

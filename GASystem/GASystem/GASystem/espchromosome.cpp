@@ -1,10 +1,11 @@
 #include "espchromosome.h"
 
-ESPChromosome::ESPChromosome(){
+ESPChromosome::ESPChromosome(uint _teamID){
     mSSMax = 1;
     mSSMin = -1;
     mFitness = 0;
     mRealFitness = 0;
+	mTeamID = _teamID;
 }
 
 void ESPChromosome::reInitialize(){
@@ -112,7 +113,7 @@ bool ESPChromosome::initialize(pugi::xml_node* _root){
         }
     }
 
-    mNeuron = new NonLeafNeuron(NULL, weights, activationFunction);
+    mNeuron = new NonLeafNeuron(NULL, weights, activationFunction, mTeamID);
     mNeuron->setInput(predecessors, true);
 
     return true;

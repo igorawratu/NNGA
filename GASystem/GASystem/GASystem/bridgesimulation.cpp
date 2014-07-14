@@ -241,8 +241,8 @@ void BridgeSimulation::applyUpdateRules(string _agentName, int _groupNum){
     input[15] = agentVel.x;
     input[16] = agentVel.z;
 
-    double angVel = mWorldEntities[_agentName]->getAngularVelocity().y;
-    input[17] = angVel;
+    /*double angVel = mWorldEntities[_agentName]->getAngularVelocity().y;
+    input[17] = angVel;*/
 
     /*Line d1Line, d2Line;
     btVector3 correctedp1 = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * btVector3(0, 0, agentBox->getHalfExtentsWithMargin().getZ());
@@ -278,7 +278,7 @@ void BridgeSimulation::applyUpdateRules(string _agentName, int _groupNum){
     }
 
     if(calcCrossVal(mFinishLine.p1, mFinishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0 && mCycleCounter > 10){
-        mAngularVelAcc += fabs(angVel);
+        //mAngularVelAcc += fabs(angVel);
 
         for(uint k = 1; k <= 8; k++)
             if(input[k] * 50 < mRangefinderRadius)
