@@ -5,12 +5,12 @@ Slave::Slave(Simulation* _sim) : mSimulationContainer(_sim){
 
 void Slave::run(){
     while(true){
-        int initialDat[3];
+        int initialDat[4];
 
         int weightCount, formatCount, nodeCount;
         MPI_Status status;
 
-        MPI_Recv(&initialDat[0], 3, MPI_INT, 0, 1, MPI_COMM_WORLD, &status);
+        MPI_Recv(&initialDat[0], 4, MPI_INT, 0, 1, MPI_COMM_WORLD, &status);
 
         nodeCount = initialDat[0];
         formatCount = initialDat[1];
@@ -31,13 +31,32 @@ void Slave::run(){
         mSimulationContainer.runFullSimulation(&solution);
         mSimulationContainer.resetSimulation();
 
-        double realFitness = solution.realFitness();
-        double fitness = solution.fitness();
+        if(initialDat[3] == 0){
+            vector<CompetitiveFitness> compFitnesses = solution.competitiveFitness();
+            
+            int* teamIDs = new int[compFitnesses.size()];
+            double* fitnesses = new double[compFitnesses.size()];
 
-        double out[2];
-        out[0] = realFitness;
-        out[1] = fitness;
+            for(uint k = 0; k < compFitnesses.size(); ++k){
+                teamIDs[k] = compFitnesses[k].first;
+                fitnesses[k] = compFitnesses[k].second;
+            }
 
-        MPI_Send(&out[0], 2, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD);
+            MPI_Send(fitnesses, compFitnesses.size(), MPI_DOUBLE, 0, 1, MPI_COMM_WORLD);
+            MPI_Send(teamIDs, compFitnesses.size(), MPI_INT, 0, 1, MPI_COMM_WORLD);
+
+            delete [] teamIDs;
+            delete [] fitnesses;
+        }
+        else{
+            double realFitness = solution.realFitness();
+            double fitness = solution.fitness();
+
+            double out[2];
+            out[0] = realFitness;
+            out[1] = fitness;
+
+            MPI_Send(&out[0], 2, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD);
+        }
     }
 }

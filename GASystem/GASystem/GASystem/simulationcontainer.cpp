@@ -26,6 +26,7 @@ void SimulationContainer::runFullSimulation(Solution* _solution){
     mSim->runFullSimulation();
     _solution->fitness() = mSim->fitness();
     _solution->realFitness() = mSim->realFitness();
+    _solution->competitiveFitness() = mSim->competitiveFitness();
 }
 
 void SimulationContainer::iterate(){

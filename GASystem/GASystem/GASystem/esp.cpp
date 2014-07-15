@@ -126,6 +126,122 @@ void ESP::hostwork(){
     }
 }
 
+void ESP::sendCompData(Solution& _solution, int _slave){
+    if(_slave == 0)
+        mWorkStatus = WORK;
+    else{
+        //construct serialized data to send through
+        int initialDat[4];
+        int *nodes, *format;
+        double* weights;
+
+        _solution.serialize(nodes, format, weights, initialDat[0], initialDat[1], initialDat[2]);
+        initialDat[3] = 0;
+
+        MPI_Send(&initialDat[0], 4, MPI_INT, _slave, 1, MPI_COMM_WORLD);
+        MPI_Send(nodes, initialDat[0], MPI_INT, _slave, 1, MPI_COMM_WORLD);
+        MPI_Send(format, initialDat[1], MPI_INT, _slave, 1, MPI_COMM_WORLD);
+        MPI_Send(weights, initialDat[2], MPI_DOUBLE, _slave, 1, MPI_COMM_WORLD);
+
+        //setup corresponding nonblocking receive calls
+        MPI_Irecv(&mRetrievedCompetitiveFitnesses[_slave * mNumTeams], mNumTeams, MPI_DOUBLE, _slave, 1, MPI_COMM_WORLD, &mRequests[_slave]);
+        MPI_Irecv(&mRetrievedTeamIDs[_slave * mNumTeams], mNumTeams, MPI_INT, _slave, 1, MPI_COMM_WORLD, &mRequests[_slave]);
+
+        delete [] nodes;
+        delete [] format;
+        delete [] weights;
+    }
+}
+
+void ESP::sendData(Solution& _solution, int _slave){
+    if(_slave == 0)
+        mWorkStatus = WORK;
+    else{
+        //construct serialized data to send through
+        int initialDat[4];
+        int *nodes, *format;
+        double* weights;
+
+        _solution.serialize(nodes, format, weights, initialDat[0], initialDat[1], initialDat[2]);
+        initialDat[3] = 1;
+
+        MPI_Send(&initialDat[0], 4, MPI_INT, _slave, 1, MPI_COMM_WORLD);
+        MPI_Send(nodes, initialDat[0], MPI_INT, _slave, 1, MPI_COMM_WORLD);
+        MPI_Send(format, initialDat[1], MPI_INT, _slave, 1, MPI_COMM_WORLD);
+        MPI_Send(weights, initialDat[2], MPI_DOUBLE, _slave, 1, MPI_COMM_WORLD);
+
+        //setup corresponding nonblocking receive call
+        MPI_Irecv(&mRetrievedFitnesses[_slave * 2], 2, MPI_DOUBLE, _slave, 1, MPI_COMM_WORLD, &mRequests[_slave]);
+
+        delete [] nodes;
+        delete [] format;
+        delete [] weights;
+    }
+}
+
+void ESP::saveUpdateVec(vector<pair<map<uint, Neuron*>, map<uint, Neuron*>>>& _nnPrims, int _slave){
+    vector<map<uint, Neuron*>> currUpdateVec;
+        
+    for(uint i = 0; i < _nnPrims.size(); ++i){
+        currUpdateVec.push_back(map<uint, Neuron*>());
+        for(map<uint, Neuron*>::iterator iter = _nnPrims[i].first.begin(); iter != _nnPrims[i].first.end(); ++iter){
+            if(iter->second->getNeuronType() == LEAF)
+                delete iter->second;
+            else currUpdateVec[i][iter->first] = iter->second;
+        }
+    }
+
+    mUpdateList[_slave] = currUpdateVec;
+}
+
+Solution* ESP::constructSolution(vector<pair<map<uint, Neuron*>, map<uint, Neuron*>>> _nnPrims){
+    vector<NeuralNetwork> neuralNets;
+
+    for(uint i = 0; i < _nnPrims.size(); ++i){
+        neuralNets.push_back(NeuralNetwork());
+        neuralNets[i].setStructure(_nnPrims[i].first, _nnPrims[i].second);
+    }
+
+    return new Solution(neuralNets);
+}
+
+void ESP::updateCompFitness(int _slave){
+    for(uint i = 0; i < mUpdateList[_slave].size(); ++i){
+        for(map<uint, Neuron*>::iterator iter = mUpdateList[_slave][i].begin(); iter != mUpdateList[_slave][i].end(); ++iter){
+            uint currFitnessTeamID = mSubpopulations[i][iter->first].first->getTeamID();
+            double fitness = 0;
+            for(uint i = _slave; i < _slave + mNumTeams; ++i){
+                if(mRetrievedTeamIDs[i] == currFitnessTeamID){
+                    fitness = mRetrievedCompetitiveFitnesses[i];
+                    break;
+                }
+            }
+            mSubpopulations[i][iter->first].first->setChromosomeFitness(iter->second, fitness, fitness);
+        }
+    }
+    mUpdateList.erase(_slave);
+}
+
+void ESP::updateFitness(int _slave, bool& _improved){
+    //update chromosomes with fitness
+    double realFitness = mRetrievedFitnesses[_slave*2];
+    double fitness = mRetrievedFitnesses[_slave*2 + 1];
+    for(uint i = 0; i < mUpdateList[_slave].size(); ++i){
+        for(map<uint, Neuron*>::iterator iter = mUpdateList[_slave][i].begin(); iter != mUpdateList[_slave][i].end(); ++iter){
+            mSubpopulations[i][iter->first].first->setChromosomeFitness(iter->second, fitness, realFitness);
+        }
+    }
+    mUpdateList.erase(_slave);
+
+    //update stagnation counter and set best solution
+    if(realFitness <= mParameters.fitnessEpsilonThreshold || mBestFitness > fitness || mBestFitness == -1){
+        mBestFitness = fitness;
+        mBestRealFitness = realFitness;
+        mBestSolution = *mSavedSolutions[_slave];
+        _improved = true;
+    }
+}
+
 void ESP::evaluateCompetitiveFitness(SimulationContainer* _simulationContainer){
     vector<pair<map<uint, Neuron*>, map<uint, Neuron*>>> neuralNetPrimitives;
     
@@ -133,66 +249,21 @@ void ESP::evaluateCompetitiveFitness(SimulationContainer* _simulationContainer){
     for(uint k = 0; k < mTotalRequests; ++k){
         //construct solution
         createNeuralNetworkPrimitives(neuralNetPrimitives);
-        vector<NeuralNetwork> neuralNets;
-
-        for(uint i = 0; i < neuralNetPrimitives.size(); ++i){
-            neuralNets.push_back(NeuralNetwork());
-            neuralNets[i].setStructure(neuralNetPrimitives[i].first, neuralNetPrimitives[i].second);
-        }
-
-        Solution *solution = new Solution(neuralNets);
+        Solution *solution = constructSolution(neuralNetPrimitives);
 
         //save solution to map
         mSavedSolutions[k] = solution;
 
-        //saves neurons needed to be updated
-        vector<map<uint, Neuron*>> currUpdateVec;
-            
-        for(uint i = 0; i < neuralNetPrimitives.size(); ++i){
-            currUpdateVec.push_back(map<uint, Neuron*>());
-            for(map<uint, Neuron*>::iterator iter = neuralNetPrimitives[i].first.begin(); iter != neuralNetPrimitives[i].first.end(); ++iter){
-                if(iter->second->getNeuronType() == LEAF)
-                    delete iter->second;
-                else currUpdateVec[i][iter->first] = iter->second;
-            }
-        }
+        //save neurons used so can update fitness later
+        saveUpdateVec(neuralNetPrimitives, k);
 
-        mUpdateList[k] = currUpdateVec;
-
-        if(k == 0)
-            mWorkStatus = WORK;
-        else{
-            //construct serialized data to send through
-            int initialDat[3];
-            int *nodes, *format;
-            double* weights;
-
-            solution->serialize(nodes, format, weights, initialDat[0], initialDat[1], initialDat[2]);
-
-            MPI_Send(&initialDat[0], 3, MPI_INT, k, 1, MPI_COMM_WORLD);
-            MPI_Send(nodes, initialDat[0], MPI_INT, k, 1, MPI_COMM_WORLD);
-            MPI_Send(format, initialDat[1], MPI_INT, k, 1, MPI_COMM_WORLD);
-            MPI_Send(weights, initialDat[2], MPI_DOUBLE, k, 1, MPI_COMM_WORLD);
-
-            //setup corresponding nonblocking receive call
-            MPI_Irecv(&mRetrievedCompetitiveFitnesses[k * mNumTeams], mNumTeams, MPI_DOUBLE, k, 1, MPI_COMM_WORLD, &mRequests[k]);
-            MPI_Irecv(&mRetrievedTeamIDs[k * mNumTeams], mNumTeams, MPI_DOUBLE, k, 1, MPI_COMM_WORLD, &mRequests[k]);
-
-            delete [] nodes;
-            delete [] format;
-            delete [] weights;
-        }
+        //assigns work to corresponding slave
+        sendCompData(*solution, k);
     }
 
     //create solution and send to free slaves until cant create anymore, then wait for slaves to complete work
     while(createNeuralNetworkPrimitives(neuralNetPrimitives)){
-        //create solution
-        vector<NeuralNetwork> neuralNets;
-        for(uint k = 0; k < neuralNetPrimitives.size(); ++k){
-            neuralNets.push_back(NeuralNetwork());
-            neuralNets[k].setStructure(neuralNetPrimitives[k].first, neuralNetPrimitives[k].second);
-        }
-        Solution *solution = new Solution(neuralNets);
+        Solution *solution = constructSolution(neuralNetPrimitives);
 
         bool assigned = false;
 
@@ -201,116 +272,30 @@ void ESP::evaluateCompetitiveFitness(SimulationContainer* _simulationContainer){
             Sleep(10);
             for(uint k = 0; k < mTotalRequests; ++k){
                 //checks if slave thread
-                if(k == 0){
-                    if(mWorkStatus == NOWORK){
-                        assigned = true;
-
-                        //update chromosomes with fitness
-                        for(uint i = 0; i < mUpdateList[k].size(); ++i){
-                            for(map<uint, Neuron*>::iterator iter = mUpdateList[k][i].begin(); iter != mUpdateList[k][i].end(); ++iter){
-                                uint currFitnessTeamID = mSubpopulations[i][iter->first].first->getTeamID();
-                                double fitness = 0;
-                                for(uint i = k; i < k + mNumTeams; ++i){
-                                    if(mRetrievedTeamIDs[i] == currFitnessTeamID){
-                                        fitness = mRetrievedCompetitiveFitnesses[i];
-                                        break;
-                                    }
-                                }
-                                mSubpopulations[i][iter->first].first->setChromosomeFitness(iter->second, fitness, fitness);
-                            }
-                        }
-                        mUpdateList.erase(k);
-
-                        //add chromosomes to corresponding map position
-                        vector<map<uint, Neuron*>> currUpdateVec;
-                        
-                        for(uint i = 0; i < neuralNetPrimitives.size(); ++i){
-                            currUpdateVec.push_back(map<uint, Neuron*>());
-                            for(map<uint, Neuron*>::iterator iter = neuralNetPrimitives[i].first.begin(); iter != neuralNetPrimitives[i].first.end(); ++iter){
-                                if(iter->second->getNeuronType() == LEAF)
-                                    delete iter->second;
-                                else currUpdateVec[i][iter->first] = iter->second;
-                            }
-                        }
-
-                        mUpdateList[k] = currUpdateVec;
-
-                        delete mSavedSolutions[k];
-                        mSavedSolutions.erase(k);
-                        mSavedSolutions[k] = solution;
-
-                        mWorkStatus = WORK;
-
-                        break;
-                    }
-                }
-                else{
+                if(k == 0 && mWorkStatus == NOWORK)
+                    assigned = true;
+                else if(k > 0){
                     MPI_Status status;
                     int received;
 
                     MPI_Test(&mRequests[k], &received, &status);
 
-                    if(received){
-                        //construct serialized data to send through
-                        int initialDat[3];
-                        int *nodes, *format;
-                        double* weights;
-
-                        solution->serialize(nodes, format, weights, initialDat[0], initialDat[1], initialDat[2]);
-
+                    if(received)
                         assigned = true;
+                }
 
-                        //update chromosomes with fitness
-                        for(uint i = 0; i < mUpdateList[k].size(); ++i){
-                            for(map<uint, Neuron*>::iterator iter = mUpdateList[k][i].begin(); iter != mUpdateList[k][i].end(); ++iter){
-                                uint currFitnessTeamID = mSubpopulations[i][iter->first].first->getTeamID();
-                                double fitness = 0;
-                                for(uint i = k; i < k + mNumTeams; ++i){
-                                    if(mRetrievedTeamIDs[i] == currFitnessTeamID){
-                                        fitness = mRetrievedCompetitiveFitnesses[i];
-                                        break;
-                                    }
-                                }
-                                mSubpopulations[i][iter->first].first->setChromosomeFitness(iter->second, fitness, fitness);
-                            }
-                        }
-                        mUpdateList.erase(k);
+                if(assigned){
+                    updateCompFitness(k);
 
-                        //assign new work
-                        MPI_Send(&initialDat[0], 3, MPI_INT, k, 1, MPI_COMM_WORLD);
-                        MPI_Send(nodes, initialDat[0], MPI_INT, k, 1, MPI_COMM_WORLD);
-                        MPI_Send(format, initialDat[1], MPI_INT, k, 1, MPI_COMM_WORLD);
-                        MPI_Send(weights, initialDat[2], MPI_DOUBLE, k, 1, MPI_COMM_WORLD);
+                    saveUpdateVec(neuralNetPrimitives, k);
 
-                        //setup corresponding nonblocking receive call
-                        MPI_Irecv(&mRetrievedCompetitiveFitnesses[k * mNumTeams], mNumTeams, MPI_DOUBLE, k, 1, MPI_COMM_WORLD, &mRequests[k]);
-                        MPI_Irecv(&mRetrievedTeamIDs[k * mNumTeams], mNumTeams, MPI_DOUBLE, k, 1, MPI_COMM_WORLD, &mRequests[k]);
+                    delete mSavedSolutions[k];
+                    mSavedSolutions.erase(k);
+                    mSavedSolutions[k] = solution;
 
-                        //add chromosomes to corresponding map position
-                        vector<map<uint, Neuron*>> currUpdateVec;
-                        
-                        for(uint i = 0; i < neuralNetPrimitives.size(); ++i){
-                            currUpdateVec.push_back(map<uint, Neuron*>());
-                            for(map<uint, Neuron*>::iterator iter = neuralNetPrimitives[i].first.begin(); iter != neuralNetPrimitives[i].first.end(); ++iter){
-                                if(iter->second->getNeuronType() == LEAF)
-                                    delete iter->second;
-                                else currUpdateVec[i][iter->first] = iter->second;
-                            }
-                        }
+                    sendCompData(*solution, k);
 
-                        mUpdateList[k] = currUpdateVec;
-
-                        delete mSavedSolutions[k];
-                        mSavedSolutions.erase(k);
-                        mSavedSolutions[k] = solution;
-
-                        delete [] nodes;
-                        delete [] format;
-                        delete [] weights;
-
-                        //stop looping
-                        break;
-                    }
+                    break;
                 }
             }
         }
@@ -322,46 +307,20 @@ void ESP::evaluateCompetitiveFitness(SimulationContainer* _simulationContainer){
         //poll the slave until it is complete
         while(!completed){
             Sleep(10);
-            if(k == 0){
-                if(mWorkStatus == NOWORK){
-                    double realFitness = mRetrievedFitnesses[k*2];
-                    double fitness = mRetrievedFitnesses[k*2 + 1];
-                    for(uint i = 0; i < mUpdateList[k].size(); ++i){
-                        for(map<uint, Neuron*>::iterator iter = mUpdateList[k][i].begin(); iter != mUpdateList[k][i].end(); ++iter){
-                            mSubpopulations[i][iter->first].first->setChromosomeFitness(iter->second, fitness, realFitness);
-                        }
-                    }
-                    mUpdateList.erase(k);
-                    completed = true;
-                }
-            }
-            else{
-                //sleep
+            if(k == 0 && mWorkStatus == NOWORK)
+                completed = true;
+            else if(k > 0){
                 MPI_Status status;
                 int received;
 
                 MPI_Test(&mRequests[k], &received, &status);
 
-                if(received){
-                    //update chromosomes with fitness
-                    for(uint i = 0; i < mUpdateList[k].size(); ++i){
-                        for(map<uint, Neuron*>::iterator iter = mUpdateList[k][i].begin(); iter != mUpdateList[k][i].end(); ++iter){
-                            uint currFitnessTeamID = mSubpopulations[i][iter->first].first->getTeamID();
-                            double fitness = 0;
-                            for(uint i = k; i < k + mNumTeams; ++i){
-                                if(mRetrievedTeamIDs[i] == currFitnessTeamID){
-                                    fitness = mRetrievedCompetitiveFitnesses[i];
-                                    break;
-                                }
-                            }
-                            mSubpopulations[i][iter->first].first->setChromosomeFitness(iter->second, fitness, fitness);
-                        }
-                    }
-                    mUpdateList.erase(k);
-
+                if(received)
                     completed = true;
-                }
             }
+
+            if(completed)
+                updateCompFitness(k);
         }
         delete mSavedSolutions[k];
         mSavedSolutions.erase(k);
@@ -376,65 +335,21 @@ void ESP::evaluateFitness(SimulationContainer* _simulationContainer){
     for(uint k = 0; k < mTotalRequests; ++k){
         //construct solution
         createNeuralNetworkPrimitives(neuralNetPrimitives);
-        vector<NeuralNetwork> neuralNets;
-
-        for(uint i = 0; i < neuralNetPrimitives.size(); ++i){
-            neuralNets.push_back(NeuralNetwork());
-            neuralNets[i].setStructure(neuralNetPrimitives[i].first, neuralNetPrimitives[i].second);
-        }
-
-        Solution *solution = new Solution(neuralNets);
+        Solution *solution = constructSolution(neuralNetPrimitives);
 
         //save solution to map
         mSavedSolutions[k] = solution;
 
         //saves neurons needed to be updated
-        vector<map<uint, Neuron*>> currUpdateVec;
-            
-        for(uint i = 0; i < neuralNetPrimitives.size(); ++i){
-            currUpdateVec.push_back(map<uint, Neuron*>());
-            for(map<uint, Neuron*>::iterator iter = neuralNetPrimitives[i].first.begin(); iter != neuralNetPrimitives[i].first.end(); ++iter){
-                if(iter->second->getNeuronType() == LEAF)
-                    delete iter->second;
-                else currUpdateVec[i][iter->first] = iter->second;
-            }
-        }
+        saveUpdateVec(neuralNetPrimitives, k);
 
-        mUpdateList[k] = currUpdateVec;
-
-        if(k == 0)
-            mWorkStatus = WORK;
-        else{
-            //construct serialized data to send through
-            int initialDat[3];
-            int *nodes, *format;
-            double* weights;
-
-            solution->serialize(nodes, format, weights, initialDat[0], initialDat[1], initialDat[2]);
-
-            MPI_Send(&initialDat[0], 3, MPI_INT, k, 1, MPI_COMM_WORLD);
-            MPI_Send(nodes, initialDat[0], MPI_INT, k, 1, MPI_COMM_WORLD);
-            MPI_Send(format, initialDat[1], MPI_INT, k, 1, MPI_COMM_WORLD);
-            MPI_Send(weights, initialDat[2], MPI_DOUBLE, k, 1, MPI_COMM_WORLD);
-
-            //setup corresponding nonblocking receive call
-            MPI_Irecv(&mRetrievedFitnesses[k * 2], 2, MPI_DOUBLE, k, 1, MPI_COMM_WORLD, &mRequests[k]);
-
-            delete [] nodes;
-            delete [] format;
-            delete [] weights;
-        }
+        //send work to slaves
+        sendData(*solution, k);
     }
 
     //create solution and send to free slaves until cant create anymore, then wait for slaves to complete work
     while(createNeuralNetworkPrimitives(neuralNetPrimitives)){
-        //create solution
-        vector<NeuralNetwork> neuralNets;
-        for(uint k = 0; k < neuralNetPrimitives.size(); ++k){
-            neuralNets.push_back(NeuralNetwork());
-            neuralNets[k].setStructure(neuralNetPrimitives[k].first, neuralNetPrimitives[k].second);
-        }
-        Solution *solution = new Solution(neuralNets);
+        Solution *solution = constructSolution(neuralNetPrimitives);
 
         bool assigned = false;
 
@@ -442,119 +357,29 @@ void ESP::evaluateFitness(SimulationContainer* _simulationContainer){
         while(!assigned){
             Sleep(10);
             for(uint k = 0; k < mTotalRequests; ++k){
-                if(k == 0){
-                    if(mWorkStatus == NOWORK){
-                        assigned = true;
-
-                        //update chromosomes with fitness
-                        double realFitness = mRetrievedFitnesses[k*2];
-                        double fitness = mRetrievedFitnesses[k*2 + 1];
-                        for(uint i = 0; i < mUpdateList[k].size(); ++i){
-                            for(map<uint, Neuron*>::iterator iter = mUpdateList[k][i].begin(); iter != mUpdateList[k][i].end(); ++iter){
-                                mSubpopulations[i][iter->first].first->setChromosomeFitness(iter->second, fitness, realFitness);
-                            }
-                        }
-                        mUpdateList.erase(k);
-
-                        //update stagnation counter and set best solution
-                        if(realFitness <= mParameters.fitnessEpsilonThreshold || mBestFitness > fitness || mBestFitness == -1){
-                            mBestFitness = fitness;
-                            mBestRealFitness = realFitness;
-                            mBestSolution = *mSavedSolutions[k];
-                            improved = true;
-                        }
-
-                        //add chromosomes to corresponding map position
-                        vector<map<uint, Neuron*>> currUpdateVec;
-                        
-                        for(uint i = 0; i < neuralNetPrimitives.size(); ++i){
-                            currUpdateVec.push_back(map<uint, Neuron*>());
-                            for(map<uint, Neuron*>::iterator iter = neuralNetPrimitives[i].first.begin(); iter != neuralNetPrimitives[i].first.end(); ++iter){
-                                if(iter->second->getNeuronType() == LEAF)
-                                    delete iter->second;
-                                else currUpdateVec[i][iter->first] = iter->second;
-                            }
-                        }
-
-                        mUpdateList[k] = currUpdateVec;
-
-                        delete mSavedSolutions[k];
-                        mSavedSolutions.erase(k);
-                        mSavedSolutions[k] = solution;
-
-                        mWorkStatus = WORK;
-
-                        break;
-                    }
-                }
-                else{
+                if(k == 0 && mWorkStatus == NOWORK)
+                    assigned = true;
+                else if(k > 0){
                     MPI_Status status;
                     int received;
 
                     MPI_Test(&mRequests[k], &received, &status);
 
-                    if(received){
-                        //construct serialized data to send through
-                        int initialDat[3];
-                        int *nodes, *format;
-                        double* weights;
-
-                        solution->serialize(nodes, format, weights, initialDat[0], initialDat[1], initialDat[2]);
-
+                    if(received)
                         assigned = true;
+                }
 
-                        //update chromosomes with fitness
-                        double realFitness = mRetrievedFitnesses[k*2];
-                        double fitness = mRetrievedFitnesses[k*2 + 1];
-                        for(uint i = 0; i < mUpdateList[k].size(); ++i){
-                            for(map<uint, Neuron*>::iterator iter = mUpdateList[k][i].begin(); iter != mUpdateList[k][i].end(); ++iter){
-                                mSubpopulations[i][iter->first].first->setChromosomeFitness(iter->second, fitness, realFitness);
-                            }
-                        }
-                        mUpdateList.erase(k);
+                if(assigned){
+                    updateFitness(k, improved);
 
-                        //update stagnation counter and set best solution
-                        if(realFitness <= mParameters.fitnessEpsilonThreshold || mBestFitness > fitness || mBestFitness == -1){
-                            mBestFitness = fitness;
-                            mBestRealFitness = realFitness;
-                            mBestSolution = *mSavedSolutions[k];
-                            improved = true;
-                        }
+                    saveUpdateVec(neuralNetPrimitives, k);
 
-                        //assign new work
-                        MPI_Send(&initialDat[0], 3, MPI_INT, k, 1, MPI_COMM_WORLD);
-                        MPI_Send(nodes, initialDat[0], MPI_INT, k, 1, MPI_COMM_WORLD);
-                        MPI_Send(format, initialDat[1], MPI_INT, k, 1, MPI_COMM_WORLD);
-                        MPI_Send(weights, initialDat[2], MPI_DOUBLE, k, 1, MPI_COMM_WORLD);
+                    delete mSavedSolutions[k];
+                    mSavedSolutions.erase(k);
+                    mSavedSolutions[k] = solution;
 
-                        //setup corresponding nonblocking receive call
-                        MPI_Irecv(&mRetrievedFitnesses[k * 2], 2, MPI_DOUBLE, k, 1, MPI_COMM_WORLD, &mRequests[k]);
-
-                        //add chromosomes to corresponding map position
-                        vector<map<uint, Neuron*>> currUpdateVec;
-                        
-                        for(uint i = 0; i < neuralNetPrimitives.size(); ++i){
-                            currUpdateVec.push_back(map<uint, Neuron*>());
-                            for(map<uint, Neuron*>::iterator iter = neuralNetPrimitives[i].first.begin(); iter != neuralNetPrimitives[i].first.end(); ++iter){
-                                if(iter->second->getNeuronType() == LEAF)
-                                    delete iter->second;
-                                else currUpdateVec[i][iter->first] = iter->second;
-                            }
-                        }
-
-                        mUpdateList[k] = currUpdateVec;
-
-                        delete mSavedSolutions[k];
-                        mSavedSolutions.erase(k);
-                        mSavedSolutions[k] = solution;
-
-                        delete [] nodes;
-                        delete [] format;
-                        delete [] weights;
-
-                        //stop looping
-                        break;
-                    }
+                    sendData(*solution, k);
+                    break;
                 }
             }
         }
@@ -566,56 +391,20 @@ void ESP::evaluateFitness(SimulationContainer* _simulationContainer){
         //poll the slave until it is complete
         while(!completed){
             Sleep(10);
-            if(k == 0){
-                if(mWorkStatus == NOWORK){
-                    double realFitness = mRetrievedFitnesses[k*2];
-                    double fitness = mRetrievedFitnesses[k*2 + 1];
-                    for(uint i = 0; i < mUpdateList[k].size(); ++i){
-                        for(map<uint, Neuron*>::iterator iter = mUpdateList[k][i].begin(); iter != mUpdateList[k][i].end(); ++iter){
-                            mSubpopulations[i][iter->first].first->setChromosomeFitness(iter->second, fitness, realFitness);
-                        }
-                    }
-                    mUpdateList.erase(k);
-
-                    //update stagnation counter and set best solution
-                    if(realFitness <= mParameters.fitnessEpsilonThreshold || mBestFitness > fitness || mBestFitness == -1){
-                        mBestFitness = fitness;
-                        mBestRealFitness = realFitness;
-                        mBestSolution = *mSavedSolutions[k];
-                        improved = true;
-                    }
-
-                    completed = true;
-                }
-            }
-            else{
-                //sleep
+            if(k == 0 && mWorkStatus == NOWORK)
+                completed = true;
+            else if (k > 0){
                 MPI_Status status;
                 int received;
 
                 MPI_Test(&mRequests[k], &received, &status);
 
-                if(received){
+                if(received)
                     completed = true;
-                    //update chromosomes with fitness
-                    double realFitness = mRetrievedFitnesses[k*2];
-                    double fitness = mRetrievedFitnesses[k*2 + 1];
-                    for(uint i = 0; i < mUpdateList[k].size(); ++i){
-                        for(map<uint, Neuron*>::iterator iter = mUpdateList[k][i].begin(); iter != mUpdateList[k][i].end(); ++iter){
-                            mSubpopulations[i][iter->first].first->setChromosomeFitness(iter->second, fitness, realFitness);
-                        }
-                    }
-                    mUpdateList.erase(k);
-
-                    //update stagnation counter and set best solution
-                    if(realFitness <= mParameters.fitnessEpsilonThreshold || mBestFitness > fitness || mBestFitness == -1){
-                        mBestFitness = fitness;
-                        mBestRealFitness = realFitness;
-                        mBestSolution = *mSavedSolutions[k];
-                        improved = true;
-                    }
-                }
             }
+
+            if(completed)
+                updateFitness(k, improved);
         }
         delete mSavedSolutions[k];
         mSavedSolutions.erase(k);
@@ -729,7 +518,7 @@ void ESP::setupSubpopulationStructure(){
         map<uint, pair<ESPSubPopulation*, uint>> currNetworkSubpopulations;
         uint teamID = 0;
         if(currNetwork.attribute("TeamID").empty()){
-            cerr << "Error: node does not have ID" << endl;
+            cerr << "Error: node does not have Team ID" << endl;
             //return;
         }
         else teamID = atoi(currNetwork.attribute("TeamID").value());

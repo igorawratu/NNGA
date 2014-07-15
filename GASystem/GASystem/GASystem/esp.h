@@ -37,6 +37,13 @@ private:
 
     void hostwork();
 
+    void sendCompData(Solution& _solution, int _slave);
+    void sendData(Solution& _solution, int _slave);
+    void saveUpdateVec(vector<pair<map<uint, Neuron*>, map<uint, Neuron*>>>& _nnPrims, int _slave);
+    Solution* constructSolution(vector<pair<map<uint, Neuron*>, map<uint, Neuron*>>> _nnPrims);
+    void updateCompFitness(int _slave);
+    void updateFitness(int _slave, bool& _improved);
+
 private:
     ESPParameters mParameters;
     vector<map<uint, pair<ESPSubPopulation*, uint>>> mSubpopulations;
