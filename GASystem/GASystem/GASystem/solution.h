@@ -24,6 +24,7 @@ public:
     
     vector<vector<double>> evaluateAllNeuralNetworks(vector<map<uint, double>> _inputs);
     vector<double> evaluateNeuralNetwork(uint _index, map<uint, double> _inputs);
+    vector<double> evaluateNeuralNetwork(uint _index, map<uint, double> _inputs, uint _teamID);
     void printToFile(string _filename);
 
     double& fitness(){return mFitness;}

@@ -42,6 +42,8 @@ public:
         return mRaysShot;
     }
 
+    virtual vector<CompetitiveFitness> competitiveFitness();
+
 private:
     void applyUpdateRules(string _agentName, uint _agentNum);
     void checkRayObject(int _groupNum, const btCollisionObject* _obj, int& _team, string& _entityName);

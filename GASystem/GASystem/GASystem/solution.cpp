@@ -45,6 +45,20 @@ vector<double> Solution::evaluateNeuralNetwork(uint _index, map<uint, double> _i
     return mNeuralNets[_index].evaluate(_inputs);
 }
 
+vector<double> Solution::evaluateNeuralNetwork(uint _index, map<uint, double> _inputs, uint _teamID){
+    int indexCounter = 0;
+    for(uint k = 0; k < mNeuralNets.size(); ++k){
+        if(_teamID == mNeuralNets[k].getTeamID()){
+            if(indexCounter == _index){
+                return mNeuralNets[k].evaluate(_inputs);
+            }
+            else ++indexCounter;
+        }
+    }
+
+    return vector<double>();
+}
+
 void Solution::printToFile(string _filename){
     xmldoc doc;
     pugi::xml_node root = doc.append_child("NeuralNetworks");

@@ -266,7 +266,7 @@ int main(int argc, char** argv){
 
     srand(time(0));
 
-    string simName = "BridgeMouseSim";
+    string simName = "WarRobotSim";
 
     GraphicsEngine* engine = new GraphicsEngine(NULL);
 

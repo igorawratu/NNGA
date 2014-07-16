@@ -290,7 +290,8 @@ void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum){
         mWorldEntities[_agentName]->avoidCollisions(frontDist, 0, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
     else{
         mWorldEntities[_agentName]->avoided();
-        vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
+        uint team = _groupNum == 0 ? 1 : 2;
+        vector<double> output = mSolution->evaluateNeuralNetwork(0, input, team);
         mWorldEntities[_agentName]->update(output);
     }
 
@@ -333,4 +334,16 @@ void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum){
                 mCollisions++;
         }
     }
+}
+
+vector<CompetitiveFitness> WarRobotSimulation::competitiveFitness(){
+    vector<CompetitiveFitness> fitnesses;
+
+    double team1Fitness = 40 - mGroupOneAgents.size() + mGroupTwoAgents.size();
+    double team2Fitness = 40 - mGroupTwoAgents.size() + mGroupOneAgents.size();
+
+    fitnesses.push_back(make_pair(1, team1Fitness));
+    fitnesses.push_back(make_pair(2, team2Fitness));
+
+    return fitnesses;
 }
