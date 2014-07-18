@@ -73,14 +73,14 @@ double WarRobotSimulation::fitness(){
     map<string, long> intAcc;
     map<string, double> dblAcc;
 
-    dblAcc["LowerBound"] = 33;
-    dblAcc["UpperBound"] = 35;
+    dblAcc["LowerBound"] = 9;
+    dblAcc["UpperBound"] = 11;
     dblAcc["Value"] = mGroupOneAgents.size();
     dblAcc["EVWeight"] = 1;
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
-    dblAcc["LowerBound"] = 2;
-    dblAcc["UpperBound"] = 4;
+    dblAcc["LowerBound"] = 9;
+    dblAcc["UpperBound"] = 11;
     dblAcc["Value"] = mGroupTwoAgents.size();
     dblAcc["EVWeight"] = 1;
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
@@ -173,14 +173,14 @@ double WarRobotSimulation::realFitness(){
     map<string, long> intAcc;
     map<string, double> dblAcc;
 
-    dblAcc["LowerBound"] = 33;
-    dblAcc["UpperBound"] = 35;
+    dblAcc["LowerBound"] = 9;
+    dblAcc["UpperBound"] = 11;
     dblAcc["Value"] = mGroupOneAgents.size();
     dblAcc["EVWeight"] = 1;
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
-    dblAcc["LowerBound"] = 2;
-    dblAcc["UpperBound"] = 4;
+    dblAcc["LowerBound"] = 9;
+    dblAcc["UpperBound"] = 11;
     dblAcc["Value"] = mGroupTwoAgents.size();
     dblAcc["EVWeight"] = 1;
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
@@ -201,7 +201,7 @@ double WarRobotSimulation::realFitness(){
 void WarRobotSimulation::checkRayObject(int _groupNum, const btCollisionObject* _obj, int& _team, string& _entityName){
     for(uint k = 0; k < mGroupOneAgents.size(); k++){
         if(_obj == mWorldEntities[mGroupOneAgents[k]]->getRigidBody()){
-            _team = _groupNum < 4 ? -1 : 1;
+            _team = _groupNum == 0 ? -1 : 1;
             _entityName = mGroupOneAgents[k];
             return;
         }
@@ -209,7 +209,7 @@ void WarRobotSimulation::checkRayObject(int _groupNum, const btCollisionObject* 
 
     for(uint k = 0; k < mGroupTwoAgents.size(); k++){
         if(_obj == mWorldEntities[mGroupTwoAgents[k]]->getRigidBody()){
-            _team = _groupNum > 3 ? -1 : 1;
+            _team = _groupNum == 1 ? -1 : 1;
             _entityName = mGroupTwoAgents[k];
             return;
         }
@@ -243,9 +243,9 @@ void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum){
 
 
     //rangefinders
-    if(_groupNum < 4)
-        input[1] = getRayCollisionDistanceNonEnv(_agentName, btVector3(100, 0, 0), front, hitposfront) / 50;
-    else input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), front, hitposfront) / 50;
+    /*if(_groupNum < 4)
+        input[1] = getRayCollisionDistanceNonEnv(_agentName, btVector3(100, 0, 0), front, hitposfront) / 50;*/
+    /*else */input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), front, hitposfront) / 50;
     checkRayObject(_groupNum, front, frontTeamInd, colliderName);
     input[13] = frontTeamInd;
 
@@ -310,8 +310,8 @@ void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum){
 
     //fitness eval code
     //try make aggresors move more/faster
-    if(_groupNum > 3)
-        mVelocityAcc += mWorldEntities[_agentName]->getVelocity().calcDistance(vector3(0, 0, 0));
+    /*if(_groupNum > 3)
+        mVelocityAcc += mWorldEntities[_agentName]->getVelocity().calcDistance(vector3(0, 0, 0));*/
 
     //rangefinder vals
     if(mCycleCounter > 10){

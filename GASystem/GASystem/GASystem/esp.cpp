@@ -42,7 +42,7 @@ Solution ESP::train(SimulationContainer* _simulationContainer, string _outputFil
 
     for(mStage = 1; mStage <= mStages; ++mStage){ 
         if(mStage == 2)
-            runDeltaCodes(_simulationContainer);
+            runDeltaCodes();
 
         if(mStages == 1 || mStage == 2)
             evaluateFitness(_simulationContainer);
@@ -458,51 +458,6 @@ bool ESP::createNeuralNetworkPrimitives(vector<pair<map<uint, Neuron*>, map<uint
     return true;
 }
 
-bool ESP::createDeltaNeuralNetworkPrimitives(vector<pair<map<uint, Neuron*>, map<uint, Neuron*>>>& _output){
-    vector<pair<map<uint, Neuron*>, map<uint, Neuron*>>> out;
-    bool completed = false;
-
-    for(uint k = 0; k < mSubpopulations.size(); ++k){
-        map<uint, Neuron*> output;
-        map<uint, Neuron*> neuronCache;
-
-		int teamID = -1;
-		for(map<uint, pair<ESPSubPopulation*, uint>>::iterator iter = mSubpopulations[k].begin(); iter != mSubpopulations[k].end(); ++iter){
-			if(iter->second.second != 0){
-				teamID = iter->second.first->getTeamID();
-				break;
-			}
-		}
-
-        for(map<uint, pair<ESPSubPopulation*, uint>>::iterator iter = mSubpopulations[k].begin(); iter != mSubpopulations[k].end(); ++iter){
-            if(iter->second.second == 0)
-                neuronCache[iter->first] = new LeafNeuron(NULL, vector<double>(), teamID);
-            else{
-                Chromosome* chrom = iter->second.first->getUnevaluatedDeltaCode();
-                if(chrom == NULL){
-                    completed = true;
-                    break;
-                }
-
-                neuronCache[iter->first] = dynamic_cast<ESPChromosome*>(chrom)->getNeuron();
-                if(iter->second.second == 2)
-                    output[iter->first] = neuronCache[iter->first];
-            }
-        }
-        if(completed){
-            for(map<uint, Neuron*>::iterator iter = neuronCache.begin(); iter != neuronCache.end(); ++iter){
-                if(iter->second->getNeuronType() == LEAF)
-                    delete iter->second;
-            }
-            return false;
-        }   
-        out.push_back(make_pair(neuronCache, output));
-    }
-    _output = out;
-
-    return true;
-}
-
 void ESP::setupSubpopulationStructure(){
     xmldoc doc;
     pugi::xml_parse_result result = doc.load_file(mParameters.nnFormatFilename.c_str());
@@ -556,40 +511,11 @@ void ESP::setupSubpopulationStructure(){
     mNumTeams = teamIDs.size();
 }
 
-void ESP::runDeltaCodes(SimulationContainer* _simulationContainer){
+void ESP::runDeltaCodes(){
     for(uint i = 0; i < mSubpopulations.size(); ++i){
         for(map<uint, pair<ESPSubPopulation*, uint>>::iterator iter = mSubpopulations[i].begin(); iter != mSubpopulations[i].end(); ++iter){
             if(iter->second.second != 0)
-                iter->second.first->generateDeltaCodes();
-        }
-    }
-
-    vector<pair<map<uint, Neuron*>, map<uint, Neuron*>>> neuralNetPrimitives;
-    while(createDeltaNeuralNetworkPrimitives(neuralNetPrimitives)){
-        vector<NeuralNetwork> neuralNets;
-        for(uint k = 0; k < neuralNetPrimitives.size(); ++k){
-            neuralNets.push_back(NeuralNetwork());
-            neuralNets[k].setStructure(neuralNetPrimitives[k].first, neuralNetPrimitives[k].second);
-        }
-        Solution solution(neuralNets);
-        _simulationContainer->runFullSimulation(&solution);
-        _simulationContainer->resetSimulation();
-
-        for(uint k = 0; k < neuralNetPrimitives.size(); ++k){
-            for(map<uint, Neuron*>::iterator iter = neuralNetPrimitives[k].first.begin(); iter != neuralNetPrimitives[k].first.end(); ++iter){
-                if(iter->second->getNeuronType() == LEAF)
-                    delete iter->second;
-                else{
-                    mSubpopulations[k][iter->first].first->setDeltaCodeFitness(iter->second, solution.fitness(), solution.realFitness());
-                }
-            }
-        }
-    }
-
-    for(uint i = 0; i < mSubpopulations.size(); ++i){
-        for(map<uint, pair<ESPSubPopulation*, uint>>::iterator iter = mSubpopulations[i].begin(); iter != mSubpopulations[i].end(); ++iter){
-            if(iter->second.second != 0)
-                iter->second.first->integrateDeltaCodes();
+                iter->second.first->generateDeltaCodes(mParameters.deltaCodeRadius);
         }
     }
 }

@@ -173,6 +173,7 @@ ESPParameters getESPParameters(int _popsize, int _maxgen, string _nnFormatFile, 
     params.elitismCount = _popsize/10;
     params.sampleEvaluationsPerChromosome = _evals;
     params.crossoverParameters["CrossoverProbability"] = 0.8;
+    params.deltaCodeRadius = 0.05;
 
     return params;
 }
@@ -200,7 +201,7 @@ void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inp
             ga = new StandardGA(params);
         }
         else{
-            ESPParameters params = getESPParameters(20, 200, _inputFile, 9999, 0, 3);
+            ESPParameters params = getESPParameters(40, 400, _inputFile, 9999, 0, 3);
             ga = new ESP(params);
         }
 

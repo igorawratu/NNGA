@@ -28,6 +28,8 @@ struct ESPParameters
     map<string, double> crossoverParameters;
     string selectionAlgorithm;
 
+    double deltaCodeRadius;
+
     uint elitismCount;
 };
 
@@ -46,10 +48,7 @@ public:
     void setChromosomeFitness(Neuron* _neuron, double _fitnessVal, double _realFitnessVal);
     void print();
 
-    void generateDeltaCodes();
-    Chromosome* getUnevaluatedDeltaCode();
-    void setDeltaCodeFitness(Neuron* _neuron, double _fitnessVal, double _realFitnessVal);
-    void integrateDeltaCodes();
+    void generateDeltaCodes(double _deltaRange);
 
     uint getTeamID();
     void setTeamID(uint _id);
@@ -64,10 +63,6 @@ private:
     ESPParameters mParameters;
     Crossover* mCrossoverAlgorithm;
     Selection* mSelectionAlgorithm;
-
-    vector<Chromosome*> mUnevaluatedDeltaCodes;
-    vector<Chromosome*> mDeltaCodes;
-    vector<uint> mDCEvaluationCounter;
 
     uint mTeamID;
 };

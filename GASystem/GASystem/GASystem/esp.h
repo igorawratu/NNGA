@@ -29,10 +29,9 @@ private:
     void setupSubpopulationStructure();
     //first neuron cache, then output
     bool createNeuralNetworkPrimitives(vector<pair<map<uint, Neuron*>, map<uint, Neuron*>>>& _output);
-    bool createDeltaNeuralNetworkPrimitives(vector<pair<map<uint, Neuron*>, map<uint, Neuron*>>>& _output);
     void evaluateFitness(SimulationContainer* _simulationContainer);
     void evaluateCompetitiveFitness(SimulationContainer* _simulationContainer);
-    void runDeltaCodes(SimulationContainer* _simulationContainer);
+    void runDeltaCodes();
     void stopSlaves();
 
     void hostwork();
