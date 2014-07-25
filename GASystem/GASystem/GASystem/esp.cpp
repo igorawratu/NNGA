@@ -41,14 +41,27 @@ Solution ESP::train(SimulationContainer* _simulationContainer, string _outputFil
     mStages = mNumTeams == 1? 1 : 2;
 
     for(mStage = 1; mStage <= mStages; ++mStage){ 
-        if(mStage == 2)
+        if(mStage == 2){
             runDeltaCodes();
+            mParameters.mutationParameters["MutationProbability"] = 0;
 
-        if(mStages == 1 || mStage == 2)
+            for(uint i = 0; i < mSubpopulations.size(); ++i)
+                for(map<uint, pair<ESPSubPopulation*, uint>>::iterator iter = mSubpopulations[i].begin(); iter != mSubpopulations[i].end(); ++iter)
+                    iter->second.first->setParameters(mParameters);
+        }
+
+        uint gen;
+
+        if(mStages == 1 || mStage == 2){
             evaluateFitness(_simulationContainer);
-        else evaluateCompetitiveFitness(_simulationContainer);
+            gen = mParameters.maxGenerations;
+        }
+        else{
+            evaluateCompetitiveFitness(_simulationContainer);
+            gen = mParameters.maxCompGenerations;
+        }
 
-        for(uint k = 0; k < mParameters.maxGenerations; ++k){
+        for(uint k = 0; k < gen; ++k){
             time_t t = time(0);
 
             cout << "Generation " << k << endl;

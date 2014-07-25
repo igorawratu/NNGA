@@ -218,10 +218,10 @@ void CarRaceSimulation::applyUpdateRules(string _agentName, uint _groupNum){
 
 
     if(frontDist < 10)
-        mWorldEntities[_agentName]->avoidCollisions(frontDist, 0, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
+        mWorldEntities[_agentName]->avoidCollisions(d1, d2, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
     else{
         mWorldEntities[_agentName]->avoided();
-        vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
+        vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input, _groupNum);
         mWorldEntities[_agentName]->update(output);
     }
 
@@ -259,4 +259,15 @@ void CarRaceSimulation::applyUpdateRules(string _agentName, uint _groupNum){
                 mCollisions++;
         }
     }
+}
+
+vector<CompetitiveFitness> CarRaceSimulation::competitiveFitness(){
+    vector<CompetitiveFitness> fitnesses;
+
+    for(uint k = 0; k < mAgents.size(); ++k){
+        double currAgentFit = getPositionInfo(mAgents[k]).calcDistance(getPositionInfo(mAgents[mWinner]));
+        fitnesses.push_back(make_pair(k, currAgentFit));
+    }
+
+    return fitnesses;
 }

@@ -160,15 +160,16 @@ ESPParameters getESPParameters(int _popsize, int _maxgen, string _nnFormatFile, 
     ESPParameters params;
     params.populationSize = _popsize;
     params.maxGenerations = _maxgen;
+    params.maxCompGenerations = 400;
     params.nnFormatFilename = _nnFormatFile;
     params.stagnationThreshold = _stag;
     params.fitnessEpsilonThreshold = _epsilon;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
+    params.mutationParameters["Deviation"] = 0.1;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "BLX";
+    params.crossoverAlgorithm = "LX";
     params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = _popsize/10;
     params.sampleEvaluationsPerChromosome = _evals;
@@ -201,7 +202,7 @@ void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inp
             ga = new StandardGA(params);
         }
         else{
-            ESPParameters params = getESPParameters(40, 400, _inputFile, 9999, 0, 3);
+            ESPParameters params = getESPParameters(40, 200, _inputFile, 9999, 0, 3);
             ga = new ESP(params);
         }
 
@@ -249,7 +250,7 @@ SimInfo createSimulation(string _simName, GraphicsEngine* _engine){
     else if(_simName == "CorneringSim") return SimInfo(new CorneringSim(2, 4, 450, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/corneringsimulation/input6h.xml", "neuralxmls/corneringsimulation/output.xml");
     else if(_simName == "CarCrashSim") return SimInfo(new CarCrashSimulation(2, 10, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/carcrashsimulation/input6h.xml", "neuralxmls/carcrashsimulation/output.xml");
     else if(_simName == "CarRaceSim") return SimInfo(new CarRaceSimulation(2, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/carracesimulation/input6h_het.xml", "neuralxmls/carracesimulation/output.xml");//2 tier, new env
-    else if(_simName == "WarRobotSim") return SimInfo(new WarRobotSimulation(2, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/warrobotsimulation/input6h.xml", "neuralxmls/warrobotsimulation/output.xml");//2 tier
+    else if(_simName == "WarRobotSim") return SimInfo(new WarRobotSimulation(2, 900, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/warrobotsimulation/input6h.xml", "neuralxmls/warrobotsimulation/output.xml");//2 tier
     else if(_simName == "MouseEscapeSim") return SimInfo(new MouseEscapeSimulation(2, 450, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/mouseescapesimulation/input6h.xml", "neuralxmls/mouseescapesimulation/output.xml");//2 tier
     else if(_simName == "MouseScatterSim") return SimInfo(new MouseScatterSimulation(2, 100, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/mousescattersimulation/input6h.xml", "neuralxmls/mousescattersimulation/output.xml");//train?
     else if(_simName == "SFObstacleSim") return SimInfo(new SFObstacleSimulation(2, 40, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/sfobstaclesimulation/input6h.xml", "neuralxmls/sfobstaclesimulation/output.xml");

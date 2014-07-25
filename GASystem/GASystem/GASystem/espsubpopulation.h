@@ -16,6 +16,7 @@ struct ESPParameters
 {
     uint populationSize;
     uint maxGenerations;
+    uint maxCompGenerations;
     uint sampleEvaluationsPerChromosome;
     uint stagnationThreshold;
 
@@ -49,6 +50,8 @@ public:
     void print();
 
     void generateDeltaCodes(double _deltaRange);
+
+    void setParameters(ESPParameters _params);
 
     uint getTeamID();
     void setTeamID(uint _id);

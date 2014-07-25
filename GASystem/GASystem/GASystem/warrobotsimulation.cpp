@@ -287,7 +287,7 @@ void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     input[12] = agentVel.z;
 
     if(frontDist < 10)
-        mWorldEntities[_agentName]->avoidCollisions(frontDist, 0, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
+        mWorldEntities[_agentName]->avoidCollisions(d2, d1, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
     else{
         mWorldEntities[_agentName]->avoided();
         uint team = _groupNum == 0 ? 1 : 2;
@@ -302,7 +302,7 @@ void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum){
         ray.p1 = getPositionInfo(_agentName);
         ray.p2 = hitposfront;
 
-        if(ray.p1.calcDistance(ray.p2) < 100 && dynamic_cast<WarRobotAgent*>(mWorldEntities[_agentName])->shootRay()){
+        if(ray.p1.calcDistance(ray.p2) < 40 && dynamic_cast<WarRobotAgent*>(mWorldEntities[_agentName])->shootRay()){
             mRaysShot.push_back(ray);
             mObjectsToRemove.push_back(colliderName);
         }

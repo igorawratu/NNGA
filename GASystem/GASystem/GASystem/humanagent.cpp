@@ -66,6 +66,9 @@ void HumanAgent::avoidCollisions(double _distanceLeft, double _distanceRight, ui
     double right = _distanceRight;
     double _frontRayDistance = left < right ? left : right;
 
+    if(_frontRayDistance < 1.5)
+        _frontRayDistance = 1.5001;
+
     if(mAnimationLoop){
         if(mCurrVel == 0)
             mAnimationName = "idle";

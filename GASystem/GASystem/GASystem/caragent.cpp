@@ -6,9 +6,13 @@ CarAgent::CarAgent(double _maxLinearVel, double _maxAngularVel){
     mCurrVel = 0;
 }
 
-void CarAgent::avoidCollisions(double _frontRayDistance, double _other, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody){
-    double left = getRayCollisionDistance(btVector3(100, 0, -10), _world, _envRigidBody);
-    double right = getRayCollisionDistance(btVector3(100, 0, 10), _world, _envRigidBody);
+void CarAgent::avoidCollisions(double _distanceLeft, double _distanceRight, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody){
+    double left = _distanceLeft;
+    double right = _distanceRight;
+    double _frontRayDistance = left < right ? left : right;
+
+    if(_frontRayDistance < 1.5)
+        _frontRayDistance = 1.5001;
 
     //calculate rotation
     if(left < _frontRayDistance && right < _frontRayDistance)

@@ -145,6 +145,10 @@ void ESPSubPopulation::quicksort(vector<Chromosome*>& elements, int left, int ri
 		quicksort(elements, i, right);
 }
 
+void ESPSubPopulation::setParameters(ESPParameters _params){
+    mParameters = _params;
+}
+
 void ESPSubPopulation::generateDeltaCodes(double _deltaRange){
     vector<Chromosome*> newPopulation;
     newPopulation.push_back(mSubpopulation[0]->clone());

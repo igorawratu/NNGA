@@ -12,6 +12,9 @@ void StarFighterAgent::avoidCollisions(double _frontRayDistance, double _other, 
     double bot = getRayCollisionDistance(btVector3(100, -10, 0), _world, _envRigidBody);
     double top = getRayCollisionDistance(btVector3(100, 10, 0), _world, _envRigidBody);
 
+    if(_frontRayDistance == 0)
+        _frontRayDistance = 0.001;
+
     double horizontalTorque, verticleTorque;
 
     //calculate rotation

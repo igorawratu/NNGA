@@ -301,10 +301,10 @@ void MouseEscapeSimulation::applyUpdateRules(string _agentName, uint _groupNum){
 
 
     if(frontDist < 10)
-        mWorldEntities[_agentName]->avoidCollisions(frontDist, 0, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
+        mWorldEntities[_agentName]->avoidCollisions(d1, d2, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
     else{
         mWorldEntities[_agentName]->avoided();
-        vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
+        vector<double> output = mSolution->evaluateNeuralNetwork(0, input, _groupNum);
         double frontVal = Simulation::getRayCollisionDistance(_agentName, btVector3(100, 0, 0), AGENT) > 3 ? 1 : 0;
         output.push_back(frontVal);
         mWorldEntities[_agentName]->update(output);
@@ -366,4 +366,32 @@ bool MouseEscapeSimulation::crossed(string _agentName){
     }
 
     return found;
+}
+
+vector<CompetitiveFitness> MouseEscapeSimulation::competitiveFitness(){
+    vector<CompetitiveFitness> fitnesses;
+
+    double maxDist = 100;
+    double mouseDistAcc = 0;
+    double robotDistAcc = maxDist * mMouseAgents.size();
+    vector3 midpoint((mFinishLine.p1.x + mFinishLine.p2.x)/2, (mFinishLine.p1.y + mFinishLine.p2.y)/2, (mFinishLine.p1.z + mFinishLine.p2.z)/2);
+
+    for(uint k = 0; k < mMouseAgents.size(); ++k){
+        double dist = 0;
+        vector3 agentPos = getPositionInfo(mMouseAgents[k]);
+        
+        if(calcCrossVal(mFinishLine.p1, mFinishLine.p2, agentPos) < 0)
+            midpoint.calcDistance(agentPos);
+
+        mouseDistAcc += dist;
+        robotDistAcc = robotDistAcc - 100 + dist;
+    }
+
+    double robotFitness = robotDistAcc;
+    double mouseFitness = (35 - mMouseAgents.size()) * 100 + mouseDistAcc;
+
+    fitnesses.push_back(make_pair(0, mouseFitness));
+    fitnesses.push_back(make_pair(1, robotFitness));
+
+    return fitnesses;
 }

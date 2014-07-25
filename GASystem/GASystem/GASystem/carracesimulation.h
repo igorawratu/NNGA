@@ -41,6 +41,8 @@ public:
         return finishLine;
     }
 
+    virtual vector<CompetitiveFitness> competitiveFitness();
+
 private:
     void applyUpdateRules(string _agentName, uint groupNum);
     double calcCrossVal(vector3 a, vector3 b, vector3 c){

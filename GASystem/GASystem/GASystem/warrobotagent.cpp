@@ -10,9 +10,13 @@ WarRobotAgent::WarRobotAgent(double _maxLinearVel, vector3 _maxVel, vector3 _min
     mMaxLinearVel = _maxLinearVel;
 }
 
-void WarRobotAgent::avoidCollisions(double _frontRayDistance, double _other, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody){
-    double left = getRayCollisionDistance(btVector3(100, 0, -10), _world, _envRigidBody);
-    double right = getRayCollisionDistance(btVector3(100, 0, 10), _world, _envRigidBody);
+void WarRobotAgent::avoidCollisions(double _distanceLeft, double _distanceRight, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody){
+    double left = _distanceLeft;
+    double right = _distanceRight;
+    double _frontRayDistance = left < right ? left : right;
+
+    if(_frontRayDistance < 1.5)
+        _frontRayDistance = 1.5001;
 
     //calculate rotation
     if(left < _frontRayDistance && right < _frontRayDistance)
