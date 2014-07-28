@@ -35,6 +35,8 @@ public:
         MouseScatterSimulation* sim = (MouseScatterSimulation*)world->getWorldUserInfo();
         sim->tick();
     }
+	virtual ESPParameters getESPParams(string _nnFormatFile);
+	virtual StandardGAParameters getSGAParameters(string _nnFormatFile);
 
 private:
     void applyUpdateRules(string _agentName);

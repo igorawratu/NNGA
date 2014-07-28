@@ -47,6 +47,8 @@ public:
         sim->tick();
     }
     virtual vector<Line> getLines();
+	virtual ESPParameters getESPParams(string _nnFormatFile);
+	virtual StandardGAParameters getSGAParameters(string _nnFormatFile);
 
 private:
     bool isCartFine();

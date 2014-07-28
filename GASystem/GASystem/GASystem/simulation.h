@@ -6,6 +6,8 @@
 #include "resourcemanager.h"
 #include "solution.h"
 #include "agent.h"
+#include "standardgaparameters.h"
+#include "espparameters.h"
 
 #include <map>
 #include <vector>
@@ -54,6 +56,10 @@ public:
 
     virtual vector<string> getRemoveList();
     virtual vector<Line> getLines();
+
+	virtual ESPParameters getESPParams(string _nnFormatFile)=0;
+	virtual StandardGAParameters getSGAParameters(string _nnFormatFile)=0;
+
 protected:
     vector3 getPositionInfo(string _entityName);
     double getRayCollisionDistance(string _agentName, const btVector3& _ray, RaycastLevel _rclevel);

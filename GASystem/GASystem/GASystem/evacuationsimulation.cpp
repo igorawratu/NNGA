@@ -424,3 +424,46 @@ double EvacuationSimulation::calculateDensity(string _agentName, double _radius)
 
     return density;
 }
+
+ESPParameters EvacuationSimulation::getESPParams(string _nnFormatFile){
+	ESPParameters params;
+    params.populationSize = 50;
+    params.maxGenerations = 200;
+    params.maxCompGenerations = 0;
+    params.nnFormatFilename = _nnFormatFile;
+    params.stagnationThreshold = 0;
+    params.fitnessEpsilonThreshold = 0;
+    params.mutationAlgorithm = "GaussianMutation";
+    params.mutationParameters["MutationProbability"] = 0.02;
+    params.mutationParameters["Deviation"] = 0.1;
+    params.mutationParameters["MaxConstraint"] = 1;
+    params.mutationParameters["MinConstraint"] = -1;
+    params.crossoverAlgorithm = "LX";
+    params.selectionAlgorithm = "LRankSelection";
+    params.elitismCount = params.populationSize/10;
+    params.sampleEvaluationsPerChromosome = 5;
+    params.crossoverParameters["CrossoverProbability"] = 0.8;
+    params.deltaCodeRadius = 0.05;
+
+    return params;
+}
+
+StandardGAParameters EvacuationSimulation::getSGAParameters(string _nnFormatFile){
+	StandardGAParameters params;
+    params.populationSize = 100;
+    params.maxGenerations = 200;
+    params.nnFormatFilename = _nnFormatFile;
+    params.stagnationThreshold = 50;
+    params.fitnessEpsilonThreshold = 0;
+    params.mutationAlgorithm = "GaussianMutation";
+    params.mutationParameters["MutationProbability"] = 0.02;
+    params.mutationParameters["Deviation"] = 0.1;
+    params.mutationParameters["MaxConstraint"] = 1;
+    params.mutationParameters["MinConstraint"] = -1;
+    params.crossoverAlgorithm = "LX";
+    params.selectionAlgorithm = "LRankSelection";
+    params.elitismCount = params.populationSize/10;
+    params.crossoverParameters["CrossoverProbability"] = 0.8;
+
+    return params;
+}

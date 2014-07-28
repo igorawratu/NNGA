@@ -28,6 +28,8 @@ public:
         PrototypeSimulation* sim = (PrototypeSimulation*)world->getWorldUserInfo();
         sim->conformVelocities();
     }
+	virtual ESPParameters getESPParams(string _nnFormatFile);
+	virtual StandardGAParameters getSGAParameters(string _nnFormatFile);
 
 private:
     void getRayCollisionDistances(map<uint, double>& _collisionDistances, const btVector3& _agentPosition);

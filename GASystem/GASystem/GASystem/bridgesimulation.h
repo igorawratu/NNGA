@@ -38,6 +38,9 @@ public:
     }
     virtual vector<Line> getLines();
 
+	virtual ESPParameters getESPParams(string _nnFormatFile);
+	virtual StandardGAParameters getSGAParameters(string _nnFormatFile);
+
 private:
     double calcCrossVal(vector3 a, vector3 b, vector3 c){
         return (b.x - a.x)*(c.z - a.z) - (b.z - a.z)*(c.x - a.x);

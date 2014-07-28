@@ -62,6 +62,14 @@ public:
         
         return true;
     }
+	virtual ESPParameters getESPParams(string _nnFormatFile){
+		ESPParameters params;
+		return params;
+	}
+	virtual StandardGAParameters getSGAParameters(string _nnFormatFile){
+		StandardGAParameters params;
+		return params;
+	}
 
 };
 

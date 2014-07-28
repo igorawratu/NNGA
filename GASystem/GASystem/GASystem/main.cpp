@@ -136,49 +136,6 @@ void testCrossoverOp(){
 
 }
 
-StandardGAParameters getGAParameters(int _popsize, int _maxgen, string _nnFormatFile, double _stag, double _epsilon){
-    StandardGAParameters params;
-    params.populationSize = _popsize;
-    params.maxGenerations = _maxgen;
-    params.nnFormatFilename = _nnFormatFile;
-    params.stagnationThreshold = _stag;
-    params.fitnessEpsilonThreshold = _epsilon;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.2;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "LX";
-    params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = _popsize/10;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-
-    return params;
-}
-
-ESPParameters getESPParameters(int _popsize, int _maxgen, string _nnFormatFile, double _stag, double _epsilon, int _evals){
-    ESPParameters params;
-    params.populationSize = _popsize;
-    params.maxGenerations = _maxgen;
-    params.maxCompGenerations = 400;
-    params.nnFormatFilename = _nnFormatFile;
-    params.stagnationThreshold = _stag;
-    params.fitnessEpsilonThreshold = _epsilon;
-    params.mutationAlgorithm = "GaussianMutation";
-    params.mutationParameters["MutationProbability"] = 0.02;
-    params.mutationParameters["Deviation"] = 0.1;
-    params.mutationParameters["MaxConstraint"] = 1;
-    params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "MultipointCrossover";
-    params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = _popsize/10;
-    params.sampleEvaluationsPerChromosome = _evals;
-    params.crossoverParameters["CrossoverProbability"] = 0.8;
-    params.deltaCodeRadius = 0.05;
-
-    return params;
-}
-
 void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inputFile, string _outputFile){
     if(!_sim){
         cout << "Simulation not created" << endl;
@@ -194,15 +151,14 @@ void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inp
     Solution solution;
 
     if(rank == 0){
-		testANNSerialization();
         GeneticAlgorithm* ga;
 
         if(_type == TYPE_STANDARD){
-            StandardGAParameters params = getGAParameters(100, 200, _inputFile, 0, 0);
+            StandardGAParameters params = _sim->getSGAParameters(_inputFile);
             ga = new StandardGA(params);
         }
         else{
-            ESPParameters params = getESPParameters(40, 200, _inputFile, 9999, 0, 3);
+            ESPParameters params = _sim->getESPParams(_inputFile);
             ga = new ESP(params);
         }
 

@@ -8,31 +8,10 @@
 #include "selection.h"
 #include "pugixml.hpp"
 #include "neuron.h"
+#include "espparameters.h"
 #include <iostream>
 
 using namespace std;
-
-struct ESPParameters
-{
-    uint populationSize;
-    uint maxGenerations;
-    uint maxCompGenerations;
-    uint sampleEvaluationsPerChromosome;
-    uint stagnationThreshold;
-
-    string nnFormatFilename;
-    double fitnessEpsilonThreshold;
-
-    string mutationAlgorithm;
-    map<string, double> mutationParameters;
-    string crossoverAlgorithm;
-    map<string, double> crossoverParameters;
-    string selectionAlgorithm;
-
-    double deltaCodeRadius;
-
-    uint elitismCount;
-};
 
 class ESPSubPopulation
 {
