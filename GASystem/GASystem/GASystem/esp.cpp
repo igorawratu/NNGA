@@ -46,8 +46,10 @@ Solution ESP::train(SimulationContainer* _simulationContainer, string _outputFil
             mParameters.mutationParameters["MutationProbability"] = 0;
 
             for(uint i = 0; i < mSubpopulations.size(); ++i)
-                for(map<uint, pair<ESPSubPopulation*, uint>>::iterator iter = mSubpopulations[i].begin(); iter != mSubpopulations[i].end(); ++iter)
-                    iter->second.first->setParameters(mParameters);
+                for(map<uint, pair<ESPSubPopulation*, uint>>::iterator iter = mSubpopulations[i].begin(); iter != mSubpopulations[i].end(); ++iter){
+                    if(iter->second.first != NULL)
+                        iter->second.first->setParameters(mParameters);
+                }
         }
 
         uint gen;

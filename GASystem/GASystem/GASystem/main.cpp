@@ -169,7 +169,7 @@ ESPParameters getESPParameters(int _popsize, int _maxgen, string _nnFormatFile, 
     params.mutationParameters["Deviation"] = 0.1;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "LX";
+    params.crossoverAlgorithm = "MultipointCrossover";
     params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = _popsize/10;
     params.sampleEvaluationsPerChromosome = _evals;
