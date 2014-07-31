@@ -7,6 +7,7 @@
 #include "pugixml.hpp"
 #include "solution.h"
 #include "common.h"
+#include "workstatus.h"
 
 #include <mpi.h>
 #include <fstream>
@@ -15,7 +16,6 @@
 #include <windows.h>
 
 using namespace std;
-enum WorkStatus{NOWORK, WORK, COMPLETE};
 
 class ESP : public GeneticAlgorithm
 {

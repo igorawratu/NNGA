@@ -13,10 +13,12 @@
 #include "pugixml.hpp"
 #include "common.h"
 #include "standardgaparameters.h"
+#include "workstatus.h"
 
+#include <mpi.h>
 #include <string>
 #include <fstream>
-#include <omp.h>
+#include <windows.h>
 
 using namespace std;
 
@@ -32,9 +34,23 @@ public:
 
 private:
     void quicksort(vector<Chromosome*>& elements, int left, int right);
+	void hostwork();
+	void stopSlaves();
+	void sendData(Solution& _solution, int _slave);
+	void evaluatePopulation();
 
 private:
     StandardGAParameters mParameters;
+
+	int* mUpdateList;
+    MPI_Request* mRequests;
+    double* mRetrievedFitnesses, *mRetrievedCompetitiveFitnesses;
+    int* mRetrievedTeamIDs;
+    int mTotalSlaveProcs, mTotalRequests;
+    WorkStatus mWorkStatus;
+    SimulationContainer* mSimulationContainer;
+	uint mStages, mStage;
+	vector<Chromosome*> mPopulation;
 
 private:
     StandardGA(){}

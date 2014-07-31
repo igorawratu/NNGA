@@ -2,6 +2,16 @@
 
 StandardGA::StandardGA(StandardGAParameters _parameters){
     mParameters = _parameters;
+
+	MPI_Comm_size(MPI_COMM_WORLD, &mTotalSlaveProcs);
+    assert(mTotalSlaveProcs > 0);
+
+    int totalWork = _parameters.populationSize;
+    mTotalRequests = totalWork > mTotalSlaveProcs ? mTotalSlaveProcs : totalWork;
+
+    mRequests = new MPI_Request[mTotalRequests];
+	mUpdateList = new int[mTotalRequests];
+    mRetrievedFitnesses = new double[mTotalRequests * 2];
 }
 
 
@@ -18,11 +28,12 @@ StandardGA& StandardGA::operator = (const StandardGA& other){
 
 
 StandardGA::~StandardGA(){
+	delete [] mRequests;
+	delete [] mUpdateList;
+	delete [] mRetrievedFitnesses;
 }
 
-Solution StandardGA::train(SimulationContainer* _simulationContainer, string _outputFileName){
-    vector<Chromosome*> population;
-    
+Solution StandardGA::train(SimulationContainer* _simulationContainer, string _outputFileName){   
     xmldoc doc;
     pugi::xml_parse_result result = doc.load_file(mParameters.nnFormatFilename.c_str());
     if(!result){
@@ -38,34 +49,27 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer, string _ou
             cerr << "Error: unable to create chromosome in GA" << endl;
             return Solution(vector<NeuralNetwork>());
         }
-        else population.push_back(currChrom);
+        else mPopulation.push_back(currChrom);
     }
 
     Crossover* crossoverAlgorithm = CrossoverFactory::instance().create(mParameters.crossoverAlgorithm);
     Selection* selectionAlgorithm = SelectionFactory::instance().create(mParameters.selectionAlgorithm);
+
+	boost::thread workerThread(boost::bind(&StandardGA::hostwork, this));
     
-    for(int i = 0; i < population.size(); ++i){
-        SimulationContainer* simcont = _simulationContainer->clone();
-
-        Solution currSolution(dynamic_cast<NNChromosome*>(population[i])->getNeuralNets());
-        simcont->runFullSimulation(&currSolution);
-        population[i]->fitness() = currSolution.fitness();
-        population[i]->realFitness() = currSolution.realFitness();
-
-        delete simcont;
-    }
+	evaluatePopulation();
 
     uint stagnationCounter = 0;
     for(uint k = 0; k < mParameters.maxGenerations; k++){
         time_t t = time(0);
         cout << "Generation: " << k << endl;
 
-        quicksort(population, 0, population.size() - 1);
+        quicksort(mPopulation, 0, mPopulation.size() - 1);
 
         cout << "Creating offspring..." << endl;
 
         //create offspring
-        vector<Chromosome*> offspring = crossoverAlgorithm->execute(population, population.size() - mParameters.elitismCount, mParameters.crossoverParameters, selectionAlgorithm);
+        vector<Chromosome*> offspring = crossoverAlgorithm->execute(mPopulation, mPopulation.size() - mParameters.elitismCount, mParameters.crossoverParameters, selectionAlgorithm);
         
         cout << "Mutating offspring..." << endl;
         //mutate offspring
@@ -74,34 +78,30 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer, string _ou
 
         cout << "Evaluating offspring..." << endl;
         //evaluate offspring
-        for(int i = 0; i < offspring.size(); ++i){
-            SimulationContainer* simcont = _simulationContainer->clone();
-
-            Solution currSolution(dynamic_cast<NNChromosome*>(offspring[i])->getNeuralNets());
-            simcont->runFullSimulation(&currSolution);
-            offspring[i]->fitness() = currSolution.fitness();
-            offspring[i]->realFitness() = currSolution.realFitness();
-
-            delete simcont;
-        }
+        evaluatePopulation();
 
         cout << "Merging population..." << endl;
 
-        quicksort(population, 0, population.size() - 1);
-        for(uint k = mParameters.elitismCount; k < population.size(); ++k)
-            delete population[k];
-        population.erase(population.begin() + mParameters.elitismCount, population.end());
-        population.insert(population.end(), offspring.begin(), offspring.end());
-        quicksort(population, 0, population.size() - 1);
+        quicksort(mPopulation, 0, mPopulation.size() - 1);
+        for(uint k = mParameters.elitismCount; k < mPopulation.size(); ++k)
+            delete mPopulation[k];
+        mPopulation.erase(mPopulation.begin() + mParameters.elitismCount, mPopulation.end());
+        mPopulation.insert(mPopulation.end(), offspring.begin(), offspring.end());
+        quicksort(mPopulation, 0, mPopulation.size() - 1);
 
         //checks if the fitness of the solution is below the epsilon threshold, if it is, stop training
-        for(uint i = 0; i < population.size(); ++i){
-            if(population[i]->realFitness() <= mParameters.fitnessEpsilonThreshold){
-                Solution finalSolution(dynamic_cast<NNChromosome*>(population[i])->getNeuralNets());
-                finalSolution.fitness() = population[i]->fitness();
+        for(uint i = 0; i < mPopulation.size(); ++i){
+            if(mPopulation[i]->realFitness() <= mParameters.fitnessEpsilonThreshold){
+                Solution finalSolution(dynamic_cast<NNChromosome*>(mPopulation[i])->getNeuralNets());
+                finalSolution.fitness() = mPopulation[i]->fitness();
 
-                for(uint j = 0; j < population.size(); ++j)
-                    delete population[j];
+				mWorkStatus = COMPLETE;
+				stopSlaves();
+				workerThread.join();
+
+                for(uint j = 0; j < mPopulation.size(); ++j)
+                    delete mPopulation[j];
+				mPopulation.clear();
 
                 delete crossoverAlgorithm;
                 delete selectionAlgorithm;
@@ -109,75 +109,30 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer, string _ou
                 return finalSolution;
             }
         }
-
-        /*vector<Chromosome*> unselected;
-        vector<Chromosome*> newPopulation;
-        for(uint i = 0; i < mParameters.elitismCount; i++)
-            newPopulation.push_back(population[i]);
-
-        for(uint i = 0; i < mParameters.elitismCount; i++)
-            population.erase(population.begin());
-
-        population = selectionAlgorithm->execute(population, mParameters.populationSize - mParameters.elitismCount, unselected);
-
-        newPopulation.insert(newPopulation.end(), population.begin(), population.end());
-        population = newPopulation;
-        
-        //delete chromosomes which have not been selected
-        for(uint i = 0; i < unselected.size(); i++)
-            delete unselected[i];
-        unselected.clear();
-
-        quicksort(population, 0, population.size() - 1);*/
         
         cout << "Current population fitnesses..." << endl;
-        for(uint i = 0; i < population.size(); i++)
-            cout << population[i]->fitness() << " | ";
+        for(uint i = 0; i < mPopulation.size(); i++)
+            cout << mPopulation[i]->fitness() << " | ";
         cout << endl;
 
-        cout << "Checking termination conditions..." << endl;
-        //calculates standard deviation, if it has been below the threshold for 10(arb, can make this var) generations, then stagnation
-        double meanFit = 0, variance = 0;
-        for(uint i = 0; i < population.size(); i++)
-            meanFit += population[i]->fitness();
-        meanFit /= population.size();
-
-        for(uint i = 0; i < population.size(); i++){
-            double dif = population[i]->fitness() - meanFit;
-            variance += dif * dif;
-        }
-        variance /= population.size();
-        if(sqrt(variance) < mParameters.stagnationThreshold)
-            stagnationCounter++;
-        else stagnationCounter = 0;
-
-        if(stagnationCounter > 10)        
-        {
-            cout << "Population stagnated" << endl;
-            quicksort(population, 0, population.size() - 1);
-
-            Solution finalSolution(dynamic_cast<NNChromosome*>(population[0])->getNeuralNets());
-
-            for(uint i = 0; i < population.size(); i++)
-                delete population[i];
-
-            delete crossoverAlgorithm;
-            delete selectionAlgorithm;
-
-            return finalSolution;
-        }
         cout << "Time taken for this generation : " << time(0) - t << endl;
 
         selectionAlgorithm->tick();
     }
-    quicksort(population, 0, population.size() - 1);
 
-    Solution finalSolution(dynamic_cast<NNChromosome*>(population[0])->getNeuralNets());
+	mWorkStatus = COMPLETE;
+	stopSlaves();
+	workerThread.join();
+
+    quicksort(mPopulation, 0, mPopulation.size() - 1);
+
+    Solution finalSolution(dynamic_cast<NNChromosome*>(mPopulation[0])->getNeuralNets());
     _simulationContainer->runFullSimulation(&finalSolution);
     _simulationContainer->resetSimulation();
 
-    for(uint i = 0; i < population.size(); i++)
-        delete population[i];
+    for(uint i = 0; i < mPopulation.size(); i++)
+        delete mPopulation[i];
+	mPopulation.clear();
 
     delete crossoverAlgorithm;
     delete selectionAlgorithm;
@@ -207,4 +162,123 @@ void StandardGA::quicksort(vector<Chromosome*>& elements, int left, int right)
 		quicksort(elements, left, j);
 	if(i < right)
 		quicksort(elements, i, right);
+}
+
+void StandardGA::evaluatePopulation(){
+	uint currPos = 0;
+
+	for(currPos = 0; currPos < mTotalRequests; ++currPos){
+		Solution currSolution(dynamic_cast<NNChromosome*>(mPopulation[currPos])->getNeuralNets());
+		sendData(currSolution, currPos);
+		mUpdateList[currPos] = currPos;
+	}
+
+	while(currPos < mPopulation.size()){
+		Solution currSolution(dynamic_cast<NNChromosome*>(mPopulation[currPos])->getNeuralNets());
+		bool assigned = false;
+
+        //poll slaves
+        while(!assigned){
+            Sleep(10);
+            for(uint k = 0; k < mTotalRequests; ++k){
+                if(k == 0 && mWorkStatus == NOWORK)
+                    assigned = true;
+                else if(k > 0){
+                    MPI_Status status;
+                    int received;
+
+                    MPI_Test(&mRequests[k], &received, &status);
+
+                    if(received)
+                        assigned = true;
+                }
+
+                if(assigned){
+                    mPopulation[mUpdateList[k]]->fitness() = mRetrievedFitnesses[k*2];
+					mPopulation[mUpdateList[k]]->realFitness() = mRetrievedFitnesses[k*2 + 1];
+
+					mUpdateList[k] = currPos++;
+
+                    sendData(currSolution, k);
+
+                    break;
+                }
+            }
+        }
+	}
+
+
+	for(int k = 0; k < mTotalRequests; ++k){
+        bool completed = false;
+        //poll the slave until it is complete
+        while(!completed){
+            Sleep(10);
+            if(k == 0 && mWorkStatus == NOWORK)
+                completed = true;
+            else if (k > 0){
+                MPI_Status status;
+                int received;
+
+                MPI_Test(&mRequests[k], &received, &status);
+
+                if(received)
+                    completed = true;
+            }
+
+			if(completed){
+                mPopulation[mUpdateList[k]]->fitness() = mRetrievedFitnesses[k*2];
+				mPopulation[mUpdateList[k]]->realFitness() = mRetrievedFitnesses[k*2 + 1];
+			}
+        }
+    }
+}
+
+void StandardGA::sendData(Solution& _solution, int _slave){
+	if(_slave == 0)
+        mWorkStatus = WORK;
+    else{
+        //construct serialized data to send through
+        int initialDat[4];
+        int *nodes, *format;
+        double* weights;
+
+        _solution.serialize(nodes, format, weights, initialDat[0], initialDat[1], initialDat[2]);
+        initialDat[3] = 1;
+
+        MPI_Send(&initialDat[0], 4, MPI_INT, _slave, 1, MPI_COMM_WORLD);
+        MPI_Send(nodes, initialDat[0], MPI_INT, _slave, 1, MPI_COMM_WORLD);
+        MPI_Send(format, initialDat[1], MPI_INT, _slave, 1, MPI_COMM_WORLD);
+        MPI_Send(weights, initialDat[2], MPI_DOUBLE, _slave, 1, MPI_COMM_WORLD);
+
+        //setup corresponding nonblocking receive call
+        MPI_Irecv(&mRetrievedFitnesses[_slave * 2], 2, MPI_DOUBLE, _slave, 1, MPI_COMM_WORLD, &mRequests[_slave]);
+
+        delete [] nodes;
+        delete [] format;
+        delete [] weights;
+    }
+}
+
+void StandardGA::stopSlaves(){
+    for(uint k = 1; k < mTotalSlaveProcs; ++k){
+        int stopmsg[3] = {-1, -1, -1};
+        MPI_Send(&stopmsg[0], 3, MPI_INT, k, 1, MPI_COMM_WORLD);
+    }
+}
+
+void StandardGA::hostwork(){
+    while(mWorkStatus != COMPLETE){
+        if(mWorkStatus == WORK){
+            Solution* solution = new Solution(dynamic_cast<NNChromosome*>(mPopulation[mUpdateList[0]])->getNeuralNets());
+            mSimulationContainer->runFullSimulation(solution);
+            mSimulationContainer->resetSimulation();
+
+            mRetrievedFitnesses[0] = solution->realFitness();
+            mRetrievedFitnesses[1] = solution->fitness();
+
+            mWorkStatus = NOWORK;
+
+			delete solution;
+        }
+    }
 }
