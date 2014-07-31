@@ -134,14 +134,14 @@ bool WarRobotSimulation::initialise(){
     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genztwo(rngtwoz, distztwo);
 
     for(uint k = 0; k < mGroupOneAgents.size(); ++k){
-        mWorldEntities[mGroupOneAgents[k]] = new WarRobotAgent(4, vector3(10, 0, 10), vector3(-10, 0, -10), 1, 15);
+        mWorldEntities[mGroupOneAgents[k]] = new WarRobotAgent(15, vector3(10, 0, 10), vector3(-10, 0, -10), 1, 15);
         if(!mWorldEntities[mGroupOneAgents[k]]->initialise("warrobotr.mesh", vector3(1, 1, 1), rotG1, mResourceManager, vector3(genxone(), 0, genzone()), 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupOneAgents[k]]->getRigidBody());
     }
     
     for(uint k = 0; k < mGroupTwoAgents.size(); ++k){
-        mWorldEntities[mGroupTwoAgents[k]] = new WarRobotAgent(8, vector3(10, 0, 10), vector3(-10, 0, -10), 1, 15);
+        mWorldEntities[mGroupTwoAgents[k]] = new WarRobotAgent(15, vector3(10, 0, 10), vector3(-10, 0, -10), 1, 15);
         if(!mWorldEntities[mGroupTwoAgents[k]]->initialise("warrobotb.mesh", vector3(1, 1, 1), rotG2, mResourceManager, vector3(genxtwo(), 0, genztwo()), 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupTwoAgents[k]]->getRigidBody());
@@ -350,7 +350,7 @@ vector<CompetitiveFitness> WarRobotSimulation::competitiveFitness(){
 
 ESPParameters WarRobotSimulation::getESPParams(string _nnFormatFile){
 	ESPParameters params;
-    params.populationSize = 50;
+    params.populationSize = 40;
     params.maxGenerations = 200;
     params.maxCompGenerations = 400;
     params.nnFormatFilename = _nnFormatFile;
@@ -361,12 +361,12 @@ ESPParameters WarRobotSimulation::getESPParams(string _nnFormatFile){
     params.mutationParameters["Deviation"] = 0.1;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "MultipointCrossover";
+    params.crossoverAlgorithm = "LX";
     params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = params.populationSize/10;
-    params.sampleEvaluationsPerChromosome = 5;
+    params.sampleEvaluationsPerChromosome = 3;
     params.crossoverParameters["CrossoverProbability"] = 0.8;
-    params.deltaCodeRadius = 0.05;
+    params.deltaCodeRadius = 0.2;
 
     return params;
 }
