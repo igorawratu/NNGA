@@ -37,7 +37,7 @@ private:
 	void hostwork();
 	void stopSlaves();
 	void sendData(Solution& _solution, int _slave);
-	void evaluatePopulation();
+	void evaluatePopulation(vector<Chromosome*>& _population);
 
 private:
     StandardGAParameters mParameters;

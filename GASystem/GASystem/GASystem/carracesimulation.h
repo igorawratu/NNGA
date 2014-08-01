@@ -53,7 +53,8 @@ private:
 
 private:
     Line mFinishLine;
-    vector<string> mAgents; 
+    vector<string> mAgents;
+    vector<int> mAgentDistances;
     long mCollisions;
     double mRangefinderVals, mRangefinderRadius;
     int mSeed, mWinner;

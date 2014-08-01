@@ -33,7 +33,7 @@ Neuron* NonLeafNeuron::clone(){
 }
 
 double NonLeafNeuron::evaluate(long _counter){
-    if(!mCurrentCounter != _counter){
+    //if(!mCurrentCounter != _counter){
         mCurrentCounter = _counter;
 
         double netInputSignal = 0;
@@ -48,7 +48,7 @@ double NonLeafNeuron::evaluate(long _counter){
         netInputSignal += -1 * mWeights[k];
 
         mLastOutput = calculateActivationEnergy(netInputSignal);
-    }
+    //}
     return mLastOutput;
 }
 

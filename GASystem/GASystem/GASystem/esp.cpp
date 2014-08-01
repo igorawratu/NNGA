@@ -38,7 +38,9 @@ Solution ESP::train(SimulationContainer* _simulationContainer, string _outputFil
     //launch host worker thread
     boost::thread workerThread(boost::bind(&ESP::hostwork, this));
 
-    mStages = mNumTeams == 1? 1 : 2;
+    if(mNumTeams == 1 || mParameters.maxCompGenerations == 0)
+        mStages = 1;
+    else mStages = 2;
 
     for(mStage = 1; mStage <= mStages; ++mStage){ 
         if(mStage == 2){
@@ -63,11 +65,14 @@ Solution ESP::train(SimulationContainer* _simulationContainer, string _outputFil
             gen = mParameters.maxCompGenerations;
         }
 
+        //check if total requests exceeds the number of total work required per generation
+        if(mTotalRequests > mParameters.populationSize - mParameters.elitismCount)
+            mTotalRequests = mParameters.populationSize - mParameters.elitismCount;
+
         for(uint k = 0; k < gen; ++k){
             time_t t = time(0);
-
+            
             cout << "Generation " << k << endl;
-
             cout << "Generating and mutating offspring" << endl;
             for(uint i = 0; i < mSubpopulations.size(); ++i){
                 for(map<uint, pair<ESPSubPopulation*, uint>>::iterator iter = mSubpopulations[i].begin(); iter != mSubpopulations[i].end(); ++iter){

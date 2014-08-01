@@ -52,12 +52,18 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer, string _ou
         else mPopulation.push_back(currChrom);
     }
 
+    mSimulationContainer = _simulationContainer;
+
     Crossover* crossoverAlgorithm = CrossoverFactory::instance().create(mParameters.crossoverAlgorithm);
     Selection* selectionAlgorithm = SelectionFactory::instance().create(mParameters.selectionAlgorithm);
 
 	boost::thread workerThread(boost::bind(&StandardGA::hostwork, this));
     
-	evaluatePopulation();
+	evaluatePopulation(mPopulation);
+
+    //check if total requests exceeds the number of total work required per generation
+    if(mTotalRequests > mParameters.populationSize - mParameters.elitismCount)
+        mTotalRequests = mParameters.populationSize - mParameters.elitismCount;
 
     uint stagnationCounter = 0;
     for(uint k = 0; k < mParameters.maxGenerations; k++){
@@ -78,7 +84,7 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer, string _ou
 
         cout << "Evaluating offspring..." << endl;
         //evaluate offspring
-        evaluatePopulation();
+        evaluatePopulation(offspring);
 
         cout << "Merging population..." << endl;
 
@@ -88,6 +94,11 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer, string _ou
         mPopulation.erase(mPopulation.begin() + mParameters.elitismCount, mPopulation.end());
         mPopulation.insert(mPopulation.end(), offspring.begin(), offspring.end());
         quicksort(mPopulation, 0, mPopulation.size() - 1);
+
+        cout << "Current population fitnesses..." << endl;
+        for(uint i = 0; i < mPopulation.size(); i++)
+            cout << mPopulation[i]->fitness() << " | ";
+        cout << endl;
 
         //checks if the fitness of the solution is below the epsilon threshold, if it is, stop training
         for(uint i = 0; i < mPopulation.size(); ++i){
@@ -109,11 +120,6 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer, string _ou
                 return finalSolution;
             }
         }
-        
-        cout << "Current population fitnesses..." << endl;
-        for(uint i = 0; i < mPopulation.size(); i++)
-            cout << mPopulation[i]->fitness() << " | ";
-        cout << endl;
 
         cout << "Time taken for this generation : " << time(0) - t << endl;
 
@@ -127,8 +133,8 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer, string _ou
     quicksort(mPopulation, 0, mPopulation.size() - 1);
 
     Solution finalSolution(dynamic_cast<NNChromosome*>(mPopulation[0])->getNeuralNets());
-    _simulationContainer->runFullSimulation(&finalSolution);
-    _simulationContainer->resetSimulation();
+    mSimulationContainer->runFullSimulation(&finalSolution);
+    mSimulationContainer->resetSimulation();
 
     for(uint i = 0; i < mPopulation.size(); i++)
         delete mPopulation[i];
@@ -136,6 +142,8 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer, string _ou
 
     delete crossoverAlgorithm;
     delete selectionAlgorithm;
+
+    mSimulationContainer = 0;
 
     return finalSolution;
 }
@@ -164,17 +172,17 @@ void StandardGA::quicksort(vector<Chromosome*>& elements, int left, int right)
 		quicksort(elements, i, right);
 }
 
-void StandardGA::evaluatePopulation(){
+void StandardGA::evaluatePopulation(vector<Chromosome*>& _population){
 	uint currPos = 0;
 
 	for(currPos = 0; currPos < mTotalRequests; ++currPos){
-		Solution currSolution(dynamic_cast<NNChromosome*>(mPopulation[currPos])->getNeuralNets());
+		Solution currSolution(dynamic_cast<NNChromosome*>(_population[currPos])->getNeuralNets());
 		sendData(currSolution, currPos);
 		mUpdateList[currPos] = currPos;
 	}
 
-	while(currPos < mPopulation.size()){
-		Solution currSolution(dynamic_cast<NNChromosome*>(mPopulation[currPos])->getNeuralNets());
+	while(currPos < _population.size()){
+		Solution currSolution(dynamic_cast<NNChromosome*>(_population[currPos])->getNeuralNets());
 		bool assigned = false;
 
         //poll slaves
@@ -192,10 +200,9 @@ void StandardGA::evaluatePopulation(){
                     if(received)
                         assigned = true;
                 }
-
                 if(assigned){
-                    mPopulation[mUpdateList[k]]->fitness() = mRetrievedFitnesses[k*2];
-					mPopulation[mUpdateList[k]]->realFitness() = mRetrievedFitnesses[k*2 + 1];
+                    _population[mUpdateList[k]]->fitness() = mRetrievedFitnesses[k*2];
+					_population[mUpdateList[k]]->realFitness() = mRetrievedFitnesses[k*2 + 1];
 
 					mUpdateList[k] = currPos++;
 
@@ -226,8 +233,8 @@ void StandardGA::evaluatePopulation(){
             }
 
 			if(completed){
-                mPopulation[mUpdateList[k]]->fitness() = mRetrievedFitnesses[k*2];
-				mPopulation[mUpdateList[k]]->realFitness() = mRetrievedFitnesses[k*2 + 1];
+                _population[mUpdateList[k]]->fitness() = mRetrievedFitnesses[k*2];
+				_population[mUpdateList[k]]->realFitness() = mRetrievedFitnesses[k*2 + 1];
 			}
         }
     }
@@ -276,9 +283,9 @@ void StandardGA::hostwork(){
             mRetrievedFitnesses[0] = solution->realFitness();
             mRetrievedFitnesses[1] = solution->fitness();
 
-            mWorkStatus = NOWORK;
+            delete solution;
 
-			delete solution;
+            mWorkStatus = NOWORK;
         }
     }
 }

@@ -20,7 +20,6 @@ void CarRaceSimulation::iterate(){
         return;
 
     if(mCycleCounter % mCyclesPerDecision == 0){
-        
         for(uint k = 0; k < mAgents.size(); k++)
             applyUpdateRules(mAgents[k], k);
         //applyUpdateRules(mAgents[0], 0);
@@ -51,8 +50,8 @@ double CarRaceSimulation::fitness(){
     pos["LineP1"] = mFinishLine.p1;
     pos["LineP2"] = mFinishLine.p2;
 
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
+    //finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
     finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
 
     //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
@@ -155,8 +154,8 @@ double CarRaceSimulation::realFitness(){
     pos["LineP1"] = mFinishLine.p1;
     pos["LineP2"] = mFinishLine.p2;
 
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
+    //finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
     finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
 
     //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
@@ -215,20 +214,19 @@ void CarRaceSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     input[20] = winnerTrans.getOrigin().getZ() / 50;
     input[21] = _groupNum == 0 ? -1 : 1;
 
-
-
     if(frontDist < 10)
-        mWorldEntities[_agentName]->avoidCollisions(d1, d2, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
+        mWorldEntities[_agentName]->avoidCollisions(d2, d1, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
     else{
         mWorldEntities[_agentName]->avoided();
-        vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input, _groupNum);
+        //vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
+        vector<double> output = mSolution->evaluateNeuralNetwork(0, input, _groupNum + 1);
         mWorldEntities[_agentName]->update(output);
     }
 
     bool checkCollisions = calcCrossVal(mFinishLine.p1, mFinishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0;
 
     if(!checkCollisions && mWinner == -1){
-        for(uint k = 0; k < mAgents.size(); k++)
+        for(uint k = 0; k < mAgents.size(); k++){
             if(mAgents[k] == _agentName){
                 btTransform winnerTrans;
                 mWorldEntities[mAgents[0]]->getRigidBody()->getMotionState()->getWorldTransform(winnerTrans);
@@ -237,6 +235,11 @@ void CarRaceSimulation::applyUpdateRules(string _agentName, uint _groupNum){
                 mWinToExpectedDistance = vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ()).calcDistance(vector3(winnerTrans.getOrigin().getX(), winnerTrans.getOrigin().getY(), winnerTrans.getOrigin().getZ()));
                 break;
             }
+        }
+
+        for(uint k = 0; k < mAgents.size(); ++k){
+            mAgentDistances.push_back(getPositionInfo(mAgents[k]).calcDistance(getPositionInfo(mAgents[mWinner])));
+        }
     }
 
     if(checkCollisions && mCycleCounter > 10){
@@ -263,10 +266,30 @@ void CarRaceSimulation::applyUpdateRules(string _agentName, uint _groupNum){
 
 vector<CompetitiveFitness> CarRaceSimulation::competitiveFitness(){
     vector<CompetitiveFitness> fitnesses;
+    if(mAgentDistances.size() == 0){
+        vector3 midpoint((mFinishLine.p1.x + mFinishLine.p2.x)/2, (mFinishLine.p1.y + mFinishLine.p2.y)/2, (mFinishLine.p1.z + mFinishLine.p2.z)/2);
 
-    for(uint k = 0; k < mAgents.size(); ++k){
-        double currAgentFit = getPositionInfo(mAgents[k]).calcDistance(getPositionInfo(mAgents[mWinner]));
-        fitnesses.push_back(make_pair(k, currAgentFit));
+        int closestPos;
+        double closestDist = 9999999;
+
+        for(uint k = 0; k < mAgents.size(); ++k){
+            double currDist = midpoint.calcDistance(getPositionInfo(mAgents[k]));
+
+            if(closestDist > currDist){
+                closestDist = currDist;
+                closestPos = k;
+            }
+        }
+
+        for(uint k = 0; k < mAgents.size(); ++k){
+            double currAgentFit = getPositionInfo(mAgents[k]).calcDistance(getPositionInfo(mAgents[closestPos]));
+            fitnesses.push_back(make_pair(k + 1, currAgentFit));
+        }
+    }
+    else{
+        for(uint k = 0; k < mAgentDistances.size(); ++k){
+            fitnesses.push_back(make_pair(k + 1, mAgentDistances[k]));
+        }
     }
 
     return fitnesses;
@@ -285,12 +308,12 @@ ESPParameters CarRaceSimulation::getESPParams(string _nnFormatFile){
     params.mutationParameters["Deviation"] = 0.1;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "MultipointCrossover";
+    params.crossoverAlgorithm = "LX";
     params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = params.populationSize/10;
-    params.sampleEvaluationsPerChromosome = 5;
+    params.sampleEvaluationsPerChromosome = 3;
     params.crossoverParameters["CrossoverProbability"] = 0.8;
-    params.deltaCodeRadius = 0.05;
+    params.deltaCodeRadius = 0.1;
 
     return params;
 }
