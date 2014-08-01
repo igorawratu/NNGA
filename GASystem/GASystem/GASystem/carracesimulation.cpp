@@ -50,8 +50,8 @@ double CarRaceSimulation::fitness(){
     pos["LineP1"] = mFinishLine.p1;
     pos["LineP2"] = mFinishLine.p2;
 
-    //finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
-    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
     finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
 
     //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
@@ -154,8 +154,8 @@ double CarRaceSimulation::realFitness(){
     pos["LineP1"] = mFinishLine.p1;
     pos["LineP2"] = mFinishLine.p2;
 
-    //finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
-    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
     finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
 
     //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
