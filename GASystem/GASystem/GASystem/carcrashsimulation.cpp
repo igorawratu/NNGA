@@ -24,9 +24,9 @@ void CarCrashSimulation::iterate(){
 
     if(mCycleCounter % mCyclesPerDecision == 0){
         for(uint k = 0; k < mGroupOneAgents.size(); k++)
-            applyUpdateRules(mGroupOneAgents[k], 1);
+            applyUpdateRules(mGroupOneAgents[k], 0);
         for(uint k = 0; k < mGroupTwoAgents.size(); k++)
-            applyUpdateRules(mGroupTwoAgents[k], 2);
+            applyUpdateRules(mGroupTwoAgents[k], 1);
     }
 
     mCycleCounter++;
@@ -46,7 +46,7 @@ double CarCrashSimulation::fitness(){
     
     for(uint k = 0; k < mGroupOneAgents.size(); k++)
         pos[mGroupOneAgents[k]] = getPositionInfo(mGroupOneAgents[k]);
-    intAcc["Positive"] = 0;
+    intAcc["Positive"] = 1;
     pos["LineP1"] = mGroupOneFinish.p1;
     pos["LineP2"] = mGroupOneFinish.p2;
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
@@ -61,7 +61,7 @@ double CarCrashSimulation::fitness(){
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
 
 
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
     //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
@@ -79,7 +79,7 @@ double CarCrashSimulation::realFitness(){
     
     for(uint k = 0; k < mGroupOneAgents.size(); k++)
         pos[mGroupOneAgents[k]] = getPositionInfo(mGroupOneAgents[k]);
-    intAcc["Positive"] = 0;
+    intAcc["Positive"] = 1;
     pos["LineP1"] = mGroupOneFinish.p1;
     pos["LineP2"] = mGroupOneFinish.p2;
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
@@ -94,7 +94,7 @@ double CarCrashSimulation::realFitness(){
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
 
 
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
     //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
@@ -114,8 +114,8 @@ bool CarCrashSimulation::initialise(){
     mFitnessFunctions.push_back(new FinishLineFitness());
     mFitnessFunctions.push_back(new CollisionFitness());
 
-    mGroupOneFinish.p1 = vector3(-20, 0, 30); mGroupOneFinish.p2 = vector3(20, 0, 30);
-    mGroupTwoFinish.p1 = vector3(-20, 0, -30); mGroupTwoFinish.p2 = vector3(20, 0, -30);
+    mGroupOneFinish.p1 = vector3(-10, 0, 30); mGroupOneFinish.p2 = vector3(10, 0, 30);
+    mGroupTwoFinish.p1 = vector3(-10, 0, -30); mGroupTwoFinish.p2 = vector3(10, 0, -30);
 
     btQuaternion rotGroupOne(0, 0, 0, 1), rotGroupTwo(0, 0, 0, 1);
     rotGroupOne.setEuler(PI + PI/2, 0, 0);
@@ -123,36 +123,23 @@ bool CarCrashSimulation::initialise(){
 
     double shiftAmount = (double)mGroupOneAgents.size() * 1.5;
 
-    vector3 minDimOne(-15, 0, -36), maxDimOne(15, 0, -30);
-    vector3 minDimTwo(-15, 0, 30), maxDimTwo(15, 0, 36);
+    vector3 minDimOne(-8, 0, -36), maxDimOne(8, 0, -30);
+    vector3 minDimTwo(-8, 0, 30), maxDimTwo(8, 0, 36);
 
-    boost::mt19937 rng(mSeed);
-    boost::mt19937 rngz(mSeed + mSeed / 2);
+    boost::mt19937 rng1(mSeed);
+    boost::mt19937 rngz1(mSeed + mSeed / 2);
+    boost::mt19937 rng2(mSeed * 2);
+    boost::mt19937 rngz2(mSeed / 2);
 
     boost::uniform_real<double> distxone(minDimOne.x, maxDimOne.x);
     boost::uniform_real<double> distzone(minDimOne.z, maxDimOne.z);
     boost::uniform_real<double> distxtwo(minDimTwo.x, maxDimTwo.x);
     boost::uniform_real<double> distztwo(minDimTwo.z, maxDimTwo.z);
 
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genxone(rng, distxone);
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genzone(rngz, distzone);
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genxtwo(rng, distxtwo);
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genztwo(rngz, distztwo);
-
-
-    /*for(uint k = 0; k < mGroupOneAgents.size(); k++){
-        mWorldEntities[mGroupOneAgents[k]] = new CarAgent(10, 0.5);
-        if(!mWorldEntities[mGroupOneAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rotGroupOne, mResourceManager, vector3(3 * k - shiftAmount, 0, -31), 0.01))
-            return false;
-        mWorld->addRigidBody(mWorldEntities[mGroupOneAgents[k]]->getRigidBody());
-    }
-
-    for(uint k = 0; k < mGroupTwoAgents.size(); k++){
-        mWorldEntities[mGroupTwoAgents[k]] = new CarAgent(10, 0.5);
-        if(!mWorldEntities[mGroupTwoAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rotGroupTwo, mResourceManager, vector3(3 * k - shiftAmount, 0, 31), 0.01))
-            return false;
-        mWorld->addRigidBody(mWorldEntities[mGroupTwoAgents[k]]->getRigidBody());
-    }*/
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genxone(rng1, distxone);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genzone(rngz1, distzone);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genxtwo(rng2, distxtwo);
+    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genztwo(rngz2, distztwo);
 
     for(uint k = 0; k < mGroupOneAgents.size(); k++){
         mWorldEntities[mGroupOneAgents[k]] = new CarAgent(10, 0.5);
@@ -169,7 +156,7 @@ bool CarCrashSimulation::initialise(){
     }
 
     mWorldEntities["environment"] = new StaticWorldAgent(0.5, 0.1);
-    if(!mWorldEntities["environment"]->initialise("corridor.mesh", vector3(20, 20, 20), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(-2, 2, 0), 0, mSeed))
+    if(!mWorldEntities["environment"]->initialise("corridor.mesh", vector3(10, 20, 25), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 2, 0), 0, mSeed))
         return false;
     mWorld->addRigidBody(mWorldEntities["environment"]->getRigidBody());
 
@@ -234,16 +221,13 @@ void CarCrashSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     input[15] = agentVel.x;
     input[16] = agentVel.z;
 
-    /*if(frontDist < 5)
-        mWorldEntities[_agentName]->avoidCollisions(frontDist, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
-    else{*/
-        mWorldEntities[_agentName]->avoided();
-        vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
-        mWorldEntities[_agentName]->update(output);
-    //}
+    mWorldEntities[_agentName]->avoided();
+    vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
+    mWorldEntities[_agentName]->update(output);
 
-    Line finishLine = _groupNum == 1 ? mGroupOneFinish : mGroupTwoFinish;
-    bool checkCollisions = calcCrossVal(finishLine.p1, finishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0;
+    Line finishLine = _groupNum == 0 ? mGroupOneFinish : mGroupTwoFinish;
+    double crossVal = calcCrossVal(finishLine.p1, finishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ()));
+    bool checkCollisions = _groupNum == 0? crossVal < 0 : crossVal > 0;
 
     if(checkCollisions && mCycleCounter > 10){
         for(uint k = 1; k <= 8; k++)

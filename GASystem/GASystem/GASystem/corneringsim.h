@@ -43,6 +43,7 @@ private:
     long mCollisions;
     int mSeed;
     double mRangefinderVals, mRangefinderRadius;
+    double mAngularVelAcc;
 };
 
 #endif

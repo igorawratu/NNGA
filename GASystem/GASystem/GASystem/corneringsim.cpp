@@ -6,6 +6,7 @@ CorneringSim::CorneringSim(double _rangefinderRadius, uint _numAgents, uint _num
     mSeed = _seed;
     mRangefinderVals = 0;
     mRangefinderRadius = _rangefinderRadius;
+    mAngularVelAcc = 0;
 
     for(uint k = 0; k < _numAgents; k++){
         mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
@@ -23,6 +24,7 @@ CorneringSim::CorneringSim(const CorneringSim& other) : Simulation(other.mNumCyc
     mSeed = other.mSeed;
     mRangefinderVals = 0;
     mRangefinderRadius = other.mRangefinderRadius;
+    mAngularVelAcc = 0;
 
     for(uint k = 0; k < other.mAgents.size(); k++){
         mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
@@ -67,7 +69,7 @@ double CorneringSim::fitness(){
 
     
     finalFitness += 2 * mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
-    finalFitness += /*finalFitness == 0 ? */mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, mWaypointTracker)/* : maxCollisions*/;
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, mWaypointTracker) + mAngularVelAcc : maxCollisions + mAgents.size() * mNumCycles / mCyclesPerDecision + 500;
 
     return finalFitness;
 }
@@ -91,8 +93,9 @@ double CorneringSim::realFitness(){
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
     
-    finalFitness += 2 * mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
-    finalFitness += /*finalFitness == 0 ? */mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, mWaypointTracker)/* : maxCollisions*/;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, mWaypointTracker) : maxCollisions;
+    finalFitness += finalFitness == 0 ? mAngularVelAcc : mAgents.size() * mNumCycles / mCyclesPerDecision + 500;
 
     return finalFitness;
 }
@@ -147,12 +150,6 @@ bool CorneringSim::initialise(){
         return false;
     mWorld->addRigidBody(mWorldEntities["environment"]->getRigidBody());
 
-    /*for(uint k = 0; k < mWaypoints.size(); k++){
-        mWorldEntities["waypoint" + boost::lexical_cast<string>(k)] = new StaticWorldAgent(0.5, 0.1);
-        if(!mWorldEntities["waypoint" + boost::lexical_cast<string>(k)]->initialise("sphere.mesh", vector3(5, 5, 5), btQuaternion(0, 0, 0, 1), mResourceManager, mWaypoints[k], 0, mSeed))
-            return false;
-    }*/
-
     mInitialised = true;
     
     return true;
@@ -201,8 +198,11 @@ void CorneringSim::applyUpdateRules(string _agentName){
     input[13] = trans.getOrigin().getX() / 50;
     input[14] = trans.getOrigin().getZ() / 50;
 
+    double angVel = mWorldEntities[_agentName]->getAngularVelocity().y;
+    input[15] = angVel;
+
     if(frontDist < 10)
-        mWorldEntities[_agentName]->avoidCollisions(d1, d2, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
+        mWorldEntities[_agentName]->avoidCollisions(d2, d1, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
     else{
         mWorldEntities[_agentName]->avoided();
         vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
@@ -214,6 +214,8 @@ void CorneringSim::applyUpdateRules(string _agentName){
             if(input[k] * 50 < mRangefinderRadius)
                 mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;
         
+        mAngularVelAcc += fabs(angVel);
+
         //gets collision data
         int numManifolds = mWorld->getDispatcher()->getNumManifolds();
 	    for (int i=0;i<numManifolds;i++)
@@ -232,8 +234,26 @@ void CorneringSim::applyUpdateRules(string _agentName){
 }
 
 void CorneringSim::tick(){
-    for(uint k = 0; k < mAgents.size(); k++)
+    for(uint k = 0; k < mAgents.size(); k++){
         mWorldEntities[mAgents[k]]->tick();
+
+        if(mWaypointTracker[mAgents[k]] < mWaypoints.size() && mCycleCounter > 10){
+            //gets collision data
+            int numManifolds = mWorld->getDispatcher()->getNumManifolds();
+	        for (int i=0;i<numManifolds;i++){
+		        btPersistentManifold* contactManifold =  mWorld->getDispatcher()->getManifoldByIndexInternal(i);
+                if(contactManifold->getNumContacts() < 1)
+                    continue;
+
+		        const btCollisionObject* obA = contactManifold->getBody0();
+		        const btCollisionObject* obB = contactManifold->getBody1();
+                
+                if((mWorldEntities[mAgents[k]]->getRigidBody() == obA || mWorldEntities[mAgents[k]]->getRigidBody() == obB))
+                    mCollisions++;
+            }
+        }
+    }
+
 }
 
 ESPParameters CorneringSim::getESPParams(string _nnFormatFile){

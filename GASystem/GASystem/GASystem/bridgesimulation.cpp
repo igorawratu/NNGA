@@ -61,7 +61,7 @@ double BridgeSimulation::fitness(){
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
     finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) + mRangefinderVals : 1000;
-    //finalFitness += finalFitness == 0 ? mAngularVelAcc : mAgents.size() * mNumCycles / mCyclesPerDecision + 500;
+    finalFitness += finalFitness == 0 ? mAngularVelAcc : mAgents.size() * mNumCycles / mCyclesPerDecision + 500;
 
     return finalFitness;
 }
@@ -116,7 +116,7 @@ double BridgeSimulation::realFitness(){
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
     finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
-    //finalFitness += finalFitness == 0? mAngularVelAcc : mAgents.size() * mNumCycles / mCyclesPerDecision + 500;
+    finalFitness += finalFitness == 0? mAngularVelAcc : mAgents.size() * mNumCycles / mCyclesPerDecision + 500;
 
     return finalFitness;
 }
@@ -131,7 +131,7 @@ bool BridgeSimulation::initialise(){
     mFinishLine.p1 = vector3(-10, 0, -25);
     mFinishLine.p2 = vector3(10, 0, -25);
 
-    //mLines.push_back(mFinishLine);
+    mLines.push_back(mFinishLine);
 
     //set the vals
     vector3 minDim(-20, -7.1, 25), maxDim(25, -7, 40);
@@ -241,34 +241,11 @@ void BridgeSimulation::applyUpdateRules(string _agentName, int _groupNum){
     input[15] = agentVel.x;
     input[16] = agentVel.z;
 
-    /*double angVel = mWorldEntities[_agentName]->getAngularVelocity().y;
-    input[17] = angVel;*/
-
-    /*Line d1Line, d2Line;
-    btVector3 correctedp1 = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * btVector3(0, 0, agentBox->getHalfExtentsWithMargin().getZ());
-    btVector3 correctedp2 = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * btVector3(0, 0, -agentBox->getHalfExtentsWithMargin().getZ());
-
-    d1Line.p1 = getPositionInfo(_agentName) + vector3(correctedp1.getX(), correctedp1.getY(), correctedp1.getZ());
-    d2Line.p1 = getPositionInfo(_agentName) + vector3(correctedp2.getX(), correctedp2.getY(), correctedp2.getZ());
-
-    btVector3 correctedRot1 = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * btVector3(d1, 0, 0);
-    btVector3 correctedRot2 = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis() * btVector3(d2, 0, 0);
-
-    d1Line.p2 = vector3(correctedRot1.getX() + d1Line.p1.x, correctedRot1.getY() + d1Line.p1.y, correctedRot1.getZ() + d1Line.p1.z);
-    d2Line.p2 = vector3(correctedRot2.getX() + d2Line.p1.x, correctedRot2.getY() + d2Line.p1.y, correctedRot2.getZ() + d2Line.p1.z);
-
-    cout << d1Line.p1.x << " " << d1Line.p1.z << " : "  << d1Line.p2.x << " " << d1Line.p2.z << endl;
-    cout << d2Line.p1.x << " " << d2Line.p1.z << " : "  << d2Line.p2.x << " " << d2Line.p2.z << endl;
-    cout << endl;
-
-
-    mLines.clear();
-    mLines.push_back(d1Line);
-    mLines.push_back(d2Line);
-    mLines.push_back(mFinishLine);*/
+    double angVel = mWorldEntities[_agentName]->getAngularVelocity().y;
+    input[17] = angVel;
 
     if(frontDist < 10)
-        mWorldEntities[_agentName]->avoidCollisions(d1, d2, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
+        mWorldEntities[_agentName]->avoidCollisions(d2, d1, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
     else{
         mWorldEntities[_agentName]->avoided();
         vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
@@ -278,7 +255,7 @@ void BridgeSimulation::applyUpdateRules(string _agentName, int _groupNum){
     }
 
     if(calcCrossVal(mFinishLine.p1, mFinishLine.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0 && mCycleCounter > 10){
-        //mAngularVelAcc += fabs(angVel);
+        mAngularVelAcc += fabs(angVel);
 
         for(uint k = 1; k <= 8; k++)
             if(input[k] * 50 < mRangefinderRadius)
@@ -297,7 +274,7 @@ ESPParameters BridgeSimulation::getESPParams(string _nnFormatFile){
     params.maxCompGenerations = 0;
     params.nnFormatFilename = _nnFormatFile;
     params.stagnationThreshold = 0;
-    params.fitnessEpsilonThreshold = 5;
+    params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.1;
@@ -308,7 +285,7 @@ ESPParameters BridgeSimulation::getESPParams(string _nnFormatFile){
     params.elitismCount = params.populationSize/10;
     params.sampleEvaluationsPerChromosome = 5;
     params.crossoverParameters["CrossoverProbability"] = 0.8;
-    params.deltaCodeRadius = 0.05;
+    params.deltaCodeRadius = 0.1;
 
     return params;
 }
@@ -319,7 +296,7 @@ StandardGAParameters BridgeSimulation::getSGAParameters(string _nnFormatFile){
     params.maxGenerations = 200;
     params.nnFormatFilename = _nnFormatFile;
     params.stagnationThreshold = 50;
-    params.fitnessEpsilonThreshold = 5;
+    params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.1;
