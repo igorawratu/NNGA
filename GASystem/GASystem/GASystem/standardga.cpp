@@ -97,7 +97,7 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer, string _ou
 
         cout << "Current population fitnesses..." << endl;
         for(uint i = 0; i < mPopulation.size(); i++)
-            cout << mPopulation[i]->fitness() << " | ";
+            cout << mPopulation[i]->fitness() << " " << mPopulation[i]->realFitness() << " | ";
         cout << endl;
 
         //checks if the fitness of the solution is below the epsilon threshold, if it is, stop training
@@ -132,9 +132,18 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer, string _ou
 
     quicksort(mPopulation, 0, mPopulation.size() - 1);
 
-    Solution finalSolution(dynamic_cast<NNChromosome*>(mPopulation[0])->getNeuralNets());
-    mSimulationContainer->runFullSimulation(&finalSolution);
-    mSimulationContainer->resetSimulation();
+	cout << "final population fitnesses..." << endl;
+	for(uint i = 0; i < mPopulation.size(); i++){
+		Solution sol(dynamic_cast<NNChromosome*>(mPopulation[i])->getNeuralNets());
+		mSimulationContainer->runFullSimulation(&sol);
+		mSimulationContainer->resetSimulation();
+        cout << sol.fitness() << " " << sol.realFitness() << " | ";
+	}
+    cout << endl;
+
+	Solution finalSolution(dynamic_cast<NNChromosome*>(mPopulation[0])->getNeuralNets());
+	mSimulationContainer->runFullSimulation(&finalSolution);
+	mSimulationContainer->resetSimulation();
 
     for(uint i = 0; i < mPopulation.size(); i++)
         delete mPopulation[i];
@@ -175,10 +184,10 @@ void StandardGA::quicksort(vector<Chromosome*>& elements, int left, int right)
 void StandardGA::evaluatePopulation(vector<Chromosome*>& _population){
 	uint currPos = 0;
 
-	for(currPos = 0; currPos < mTotalRequests; ++currPos){
+	for(currPos = 0; currPos < mTotalRequests - 1; ++currPos){
 		Solution currSolution(dynamic_cast<NNChromosome*>(_population[currPos])->getNeuralNets());
-		sendData(currSolution, currPos);
-		mUpdateList[currPos] = currPos;
+		sendData(currSolution, currPos + 1);
+		mUpdateList[currPos + 1] = currPos;
 	}
 
 	while(currPos < _population.size()){
@@ -188,7 +197,7 @@ void StandardGA::evaluatePopulation(vector<Chromosome*>& _population){
         //poll slaves
         while(!assigned){
             Sleep(10);
-            for(uint k = 0; k < mTotalRequests; ++k){
+            for(uint k = 1; k < mTotalRequests; ++k){
                 if(k == 0 && mWorkStatus == NOWORK)
                     assigned = true;
                 else if(k > 0){
@@ -201,8 +210,8 @@ void StandardGA::evaluatePopulation(vector<Chromosome*>& _population){
                         assigned = true;
                 }
                 if(assigned){
-                    _population[mUpdateList[k]]->fitness() = mRetrievedFitnesses[k*2];
-					_population[mUpdateList[k]]->realFitness() = mRetrievedFitnesses[k*2 + 1];
+                    _population[mUpdateList[k]]->realFitness() = mRetrievedFitnesses[k*2];
+					_population[mUpdateList[k]]->fitness() = mRetrievedFitnesses[k*2 + 1];
 
 					mUpdateList[k] = currPos++;
 
@@ -215,7 +224,7 @@ void StandardGA::evaluatePopulation(vector<Chromosome*>& _population){
 	}
 
 
-	for(int k = 0; k < mTotalRequests; ++k){
+	for(int k = 1; k < mTotalRequests; ++k){
         bool completed = false;
         //poll the slave until it is complete
         while(!completed){
@@ -233,8 +242,8 @@ void StandardGA::evaluatePopulation(vector<Chromosome*>& _population){
             }
 
 			if(completed){
-                _population[mUpdateList[k]]->fitness() = mRetrievedFitnesses[k*2];
-				_population[mUpdateList[k]]->realFitness() = mRetrievedFitnesses[k*2 + 1];
+                _population[mUpdateList[k]]->realFitness() = mRetrievedFitnesses[k*2];
+				_population[mUpdateList[k]]->fitness() = mRetrievedFitnesses[k*2 + 1];
 			}
         }
     }

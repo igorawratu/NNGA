@@ -197,7 +197,7 @@ void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inp
 }
 
 SimInfo createSimulation(string _simName, GraphicsEngine* _engine){
-    int seed = 120;
+    int seed = 100;
 
     if (_simName == "BridgeCarSim") return SimInfo(new BridgeSimulation(2, 10, CAR, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/bridgesimulation/car/input6h.xml", "neuralxmls/bridgesimulation/car/output.xml"); //find reduce angvel range
     else if(_simName == "BridgeMouseSim") return SimInfo(new BridgeSimulation(2, 30, MOUSE, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/bridgesimulation/mouse/input6h.xml", "neuralxmls/bridgesimulation/mouse/output.xml"); //find reduce angvel range
@@ -227,7 +227,7 @@ int main(int argc, char** argv){
 
     SimInfo simInfo = createSimulation(simName, engine);
 
-    runSim(engine, simInfo.get<0>(), TYPE_ESP, simInfo.get<1>(), simInfo.get<2>());
+    runSim(engine, simInfo.get<0>(), TYPE_STANDARD, simInfo.get<1>(), simInfo.get<2>());
     //testCrossoverOp();
 
     delete engine;

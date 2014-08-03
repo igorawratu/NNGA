@@ -43,7 +43,7 @@ double CarCrashSimulation::fitness(){
     doubleAcc["Collisions"] = mRangefinderVals + mCollisions; 
     doubleAcc["FLFitnessWeight"] = 1;
     doubleAcc["ColFitnessWeight"] = 1;
-    
+
     for(uint k = 0; k < mGroupOneAgents.size(); k++)
         pos[mGroupOneAgents[k]] = getPositionInfo(mGroupOneAgents[k]);
     intAcc["Positive"] = 1;
@@ -61,7 +61,7 @@ double CarCrashSimulation::fitness(){
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
 
 
-    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
+	finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 5000;
     //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
@@ -94,7 +94,7 @@ double CarCrashSimulation::realFitness(){
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
 
 
-    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 5000;
     //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
@@ -142,14 +142,14 @@ bool CarCrashSimulation::initialise(){
     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genztwo(rngz2, distztwo);
 
     for(uint k = 0; k < mGroupOneAgents.size(); k++){
-        mWorldEntities[mGroupOneAgents[k]] = new CarAgent(10, 0.5);
+        mWorldEntities[mGroupOneAgents[k]] = new CarAgent(10, 1);
         if(!mWorldEntities[mGroupOneAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rotGroupOne, mResourceManager, vector3(genxone(), 0, genzone()), 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupOneAgents[k]]->getRigidBody());
     }
 
     for(uint k = 0; k < mGroupTwoAgents.size(); k++){
-        mWorldEntities[mGroupTwoAgents[k]] = new CarAgent(10, 0.5);
+        mWorldEntities[mGroupTwoAgents[k]] = new CarAgent(10, 1);
         if(!mWorldEntities[mGroupTwoAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rotGroupTwo, mResourceManager, vector3(genxtwo(), 0, genztwo()), 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupTwoAgents[k]]->getRigidBody());
