@@ -12,6 +12,10 @@ ESPSubPopulation::ESPSubPopulation(ESPParameters _parameters, pugi::xml_node* _r
             cout << "Error initializing ESP Subpopulation" << endl;
         mEvaluationCounter.push_back(0);
     }
+
+    mLastDCRadius = _parameters.deltaCodeRadius;
+    mBestLastFitness = 99999999999;
+    mStagnationCounter = 0;
 }
 
 ESPSubPopulation::~ESPSubPopulation(){
@@ -34,6 +38,10 @@ ESPSubPopulation::ESPSubPopulation(const ESPSubPopulation& _other){
 
     mCrossoverAlgorithm = CrossoverFactory::instance().create(mParameters.crossoverAlgorithm);
     mSelectionAlgorithm = SelectionFactory::instance().create(mParameters.selectionAlgorithm);
+
+    mLastDCRadius = _other.mLastDCRadius;
+    mBestLastFitness = _other.mBestLastFitness;
+    mStagnationCounter = _other.mStagnationCounter;
 }
 
 ESPSubPopulation& ESPSubPopulation::operator = (const ESPSubPopulation& _other){
@@ -47,6 +55,10 @@ ESPSubPopulation& ESPSubPopulation::operator = (const ESPSubPopulation& _other){
     mCrossoverAlgorithm = CrossoverFactory::instance().create(mParameters.crossoverAlgorithm);
     mSelectionAlgorithm = SelectionFactory::instance().create(mParameters.selectionAlgorithm);
 
+    mLastDCRadius = _other.mLastDCRadius;
+    mBestLastFitness = _other.mBestLastFitness;
+    mStagnationCounter = _other.mStagnationCounter;
+
     return *this;
 }
 
@@ -59,16 +71,30 @@ void ESPSubPopulation::print(){
 
 void ESPSubPopulation::generateOffspring(){
     quicksort(mSubpopulation, 0, mSubpopulation.size() - 1);
-    mUnevaluatedSubpopulation = mCrossoverAlgorithm->execute(mSubpopulation, mSubpopulation.size() - mParameters.elitismCount, mParameters.crossoverParameters, mSelectionAlgorithm);
-    for(uint k = 0; k < mUnevaluatedSubpopulation.size(); ++k){
-        mUnevaluatedSubpopulation[k]->mutate(mParameters.mutationAlgorithm, mParameters.mutationParameters);
-        mEvaluationCounter.push_back(0);
+
+    if(mSubpopulation[0]->fitness() < mBestLastFitness){
+        mBestLastFitness = mSubpopulation[0]->fitness();
+        mStagnationCounter = 0;
     }
+    else mStagnationCounter++;
 
-    for(uint k = mParameters.elitismCount; k < mSubpopulation.size(); ++k)
-        delete mSubpopulation[k];
+    if(mStagnationCounter > mParameters.stagnationThreshold){
+        mStagnationCounter = 0;
 
-    mSubpopulation.erase(mSubpopulation.begin() + mParameters.elitismCount, mSubpopulation.end());
+        generateDeltaCodes(mLastDCRadius);        
+    }
+    else{
+        mUnevaluatedSubpopulation = mCrossoverAlgorithm->execute(mSubpopulation, mSubpopulation.size() - mParameters.elitismCount, mParameters.crossoverParameters, mSelectionAlgorithm);
+        for(uint k = 0; k < mUnevaluatedSubpopulation.size(); ++k){
+            mUnevaluatedSubpopulation[k]->mutate(mParameters.mutationAlgorithm, mParameters.mutationParameters);
+            mEvaluationCounter.push_back(0);
+        }
+
+        for(uint k = mParameters.elitismCount; k < mSubpopulation.size(); ++k)
+            delete mSubpopulation[k];
+
+        mSubpopulation.erase(mSubpopulation.begin() + mParameters.elitismCount, mSubpopulation.end());
+    }
 }
 
 void ESPSubPopulation::nextGeneration(){
@@ -76,6 +102,21 @@ void ESPSubPopulation::nextGeneration(){
 
     quicksort(mSubpopulation, 0, mSubpopulation.size() - 1);
 }
+
+void ESPSubPopulation::printBestWorstDistance(){
+    vector<double> bestWeights = mSubpopulation[0]->getWeightData()[0][1];
+    vector<double> worstWeights = mSubpopulation[mSubpopulation.size() - 1]->getWeightData()[0][1];
+
+    double dSquared = 0;
+    for(uint k = 0; k < bestWeights.size(); ++k){
+        double temp = bestWeights[k] - worstWeights[k];
+        dSquared += temp * temp;
+    }
+
+    dSquared = sqrt(dSquared);
+    cout << dSquared << endl;
+}
+
 
 Chromosome* ESPSubPopulation::getUnevaluatedChromosome(){
     if(mUnevaluatedSubpopulation.size() == 0)
@@ -150,6 +191,8 @@ void ESPSubPopulation::setParameters(ESPParameters _params){
 }
 
 void ESPSubPopulation::generateDeltaCodes(double _deltaRange){
+    mBestLastFitness = mSubpopulation[0]->fitness();
+    mLastDCRadius = _deltaRange;
     vector<Chromosome*> newPopulation;
     newPopulation.push_back(mSubpopulation[0]->clone());
     mEvaluationCounter.clear();

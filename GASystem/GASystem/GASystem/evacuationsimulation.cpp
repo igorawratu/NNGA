@@ -37,7 +37,7 @@ void EvacuationSimulation::iterate(){
 
     mCycleCounter++;
 
-    mWorld->stepSimulation(1/(float)mCyclesPerSecond, 5, 1/((float)mCyclesPerSecond * 5));
+    mWorld->stepSimulation(1/(float)mCyclesPerSecond, 1, 1/((float)mCyclesPerSecond));
 }
 
 double EvacuationSimulation::fitness(){
@@ -450,7 +450,7 @@ ESPParameters EvacuationSimulation::getESPParams(string _nnFormatFile){
 
 StandardGAParameters EvacuationSimulation::getSGAParameters(string _nnFormatFile){
 	StandardGAParameters params;
-    params.populationSize = 100;
+    params.populationSize = 20;
     params.maxGenerations = 200;
     params.nnFormatFilename = _nnFormatFile;
     params.stagnationThreshold = 50;

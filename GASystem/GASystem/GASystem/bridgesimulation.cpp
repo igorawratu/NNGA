@@ -50,18 +50,23 @@ double BridgeSimulation::fitness(){
     map<string, vector3> pos;
     map<string, long> intAcc;
     map<string, double> dblAcc;
-    dblAcc["Collisions"] = mCollisions; 
-    dblAcc["FLFitnessWeight"] = 1;
-    dblAcc["ColFitnessWeight"] = 1;
+    dblAcc["Collisions"] = mCollisions + mRangefinderVals; 
+    dblAcc["FLFitnessWeight"] = 2;
+    dblAcc["ColFitnessWeight"] = 2;
     intAcc["Positive"] = 0;
     pos["LineP1"] = mFinishLine.p1;
     pos["LineP2"] = mFinishLine.p2;
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
+    dblAcc["LowerBound"] = 0;
+    dblAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 10;
+    dblAcc["Value"] = mAngularVelAcc;
+    dblAcc["EVWeight"] = 1;
+
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) + mRangefinderVals : 1000;
-    finalFitness += finalFitness == 0 ? mAngularVelAcc : mAgents.size() * mNumCycles / mCyclesPerDecision + 500;
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
+    finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, dblAcc, intAcc);
 
     return finalFitness;
 }
@@ -106,17 +111,22 @@ double BridgeSimulation::realFitness(){
     map<string, long> intAcc;
     map<string, double> dblAcc;
     dblAcc["Collisions"] = mCollisions; 
-    dblAcc["FLFitnessWeight"] = 1;
-    dblAcc["ColFitnessWeight"] = 1;
+    dblAcc["FLFitnessWeight"] = 2;
+    dblAcc["ColFitnessWeight"] = 2;
     intAcc["Positive"] = 0;
     pos["LineP1"] = mFinishLine.p1;
     pos["LineP2"] = mFinishLine.p2;
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
+    dblAcc["LowerBound"] = 0;
+    dblAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 10;
+    dblAcc["Value"] = mAngularVelAcc;
+    dblAcc["EVWeight"] = 1;
+
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
-    finalFitness += finalFitness == 0? mAngularVelAcc : mAgents.size() * mNumCycles / mCyclesPerDecision + 500;
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
+    finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, dblAcc, intAcc);
 
     return finalFitness;
 }
@@ -127,6 +137,7 @@ bool BridgeSimulation::initialise(){
 
     mFitnessFunctions.push_back(new FinishLineFitness());
     mFitnessFunctions.push_back(new CollisionFitness());
+    mFitnessFunctions.push_back(new ExpectedValueFitness());
 
     mFinishLine.p1 = vector3(-10, 0, -25);
     mFinishLine.p2 = vector3(10, 0, -25);

@@ -41,7 +41,7 @@ double CarCrashSimulation::fitness(){
     map<string, long> intAcc;
     map<string, double> doubleAcc;
     doubleAcc["Collisions"] = mRangefinderVals + mCollisions; 
-    doubleAcc["FLFitnessWeight"] = 1;
+    doubleAcc["FLFitnessWeight"] = 5;
     doubleAcc["ColFitnessWeight"] = 1;
 
     for(uint k = 0; k < mGroupOneAgents.size(); k++)
@@ -61,7 +61,7 @@ double CarCrashSimulation::fitness(){
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
 
 
-	finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 5000;
+	finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
     //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
@@ -74,7 +74,7 @@ double CarCrashSimulation::realFitness(){
     map<string, long> intAcc;
     map<string, double> doubleAcc;
     doubleAcc["Collisions"] = mCollisions; 
-    doubleAcc["FLFitnessWeight"] = 1;
+    doubleAcc["FLFitnessWeight"] = 5;
     doubleAcc["ColFitnessWeight"] = 1;
     
     for(uint k = 0; k < mGroupOneAgents.size(); k++)
@@ -94,7 +94,7 @@ double CarCrashSimulation::realFitness(){
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
 
 
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 5000;
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
     //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
 
     return finalFitness;
@@ -258,7 +258,7 @@ ESPParameters CarCrashSimulation::getESPParams(string _nnFormatFile){
     params.maxCompGenerations = 0;
     params.nnFormatFilename = _nnFormatFile;
     params.stagnationThreshold = 0;
-    params.fitnessEpsilonThreshold = 0;
+    params.fitnessEpsilonThreshold = 0; 
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.1;

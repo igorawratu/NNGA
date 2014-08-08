@@ -39,7 +39,7 @@ double CarRaceSimulation::fitness(){
     doubleAcc["Collisions"] = mRangefinderVals + mCollisions; 
     doubleAcc["FLFitnessWeight"] = 1;
     doubleAcc["ColFitnessWeight"] = 1;
-    doubleAcc["WinnerFitnessWeight"] = 1;
+    doubleAcc["WinnerFitnessWeight"] = 10;
     
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
@@ -51,11 +51,8 @@ double CarRaceSimulation::fitness(){
     pos["LineP2"] = mFinishLine.p2;
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
-
-    //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
-    //finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc);
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, doubleAcc, intAcc);
 
     return finalFitness;
 }
@@ -96,7 +93,6 @@ bool CarRaceSimulation::initialise(){
     if(!mWorldEntities[mAgents[0]]->initialise("carone.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(-7.5, 0, 38), 0.01, mSeed))
         return false;
     mWorld->addRigidBody(mWorldEntities[mAgents[0]]->getRigidBody());
-    //mWorldEntities[mAgents[0]]->setVelocity(vector3(5, 0, 0));
 
     for(uint k = 1; k < mAgents.size(); k++){
         vector3 pos;
@@ -116,7 +112,6 @@ bool CarRaceSimulation::initialise(){
             return false;
         mWorldEntities[mAgents[k]]->setVelocity(vector3(0, 0, 0.5));
         mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());
-        //mWorldEntities[mAgents[k]]->setVelocity(vector3(5, 0, 0));
     }
     
     mWorldEntities["environment"] = new StaticWorldAgent(0.5, 0.1);
@@ -143,7 +138,7 @@ double CarRaceSimulation::realFitness(){
     doubleAcc["Collisions"] = mCollisions; 
     doubleAcc["FLFitnessWeight"] = 1;
     doubleAcc["ColFitnessWeight"] = 1;
-    doubleAcc["WinnerFitnessWeight"] = 1;
+    doubleAcc["WinnerFitnessWeight"] = 10;
     
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
@@ -155,11 +150,8 @@ double CarRaceSimulation::realFitness(){
     pos["LineP2"] = mFinishLine.p2;
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, doubleAcc, intAcc) : 1000;
-
-    //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, map<string, double>(), intAcc);
-    //finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, map<string, double>(), intAcc);
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, doubleAcc, intAcc);
 
     return finalFitness;
 }
@@ -297,7 +289,7 @@ vector<CompetitiveFitness> CarRaceSimulation::competitiveFitness(){
 
 ESPParameters CarRaceSimulation::getESPParams(string _nnFormatFile){
 	ESPParameters params;
-    params.populationSize = 50;
+    params.populationSize = 30;
     params.maxGenerations = 200;
     params.maxCompGenerations = 400;
     params.nnFormatFilename = _nnFormatFile;
@@ -311,7 +303,7 @@ ESPParameters CarRaceSimulation::getESPParams(string _nnFormatFile){
     params.crossoverAlgorithm = "LX";
     params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = params.populationSize/10;
-    params.sampleEvaluationsPerChromosome = 3;
+    params.sampleEvaluationsPerChromosome = 5;
     params.crossoverParameters["CrossoverProbability"] = 0.8;
     params.deltaCodeRadius = 0.1;
 

@@ -62,8 +62,8 @@ double MouseEscapeSimulation::fitness(){
     map<string, vector3> pos;
     map<string, long> intAcc;
     map<string, double> dblAcc;
-    dblAcc["FLFitnessWeight"] = 1;
-    dblAcc["EVWeight"] = 1;
+    dblAcc["FLFitnessWeight"] = 4;
+    dblAcc["EVWeight"] = 25;
 
     for(uint k = 0; k < mMouseAgents.size(); k++)
         pos[mMouseAgents[k]] = getPositionInfo(mMouseAgents[k]);
@@ -73,16 +73,15 @@ double MouseEscapeSimulation::fitness(){
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
-    dblAcc["LowerBound"] = 1;
-    dblAcc["UpperBound"] = 3;
+    dblAcc["LowerBound"] = 11;
+    dblAcc["UpperBound"] = 13;
     dblAcc["Value"] = mMouseAgents.size();
     
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
-    //change max val
     dblAcc["Collisions"] = mRangefinderVals + mCollisions; 
     dblAcc["ColFitnessWeight"] = 1;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, dblAcc, intAcc) : 5000;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
     return finalFitness;
 }
@@ -165,8 +164,8 @@ double MouseEscapeSimulation::realFitness(){
     map<string, vector3> pos;
     map<string, long> intAcc;
     map<string, double> dblAcc;
-    dblAcc["FLFitnessWeight"] = 1;
-    dblAcc["EVWeight"] = 1;
+    dblAcc["FLFitnessWeight"] = 4;
+    dblAcc["EVWeight"] = 25;
 
     for(uint k = 0; k < mMouseAgents.size(); k++)
         pos[mMouseAgents[k]] = getPositionInfo(mMouseAgents[k]);
@@ -176,16 +175,16 @@ double MouseEscapeSimulation::realFitness(){
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
-    dblAcc["LowerBound"] = 1;
-    dblAcc["UpperBound"] = 3;
+    dblAcc["LowerBound"] = 11;
+    dblAcc["UpperBound"] = 13;
     dblAcc["Value"] = mMouseAgents.size();
     
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 1000;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
     //change max val
     dblAcc["Collisions"] = mCollisions; 
     dblAcc["ColFitnessWeight"] = 1;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[2]->evaluateFitness(pos, dblAcc, intAcc) : 5000;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
     return finalFitness;
 }
@@ -233,54 +232,57 @@ void MouseEscapeSimulation::applyUpdateRules(string _agentName, uint _groupNum){
 
     double frontDist = d1 > d2 ? d2 : d1;
 
-    //rangefinders
-    input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), front, hitposfront) / 50;
-    if(_groupNum == 1){
+    double frontVal;
+
+    if(_groupNum == 0){
+        input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 105), AGENT) / 50;
+        input[2] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 75), AGENT) / 50;
+        input[3] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 45), AGENT) / 50;
+        input[4] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, 15), AGENT) / 50;
+        input[5] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -15), AGENT) / 50;
+        input[6] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -45), AGENT) / 50;
+        input[7] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -75), AGENT) / 50;
+        input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0.1, -105), AGENT) / 50;
+        input[13] = mFinishLine.p1.x;
+        input[14] = mFinishLine.p1.z;
+        input[15] = mFinishLine.p2.x;
+        input[16] = mFinishLine.p2.z;
+    }
+    else{
+        input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 0), front, hitposfront) / 50;
         checkRayObject(_groupNum, front, frontTeamInd, colliderName);
         input[13] = frontTeamInd;
-    }
 
-    input[2] = getRayCollisionDistance(_agentName, btVector3(-100, 0, 0), obj, hitposother) / 50;
-    if(_groupNum == 1){
+        input[2] = getRayCollisionDistance(_agentName, btVector3(-100, 0, 0), obj, hitposother) / 50;
         checkRayObject(_groupNum, obj, teamInd, otherColliderName);
         input[14] = teamInd;
-    }
 
-    input[3] = getRayCollisionDistance(_agentName, btVector3(0, 0, 100), obj, hitposother) / 50;
-    if(_groupNum == 1){
+        input[3] = getRayCollisionDistance(_agentName, btVector3(0, 0, 100), obj, hitposother) / 50;
         checkRayObject(_groupNum, obj, teamInd, otherColliderName);
         input[15] = teamInd;
-    }
 
-    input[4] = getRayCollisionDistance(_agentName, btVector3(0, 0, 100), obj, hitposother) / 50;
-    if(_groupNum == 1){
+        input[4] = getRayCollisionDistance(_agentName, btVector3(0, 0, 100), obj, hitposother) / 50;
         checkRayObject(_groupNum, obj, teamInd, otherColliderName);
         input[16] = teamInd;
-    }
 
-    input[5] = getRayCollisionDistance(_agentName, btVector3(100, 0, -100), obj, hitposother) / 50;
-    if(_groupNum == 1){
+        input[5] = getRayCollisionDistance(_agentName, btVector3(100, 0, -100), obj, hitposother) / 50;
         checkRayObject(_groupNum, obj, teamInd, otherColliderName);
         input[17] = teamInd;
-    }
 
-    input[6] = getRayCollisionDistance(_agentName, btVector3(-100, 0, 100), obj, hitposother) / 50;
-    if(_groupNum == 1){
+        input[6] = getRayCollisionDistance(_agentName, btVector3(-100, 0, 100), obj, hitposother) / 50;
         checkRayObject(_groupNum, obj, teamInd, otherColliderName);
         input[18] = teamInd;
-    }
 
-    input[7] = getRayCollisionDistance(_agentName, btVector3(-100, 0, -100), obj, hitposother) / 50;
-    if(_groupNum == 1){
+        input[7] = getRayCollisionDistance(_agentName, btVector3(-100, 0, -100), obj, hitposother) / 50;
         checkRayObject(_groupNum, obj, teamInd, otherColliderName);
         input[19] = teamInd;
-    }
 
-    input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0, 100), obj, hitposother) / 50;
-    if(_groupNum == 1){
+        input[8] = getRayCollisionDistance(_agentName, btVector3(100, 0, 100), obj, hitposother) / 50;
         checkRayObject(_groupNum, obj, teamInd, otherColliderName);
         input[20] = teamInd;
     }
+
+    
 
     //agent position
     input[9] = trans.getOrigin().getX() / 50;
@@ -291,22 +293,15 @@ void MouseEscapeSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     input[11] = agentVel.x;
     input[12] = agentVel.z;
 
-    //NB: Find closest point
-    if(_groupNum == 0){
-        input[13] = mFinishLine.p1.x;
-        input[14] = mFinishLine.p1.z;
-        input[15] = mFinishLine.p2.x;
-        input[16] = mFinishLine.p2.z;
-    }
-
-
     if(frontDist < 10)
-        mWorldEntities[_agentName]->avoidCollisions(d1, d2, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
+        mWorldEntities[_agentName]->avoidCollisions(d2, d1, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
     else{
         mWorldEntities[_agentName]->avoided();
-        vector<double> output = mSolution->evaluateNeuralNetwork(0, input, _groupNum);
-        double frontVal = Simulation::getRayCollisionDistance(_agentName, btVector3(100, 0, 0), AGENT) > 3 ? 1 : 0;
-        output.push_back(frontVal);
+        vector<double> output = mSolution->evaluateNeuralNetwork(0, input, _groupNum + 1);
+        if(_groupNum == 0){
+            double frontVal = Simulation::getRayCollisionDistance(_agentName, btVector3(100, 0, 0), AGENT) > 3 ? 1 : 0;
+            output.push_back(frontVal);
+        }
         mWorldEntities[_agentName]->update(output);
     }
 
@@ -322,11 +317,6 @@ void MouseEscapeSimulation::applyUpdateRules(string _agentName, uint _groupNum){
             mObjectsToRemove.push_back(colliderName);
         }
     }
-
-    /*if(_groupNum == 0){
-        if(calcCrossVal(mFinishLine.p1, mFinishLine.p2, getPositionInfo(_agentName)) > 0)
-            mCrossed.push_back(_agentName);
-    }*/
 
     //fitness eval code
     //try make aggresors move more/faster
@@ -381,7 +371,7 @@ vector<CompetitiveFitness> MouseEscapeSimulation::competitiveFitness(){
         vector3 agentPos = getPositionInfo(mMouseAgents[k]);
         
         if(calcCrossVal(mFinishLine.p1, mFinishLine.p2, agentPos) < 0)
-            midpoint.calcDistance(agentPos);
+            dist = midpoint.calcDistance(agentPos);
 
         mouseDistAcc += dist;
         robotDistAcc = robotDistAcc - 100 + dist;
@@ -390,15 +380,15 @@ vector<CompetitiveFitness> MouseEscapeSimulation::competitiveFitness(){
     double robotFitness = robotDistAcc;
     double mouseFitness = (35 - mMouseAgents.size()) * 100 + mouseDistAcc;
 
-    fitnesses.push_back(make_pair(0, mouseFitness));
-    fitnesses.push_back(make_pair(1, robotFitness));
+    fitnesses.push_back(make_pair(1, mouseFitness));
+    fitnesses.push_back(make_pair(2, robotFitness));
 
     return fitnesses;
 }
 
 ESPParameters MouseEscapeSimulation::getESPParams(string _nnFormatFile){
 	ESPParameters params;
-    params.populationSize = 50;
+    params.populationSize = 30;
     params.maxGenerations = 200;
     params.maxCompGenerations = 400;
     params.nnFormatFilename = _nnFormatFile;
@@ -409,12 +399,12 @@ ESPParameters MouseEscapeSimulation::getESPParams(string _nnFormatFile){
     params.mutationParameters["Deviation"] = 0.1;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "MultipointCrossover";
+    params.crossoverAlgorithm = "LX";
     params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = params.populationSize/10;
-    params.sampleEvaluationsPerChromosome = 5;
+    params.sampleEvaluationsPerChromosome = 4;
     params.crossoverParameters["CrossoverProbability"] = 0.8;
-    params.deltaCodeRadius = 0.05;
+    params.deltaCodeRadius = 0.2;
 
     return params;
 }

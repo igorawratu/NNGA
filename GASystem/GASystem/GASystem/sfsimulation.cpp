@@ -12,6 +12,8 @@ SFSimulation::SFSimulation(double _rangefinderRadius, uint _numAgents, uint _num
 
     mFitnessFunctions.push_back(new GoalPointFitness());
     mFitnessFunctions.push_back(new CollisionFitness());
+    mFitnessFunctions.push_back(new ExpectedValueFitness());
+    mAngularVelAcc =0;
 }
 
 SFSimulation::SFSimulation(const SFSimulation& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager){
@@ -26,6 +28,8 @@ SFSimulation::SFSimulation(const SFSimulation& other) : Simulation(other.mNumCyc
 
     mFitnessFunctions.push_back(new GoalPointFitness());
     mFitnessFunctions.push_back(new CollisionFitness());
+    mFitnessFunctions.push_back(new ExpectedValueFitness());
+    mAngularVelAcc = 0;
 }
 
 SFSimulation::~SFSimulation(){}
@@ -43,7 +47,7 @@ void SFSimulation::iterate(){
 
     mCycleCounter++;
 
-    mWorld->stepSimulation(1/(float)mCyclesPerSecond, 5, 1/((float)mCyclesPerSecond * 5));
+    mWorld->stepSimulation(1/(float)mCyclesPerSecond, 1, 1/((float)mCyclesPerSecond));
 }
 
 vector3 SFSimulation::calculateCentroid(){
@@ -73,7 +77,7 @@ double SFSimulation::fitness(){
     doubleAcc["ColFitnessWeight"] = 1;
     intAcc["Positive"] = 0;
 
-    doubleAcc["GPWeight"] = 1;
+    doubleAcc["GPWeight"] = 2;
     doubleAcc["GoalRadius"] = mGoalRadius;
     pos["GoalPoint"] = mGoalpoint;
     pos["Agent0"] = calculateCentroid();
@@ -86,7 +90,15 @@ double SFSimulation::fitness(){
         if(!reached(mAgents[k]))
             pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc) + mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 10000;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
+
+    doubleAcc["LowerBound"] = 0;
+    doubleAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 10;
+    doubleAcc["Value"] = mAngularVelAcc;
+    doubleAcc["EVWeight"] = 1;
+
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
 
     return finalFitness;
 }
@@ -106,7 +118,7 @@ double SFSimulation::realFitness(){
     doubleAcc["ColFitnessWeight"] = 1;
     intAcc["Positive"] = 0;
 
-    doubleAcc["GPWeight"] = 1;
+    doubleAcc["GPWeight"] = 2;
     doubleAcc["GoalRadius"] = mGoalRadius;
     pos["GoalPoint"] = mGoalpoint;
     pos["Agent0"] = calculateCentroid();
@@ -119,7 +131,15 @@ double SFSimulation::realFitness(){
         if(!reached(mAgents[k]))
             pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc) + mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc) : 10000;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
+
+    doubleAcc["LowerBound"] = 0;
+    doubleAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 10;
+    doubleAcc["Value"] = mAngularVelAcc;
+    doubleAcc["EVWeight"] = 1;
+
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
 
     return finalFitness;
 }
@@ -170,6 +190,10 @@ void SFSimulation::applyUpdateRules(string _agentName, int _groupNum){
     input[8 + inputIndex] = agentVel.y;
     input[9 + inputIndex] = agentVel.z;
 
+    vector3 angVel = mWorldEntities[_agentName]->getAngularVelocity();
+    double angVelDist = angVel.calcDistance(vector3(0, 0, 0));
+    input[10 + inputIndex] = angVelDist;
+
     if(frontDist < 10)
         mWorldEntities[_agentName]->avoidCollisions(frontDist, 0, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
     else{
@@ -182,6 +206,8 @@ void SFSimulation::applyUpdateRules(string _agentName, int _groupNum){
         mReached.push_back(_agentName);
 
     if(!reached(_agentName) && mCycleCounter > 10){
+        mAngularVelAcc += angVelDist;
+
         for(uint k = 1; k < inputIndex; k++)
             if(input[k] * 50 < mRangefinderRadius)
                 mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;
@@ -217,7 +243,7 @@ bool SFSimulation::reached(string _agentName){
 
 ESPParameters SFSimulation::getESPParams(string _nnFormatFile){
 	ESPParameters params;
-    params.populationSize = 50;
+    params.populationSize = 30;
     params.maxGenerations = 200;
     params.maxCompGenerations = 0;
     params.nnFormatFilename = _nnFormatFile;

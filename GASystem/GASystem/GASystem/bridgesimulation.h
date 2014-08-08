@@ -17,6 +17,7 @@
 #include "cubeagent.h"
 #include "collisionfitness.h"
 #include "finishlinefitness.h"
+#include "expectedvaluefitness.h"
 
 enum AgentType{MOUSE, CAR};
 

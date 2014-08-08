@@ -32,6 +32,8 @@ public:
 
     void setParameters(ESPParameters _params);
 
+    void printBestWorstDistance();
+
     uint getTeamID();
     void setTeamID(uint _id);
 
@@ -47,6 +49,10 @@ private:
     Selection* mSelectionAlgorithm;
 
     uint mTeamID;
+
+    double mLastDCRadius;
+    double mBestLastFitness;
+    uint stagnationCounter;
 };
 
 #endif

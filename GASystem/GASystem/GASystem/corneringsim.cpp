@@ -57,7 +57,7 @@ double CorneringSim::fitness(){
     map<string, long> intAcc;
     doubleAcc["ColFitnessWeight"] = 1;
     doubleAcc["Collisions"] = mCollisions + mRangefinderVals;
-    doubleAcc["WPFitnessWeight"] = 1;
+    doubleAcc["WPFitnessWeight"] = 2;
     intAcc = mWaypointTracker;
 
     for(uint k = 0; k < mWaypoints.size(); k++)
@@ -67,9 +67,15 @@ double CorneringSim::fitness(){
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
     }
 
+    doubleAcc["LowerBound"] = 0;
+    doubleAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 15;
+    doubleAcc["Value"] = mAngularVelAcc;
+    doubleAcc["EVWeight"] = 1;
+
     
-    finalFitness += 2 * mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, mWaypointTracker) + mAngularVelAcc : maxCollisions + mAgents.size() * mNumCycles / mCyclesPerDecision + 500;
+    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
 
     return finalFitness;
 }
@@ -83,7 +89,7 @@ double CorneringSim::realFitness(){
     map<string, long> intAcc;
     doubleAcc["ColFitnessWeight"] = 1;
     doubleAcc["Collisions"] = mCollisions;
-    doubleAcc["WPFitnessWeight"] = 1;
+    doubleAcc["WPFitnessWeight"] = 2;
     intAcc = mWaypointTracker;
 
     for(uint k = 0; k < mWaypoints.size(); k++)
@@ -92,10 +98,15 @@ double CorneringSim::realFitness(){
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
-    
+    doubleAcc["LowerBound"] = 0;
+    doubleAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 10;
+    doubleAcc["Value"] = mAngularVelAcc;
+    doubleAcc["EVWeight"] = 1;
+
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, mWaypointTracker) : maxCollisions;
-    finalFitness += finalFitness == 0 ? mAngularVelAcc : mAgents.size() * mNumCycles / mCyclesPerDecision + 500;
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
+
 
     return finalFitness;
 }
@@ -113,6 +124,7 @@ bool CorneringSim::initialise(){
 
     mFitnessFunctions.push_back(new WaypointFitness());
     mFitnessFunctions.push_back(new CollisionFitness());
+    mFitnessFunctions.push_back(new ExpectedValueFitness());
 
     mWaypointTracker["ColFitnessWeight"] = 1;
     mWaypointTracker["NumAgents"] = mAgents.size();

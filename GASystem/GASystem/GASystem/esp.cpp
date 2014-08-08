@@ -91,8 +91,11 @@ Solution ESP::train(SimulationContainer* _simulationContainer, string _outputFil
 
             for(uint i = 0; i < mSubpopulations.size(); ++i){
                 for(map<uint, pair<ESPSubPopulation*, uint>>::iterator iter = mSubpopulations[i].begin(); iter != mSubpopulations[i].end(); ++iter){
-                    if(iter->second.second != 0)
+                    if(iter->second.second != 0){
                         iter->second.first->nextGeneration();
+                        cout << "Subpop " << iter->first << " best-worst distance : "; 
+                        iter->second.first->printBestWorstDistance();
+                    }
                 }
             }
 

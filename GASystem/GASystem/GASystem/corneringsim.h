@@ -7,6 +7,7 @@
 #include "common.h"
 #include "collisionfitness.h"
 #include "waypointfitness.h"
+#include "expectedvaluefitness.h"
 
 #include <vector>
 #include <iostream>

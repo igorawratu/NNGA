@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="GASystem"
 	ProjectGUID="{33658910-1D9C-4AC4-B854-A6572A4436AC}"
 	RootNamespace="GASystem"
@@ -685,6 +685,10 @@
 			>
 			<File
 				RelativePath=".\chromosome.h"
+				>
+			</File>
+			<File
+				RelativePath=".\cmaes.h"
 				>
 			</File>
 			<File

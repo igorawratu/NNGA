@@ -49,6 +49,7 @@ protected:
     double mRangefinderVals;
     double mGoalRadius;
     double mCrowdingRadius;
+    double mAngularVelAcc;
 };
 
 #endif
