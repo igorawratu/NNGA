@@ -47,7 +47,7 @@ private:
     double* mRetrievedFitnesses, *mRetrievedCompetitiveFitnesses;
     int* mRetrievedTeamIDs;
     int mTotalSlaveProcs, mTotalRequests;
-    WorkStatus mWorkStatus;
+    volatile WorkStatus mWorkStatus;
     SimulationContainer* mSimulationContainer;
 	uint mStages, mStage;
 	vector<Chromosome*> mPopulation;

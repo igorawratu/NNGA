@@ -688,7 +688,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\cmaes.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\cmaes.h"
+				>
+			</File>
+			<File
+				RelativePath=".\cmaesparameters.h"
 				>
 			</File>
 			<File

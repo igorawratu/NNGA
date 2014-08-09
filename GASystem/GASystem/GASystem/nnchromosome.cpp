@@ -34,9 +34,27 @@ NNChromosome& NNChromosome::operator = (const NNChromosome& other){
     return *this;
 }
 
+NNChromosome::NNChromosome(vector<NeuralNetwork> _nets){
+    mNets = _nets;
+}
+
 bool NNChromosome::addDelta(vector<map<uint, vector<double>>> _weights){
-    cout << "Add delta currently not implemented for NNChromosome" << endl;
-    return false;
+    if(_weights.size() != mNets.size())
+        return false;
+    
+    for(uint k = 0; k < _weights.size(); ++k){
+        map<uint, vector<double>> nnWeights = mNets[k].getWeights();
+
+        for(map<uint, vector<double>>::iterator iter = _weights[k].begin(); iter != _weights[k].end(); ++iter){
+            for(uint i = 0; i < iter->second.size(); ++i){
+                nnWeights[iter->first][i] += iter->second[i];
+            }
+        }
+
+        mNets[k].setWeights(nnWeights);
+    }
+
+    return true;
 }
 
 void NNChromosome::mutate(string _mutationType, map<string, double>& _parameters){

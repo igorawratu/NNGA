@@ -12,6 +12,8 @@ StandardGA::StandardGA(StandardGAParameters _parameters){
     mRequests = new MPI_Request[mTotalRequests];
 	mUpdateList = new int[mTotalRequests];
     mRetrievedFitnesses = new double[mTotalRequests * 2];
+
+    mWorkStatus = NOWORK;
 }
 
 
@@ -101,24 +103,22 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer, string _ou
         cout << endl;
 
         //checks if the fitness of the solution is below the epsilon threshold, if it is, stop training
-        for(uint i = 0; i < mPopulation.size(); ++i){
-            if(mPopulation[i]->realFitness() <= mParameters.fitnessEpsilonThreshold){
-                Solution finalSolution(dynamic_cast<NNChromosome*>(mPopulation[i])->getNeuralNets());
-                finalSolution.fitness() = mPopulation[i]->fitness();
+        if(mPopulation[0]->realFitness() <= mParameters.fitnessEpsilonThreshold){
+            Solution finalSolution(dynamic_cast<NNChromosome*>(mPopulation[0])->getNeuralNets());
+            finalSolution.fitness() = mPopulation[0]->fitness();
 
-				mWorkStatus = COMPLETE;
-				stopSlaves();
-				workerThread.join();
+			mWorkStatus = COMPLETE;
+			stopSlaves();
+			workerThread.join();
 
-                for(uint j = 0; j < mPopulation.size(); ++j)
-                    delete mPopulation[j];
-				mPopulation.clear();
+            for(uint j = 0; j < mPopulation.size(); ++j)
+                delete mPopulation[j];
+			mPopulation.clear();
 
-                delete crossoverAlgorithm;
-                delete selectionAlgorithm;
+            delete crossoverAlgorithm;
+            delete selectionAlgorithm;
 
-                return finalSolution;
-            }
+            return finalSolution;
         }
 
         cout << "Time taken for this generation : " << time(0) - t << endl;

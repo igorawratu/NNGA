@@ -52,7 +52,7 @@ private:
 
     double mLastDCRadius;
     double mBestLastFitness;
-    uint stagnationCounter;
+    uint mStagnationCounter;
 };
 
 #endif

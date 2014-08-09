@@ -48,15 +48,15 @@ private:
     vector<map<uint, pair<ESPSubPopulation*, uint>>> mSubpopulations;
     double mBestFitness, mBestRealFitness;
     Solution mBestSolution;
-    uint mStagnationCounter, mNumTeams;
+    uint mNumTeams;
 
     map<int, vector<map<uint, Neuron*>>> mUpdateList;
-    MPI_Request* mRequests;
+    MPI_Request* mRequests, *mTeamRequests;
     double* mRetrievedFitnesses, *mRetrievedCompetitiveFitnesses;
     int* mRetrievedTeamIDs;
     int mTotalSlaveProcs, mTotalRequests;
     map<uint, Solution*> mSavedSolutions;
-    WorkStatus mWorkStatus;
+    volatile WorkStatus mWorkStatus;
     SimulationContainer* mSimulationContainer;
 	uint mStages, mStage;
 

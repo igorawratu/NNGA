@@ -12,12 +12,15 @@ ESP::ESP(ESPParameters _parameters){
     mTotalRequests = totalWork > mTotalSlaveProcs ? mTotalSlaveProcs : totalWork;
 
     mRequests = new MPI_Request[mTotalRequests];
+    mTeamRequests = new MPI_Request[mTotalRequests];
     mRetrievedFitnesses = new double[mTotalRequests * 2];
 
     if(mNumTeams > 1){
         mRetrievedCompetitiveFitnesses = new double[mTotalRequests * mNumTeams];
         mRetrievedTeamIDs = new int[mTotalRequests * mNumTeams];
     }
+
+    mWorkStatus = NOWORK;
 }
 
 ESP::~ESP(){
@@ -299,11 +302,12 @@ void ESP::evaluateCompetitiveFitness(SimulationContainer* _simulationContainer){
                     assigned = true;
                 else if(k > 0){
                     MPI_Status status;
-                    int received;
+                    int received, receivedTeam;
 
                     MPI_Test(&mRequests[k], &received, &status);
+                    MPI_Test(&mTeamRequests[k], &receivedTeam, &status);
 
-                    if(received)
+                    if(received && receivedTeam)
                         assigned = true;
                 }
 
@@ -432,8 +436,6 @@ void ESP::evaluateFitness(SimulationContainer* _simulationContainer){
         delete mSavedSolutions[k];
         mSavedSolutions.erase(k);
     }
-
-    mStagnationCounter = improved ? 0 : mStagnationCounter + 1;
 }
 
 bool ESP::createNeuralNetworkPrimitives(vector<pair<map<uint, Neuron*>, map<uint, Neuron*>>>& _output){

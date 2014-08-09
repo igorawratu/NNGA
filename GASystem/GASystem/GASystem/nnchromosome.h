@@ -16,6 +16,7 @@ class NNChromosome : public Chromosome
 {
 public:
     NNChromosome();
+    NNChromosome(vector<NeuralNetwork> _nets);
     virtual bool initialize(pugi::xml_node* _root);
     NNChromosome(const NNChromosome& other);
     virtual ~NNChromosome();
