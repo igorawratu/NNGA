@@ -171,7 +171,7 @@ void ESP::sendCompData(Solution& _solution, int _slave){
 
         //setup corresponding nonblocking receive calls
         MPI_Irecv(&mRetrievedCompetitiveFitnesses[_slave * mNumTeams], mNumTeams, MPI_DOUBLE, _slave, 1, MPI_COMM_WORLD, &mRequests[_slave]);
-        MPI_Irecv(&mRetrievedTeamIDs[_slave * mNumTeams], mNumTeams, MPI_INT, _slave, 1, MPI_COMM_WORLD, &mRequests[_slave]);
+        MPI_Irecv(&mRetrievedTeamIDs[_slave * mNumTeams], mNumTeams, MPI_INT, _slave, 1, MPI_COMM_WORLD, &mTeamRequests[_slave]);
 
         delete [] nodes;
         delete [] format;

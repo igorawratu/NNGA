@@ -1,19 +1,24 @@
 #ifndef CMAESPARAMETERS_H
 #define CMAESPARAMETERS_H
 
+#include <Eigen/Dense>
+
 struct CMAESParameters
 {
-    uint populationSize;
+    //set
     uint maxGenerations;
     uint maxCompGenerations;
-
     uint evalsPerCompChrom;
-
     string nnFormatFilename;
     double fitnessEpsilonThreshold;
     double deltaCodeRadius;
+    double initStepsize;
 
-    string selectionAlgorithm;
+    //do not set
+    uint populationSize;
+    uint parentSize;
+    Eigen::MatrixXd weights;
+    double mewEff;
 };
 
 

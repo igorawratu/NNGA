@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(CPPREPO)\boost_1_51_0\boost_1_51_0&quot;;&quot;$(OGRE_HOME)\Samples\Common\include&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;&quot;$(BULLET_ROOT)\src&quot;;&quot;C:\Program Files\Microsoft HPC Pack 2008 SDK\Include&quot;"
+				AdditionalIncludeDirectories="&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(CPPREPO)\boost_1_51_0\boost_1_51_0&quot;;&quot;$(OGRE_HOME)\Samples\Common\include&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;&quot;$(BULLET_ROOT)\src&quot;;&quot;C:\Program Files\Microsoft HPC Pack 2008 SDK\Include&quot;;&quot;$(CPPREPO)\eigen&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -118,7 +118,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(CPPREPO)\boost_1_51_0\boost_1_51_0&quot;;&quot;$(OGRE_HOME)\Samples\Common\include&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;&quot;$(BULLET_ROOT)\src&quot;;&quot;C:\Program Files\Microsoft HPC Pack 2008 SDK\Include&quot;"
+				AdditionalIncludeDirectories="&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(CPPREPO)\boost_1_51_0\boost_1_51_0&quot;;&quot;$(OGRE_HOME)\Samples\Common\include&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;&quot;$(BULLET_ROOT)\src&quot;;&quot;C:\Program Files\Microsoft HPC Pack 2008 SDK\Include&quot;;&quot;$(CPPREPO)\eigen&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
