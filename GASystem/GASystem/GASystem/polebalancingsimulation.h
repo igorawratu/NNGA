@@ -49,6 +49,7 @@ public:
     virtual vector<Line> getLines();
 	virtual ESPParameters getESPParams(string _nnFormatFile);
 	virtual StandardGAParameters getSGAParameters(string _nnFormatFile);
+    virtual CMAESParameters getCMAESParameters(string _nnFormatFile);
 
 private:
     bool isCartFine();

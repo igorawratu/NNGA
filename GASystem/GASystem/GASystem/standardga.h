@@ -36,7 +36,7 @@ private:
     void quicksort(vector<Chromosome*>& elements, int left, int right);
 	void hostwork();
 	void stopSlaves();
-	void sendData(Solution& _solution, int _slave);
+	void sendData(Solution* _solution, int _slave);
 	void evaluatePopulation(vector<Chromosome*>& _population);
 
 private:
@@ -51,6 +51,7 @@ private:
     SimulationContainer* mSimulationContainer;
 	uint mStages, mStage;
 	vector<Chromosome*> mPopulation;
+    Solution* mSavedSolution;
 
 private:
     StandardGA(){}

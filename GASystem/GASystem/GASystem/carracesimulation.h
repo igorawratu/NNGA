@@ -44,6 +44,7 @@ public:
     virtual vector<CompetitiveFitness> competitiveFitness();
 	virtual ESPParameters getESPParams(string _nnFormatFile);
 	virtual StandardGAParameters getSGAParameters(string _nnFormatFile);
+    virtual CMAESParameters getCMAESParameters(string _nnFormatFile);
 
 private:
     void applyUpdateRules(string _agentName, uint groupNum);

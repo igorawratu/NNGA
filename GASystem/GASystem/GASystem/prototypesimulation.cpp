@@ -249,3 +249,17 @@ StandardGAParameters PrototypeSimulation::getSGAParameters(string _nnFormatFile)
 
     return params;
 }
+
+CMAESParameters PrototypeSimulation::getCMAESParameters(string _nnFormatFile){
+    CMAESParameters params;
+
+    params.maxGenerations = 600;
+    params.maxCompGenerations = 0;
+    params.evalsPerCompChrom = 5;
+    params.nnFormatFilename = _nnFormatFile;
+    params.fitnessEpsilonThreshold = 0;
+    params.deltaCodeRadius = 0.2;
+    params.initStepsize = 0.2;
+
+    return params;
+}

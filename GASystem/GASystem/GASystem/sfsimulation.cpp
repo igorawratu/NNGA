@@ -13,7 +13,7 @@ SFSimulation::SFSimulation(double _rangefinderRadius, uint _numAgents, uint _num
     mFitnessFunctions.push_back(new GoalPointFitness());
     mFitnessFunctions.push_back(new CollisionFitness());
     mFitnessFunctions.push_back(new ExpectedValueFitness());
-    mAngularVelAcc =0;
+    mAngularVelAcc = 0;
 }
 
 SFSimulation::SFSimulation(const SFSimulation& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager){
@@ -96,9 +96,9 @@ double SFSimulation::fitness(){
     doubleAcc["LowerBound"] = 0;
     doubleAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 10;
     doubleAcc["Value"] = mAngularVelAcc;
-    doubleAcc["EVWeight"] = 1;
+    doubleAcc["EVWeight"] = 0.2;
 
-    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, doubleAcc, intAcc);
 
     return finalFitness;
 }
@@ -137,9 +137,9 @@ double SFSimulation::realFitness(){
     doubleAcc["LowerBound"] = 0;
     doubleAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 10;
     doubleAcc["Value"] = mAngularVelAcc;
-    doubleAcc["EVWeight"] = 1;
+    doubleAcc["EVWeight"] = 0.2;
 
-    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, doubleAcc, intAcc);
 
     return finalFitness;
 }
@@ -170,37 +170,36 @@ void SFSimulation::applyUpdateRules(string _agentName, int _groupNum){
 
     for(int k = -100; k <= 100; k += 50){
         for(int i = -100; i <= 100; i+= 50){
-            input[inputIndex] = getRayCollisionDistance(_agentName, btVector3(k, i, 5), AGENT);
-            inputIndex++;
+            input[inputIndex++] = getRayCollisionDistance(_agentName, btVector3(k, i, 5), AGENT);
         }
     }
 
     //agent position
-    input[1 + inputIndex] = trans.getOrigin().getX() / 50;
-    input[2 + inputIndex] = trans.getOrigin().getY() / 50;
-    input[3 + inputIndex] = trans.getOrigin().getZ() / 50;
+    input[inputIndex] = trans.getOrigin().getX() / 50;
+    input[1 + inputIndex] = trans.getOrigin().getY() / 50;
+    input[2 + inputIndex] = trans.getOrigin().getZ() / 50;
     
     //goal line
-    input[4 + inputIndex] = mGoalpoint.x / 50;
-    input[5 + inputIndex] = mGoalpoint.y / 50;
-    input[6 + inputIndex] = mGoalpoint.z / 50;
+    input[3 + inputIndex] = mGoalpoint.x / 50;
+    input[4 + inputIndex] = mGoalpoint.y / 50;
+    input[5 + inputIndex] = mGoalpoint.z / 50;
 
     vector3 agentVel = mWorldEntities[_agentName]->getVelocity();
-    input[7 + inputIndex] = agentVel.x;
-    input[8 + inputIndex] = agentVel.y;
-    input[9 + inputIndex] = agentVel.z;
+    input[6 + inputIndex] = agentVel.x;
+    input[7 + inputIndex] = agentVel.y;
+    input[8 + inputIndex] = agentVel.z;
 
     vector3 angVel = mWorldEntities[_agentName]->getAngularVelocity();
     double angVelDist = angVel.calcDistance(vector3(0, 0, 0));
-    input[10 + inputIndex] = angVelDist;
+    input[9 + inputIndex] = angVelDist;
 
-    if(frontDist < 10)
+    /*if(frontDist < 10)
         mWorldEntities[_agentName]->avoidCollisions(frontDist, 0, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
-    else{
-        mWorldEntities[_agentName]->avoided();
+    else{*/
         vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
+
         mWorldEntities[_agentName]->update(output);
-    }
+    //}
 
     if(!reached(_agentName) && getPositionInfo(_agentName).calcDistance(mGoalpoint) < mGoalRadius)
         mReached.push_back(_agentName);
@@ -247,7 +246,7 @@ ESPParameters SFSimulation::getESPParams(string _nnFormatFile){
     params.maxGenerations = 200;
     params.maxCompGenerations = 0;
     params.nnFormatFilename = _nnFormatFile;
-    params.stagnationThreshold = 0;
+    params.stagnationThreshold = 1;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
@@ -259,7 +258,7 @@ ESPParameters SFSimulation::getESPParams(string _nnFormatFile){
     params.elitismCount = params.populationSize/10;
     params.sampleEvaluationsPerChromosome = 5;
     params.crossoverParameters["CrossoverProbability"] = 0.8;
-    params.deltaCodeRadius = 0.05;
+    params.deltaCodeRadius = 0.2;
 
     return params;
 }
@@ -280,6 +279,20 @@ StandardGAParameters SFSimulation::getSGAParameters(string _nnFormatFile){
     params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = params.populationSize/10;
     params.crossoverParameters["CrossoverProbability"] = 0.8;
+
+    return params;
+}
+
+CMAESParameters SFSimulation::getCMAESParameters(string _nnFormatFile){
+    CMAESParameters params;
+
+    params.maxGenerations = 600;
+    params.maxCompGenerations = 0;
+    params.evalsPerCompChrom = 5;
+    params.nnFormatFilename = _nnFormatFile;
+    params.fitnessEpsilonThreshold = 0;
+    params.deltaCodeRadius = 0.2;
+    params.initStepsize = 0.2;
 
     return params;
 }

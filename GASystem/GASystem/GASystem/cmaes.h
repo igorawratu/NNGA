@@ -10,7 +10,6 @@
 #include <vector>
 #include <map>
 #include <mpi.h>
-#include "multivariatenormal.h"
 #include <math.h> 
 
 #include <boost/random.hpp>

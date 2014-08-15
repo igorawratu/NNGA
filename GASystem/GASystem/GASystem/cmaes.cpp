@@ -5,15 +5,6 @@ using namespace std;
 CMAES::CMAES(CMAESParameters _parameters){
     mParameters = _parameters;
 
-    MPI_Comm_size(MPI_COMM_WORLD, &mTotalSlaveProcs);
-    assert(mTotalSlaveProcs > 0);
-
-    int totalWork = _parameters.evalsPerCompChrom * _parameters.populationSize;
-    mTotalRequests = totalWork > mTotalSlaveProcs ? mTotalSlaveProcs : totalWork;
-
-    mRequests = new MPI_Request[mTotalRequests];
-    mRetrievedFitnesses = new double[mTotalRequests];
-
     mWorkStatus = NOWORK;
 }
     
@@ -94,10 +85,10 @@ Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputF
 
             double csig = (mParameters.mewEff + 2) / (dims + mParameters.mewEff + 5);
 
-            double dsigTemp = sqrt((mParameters.mewEff - 1) / (dims + 1)) + 1;
+            double dsigTemp = sqrt((mParameters.mewEff - 1) / (dims + 1)) - 1;
             dsigTemp = dsigTemp > 0 ? dsigTemp : 0;
             double dsig = 1 + 2 * dsigTemp + csig;
-            double cc = (4 + mParameters.mewEff / dims) / (dims + 4 + (2*mParameters.mewEff) / dims);
+            double cc = (4 + mParameters.mewEff / dims) / (dims + 4 + ((2*mParameters.mewEff) / dims));
             double c1 = 2 / (pow(dims + 1.3, 2) + mParameters.mewEff);
             
             double cmewTemp = 2 * ((mParameters.mewEff - 2 + 1/mParameters.mewEff)/(pow((double)dims + 2, 2) + (2*mParameters.mewEff)/2));
@@ -182,6 +173,7 @@ Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputF
                 for(uint i = 0; i < mParameters.parentSize; ++i){
                     rankMew += mParameters.weights(i, 0) * yilambdas[i] * yilambdas[i].transpose();
                 }
+                rankMew *= cmew;
 
                 covMat = mem + rankOne + rankMew;
 
@@ -189,6 +181,7 @@ Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputF
                 Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigenSolver(covMat);
                 eigenVectors = eigenSolver.eigenvectors();
                 eigenValuesSqrt = eigenSolver.eigenvalues();
+
                 for(int k = 0; k < dims; ++k) {
                     eigenValuesSqrt(k, 0) = sqrt(eigenValuesSqrt(k, 0));
                 }
@@ -203,6 +196,11 @@ Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputF
                 //evaluate offspring
                 cout << "Evaluating Fitness" << endl;
                 evaluateFitness(mPopulation);
+
+                cout << "Current population fitnesses..." << endl;
+                for(uint i = 0; i < mPopulation.size(); i++)
+                    cout << mPopulation[i]->fitness() << " " << mPopulation[i]->realFitness() << " | ";
+                cout << endl;
                 
                 cout << "Time taken for this generation : " << time(0) - t << endl;
                 
@@ -244,7 +242,7 @@ Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputF
                 //set constants
                 csigs[iter->first] = (mParameters.mewEff + 2) / (dims[iter->first] + mParameters.mewEff + 5);
 
-                double dsigTemp = sqrt((mParameters.mewEff - 1) / (dims[iter->first] + 1)) + 1;
+                double dsigTemp = sqrt((mParameters.mewEff - 1) / (dims[iter->first] + 1)) - 1;
                 dsigTemp = dsigTemp > 0 ? dsigTemp : 0;
                 dsigs[iter->first] = 1 + 2 * dsigTemp + csigs[iter->first];
                 ccs[iter->first] = (4 + mParameters.mewEff / dims[iter->first]) / (dims[iter->first] + 4 + (2*mParameters.mewEff) / dims[iter->first]);
@@ -411,6 +409,17 @@ bool CMAES::setup(){
     //set initial variables
     mParameters.populationSize = 4 + 3 * log((double)dims);
     mParameters.parentSize = mParameters.populationSize / 2;
+
+    MPI_Comm_size(MPI_COMM_WORLD, &mTotalSlaveProcs);
+    if(mTotalSlaveProcs == 0)
+        return false;
+
+    int totalWork = mParameters.evalsPerCompChrom * mParameters.populationSize;
+    mTotalRequests = totalWork > mTotalSlaveProcs ? mTotalSlaveProcs : totalWork;
+
+    mRequests = new MPI_Request[mTotalRequests];
+    mRetrievedFitnesses = new double[mTotalRequests];
+
     setupWeights();
     
     //determine how many teams
@@ -473,17 +482,24 @@ bool CMAES::setup(){
             }
         }
     }
+
+    return true;
 }
 
 void CMAES::setupWeights(){
     mParameters.weights.resize(mParameters.parentSize, 1);
     mParameters.mewEff = 0;
 
-    double total = ((double)mParameters.parentSize * (1 + (double)mParameters.parentSize)) / 2;
+    double total = 0;
+    double mewbar = (double)(mParameters.populationSize) / 2.;
+
+    for(uint k = 1; k <= mParameters.parentSize; ++k){
+        mParameters.weights(k - 1, 0) = log(mewbar + 0.5) - log((double)k);
+        total += mParameters.weights(k - 1, 0);
+    }
 
     for(uint k = 0; k < mParameters.parentSize; ++k){
-        double mewbar = (double)(mParameters.parentSize) / 2;
-        mParameters.weights(k, 0) = log(mewbar + 0.5) - log((double)k);
+        mParameters.weights(k, 0) = mParameters.weights(k, 0) / total;
         mParameters.mewEff += mParameters.weights(k, 0) * mParameters.weights(k, 0);
     }
 
@@ -714,7 +730,7 @@ void CMAES::runDeltaCodes(){
         }
 
         Chromosome* newChrom = seedChrom->clone();
-        newChrom->setWeights(newWeights);
+        newChrom->addDelta(newWeights);
         mPopulation.push_back(newChrom);
     }
 
@@ -912,6 +928,7 @@ void CMAES::calcMean(const vector<Chromosome*>& _population, Eigen::MatrixXd& _w
                 for(uint i = 0; i < iter->second.size(); ++i){
                     yilambda(currPos, 0) = (iter->second[i] - _weightedMean(currPos, 0)) / _stepSize;
                     _weightedMean(currPos, 0) += mParameters.weights(k, 0) * iter->second[i];
+                    
                     currPos++;
                 }
             }
@@ -939,19 +956,18 @@ void CMAES::generateOffspring(vector<Chromosome*>& _population, const Eigen::Mat
             infeasiblePositions.push_back(i);
         }
 
-        while(infeasiblePositions.size() > 0){
-            for(int i = 0; i < infeasiblePositions.size(); ++i) {
-                sampleTemp(infeasiblePositions[i], 0) = gen() * _eigenValuesSqrt(i, 0);
-            }
-            sample = _eigenVectors * sampleTemp;
+        for(int i = 0; i < _dims; ++i) {
+            sampleTemp(i, 0) = gen() * _eigenValuesSqrt(i, 0);
+        }
+        sample = _eigenVectors * sampleTemp;
 
-            infeasiblePositions.clear();
-            for(uint i = 0; i < _dims; ++i){
-                sample(i, 0) = sample(i, 0) * _stepSize + _means(k, 0);
+        for(uint i = 0; i < _dims; ++i){
+            sample(i, 0) = _stepSize * sample(i, 0) + _means(i, 0);
 
-                if(sample(i, 0) < -1 || sample(i, 0) > 1)
-                    infeasiblePositions.push_back(i);
-            }
+            /*if(sample(i, 0) < -1)
+                sample(i, 0) = -1;
+            else if(sample(i, 0) > 1)
+                sample(i, 0) = 1;*/
         }
 
         //set generated synapses for new child

@@ -162,3 +162,15 @@ void Solution::serialize(int*& _nodes, int*& _format, double*& _weights, int& _n
         delete [] weights[k];
     }
 }
+
+void Solution::print(){
+    for(uint k = 0; k < mNeuralNets.size(); k++){
+        map<uint, vector<double>> weights = mNeuralNets[k].getWeights();
+        for(map<uint, vector<double>>::iterator iter = weights.begin(); iter != weights.end(); ++iter){
+            for(uint i = 0; i < iter->second.size(); ++i){
+                cout << iter->second[i] << " ";
+            }
+        }
+    }
+    cout << endl;
+}

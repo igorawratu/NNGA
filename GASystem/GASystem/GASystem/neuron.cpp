@@ -36,7 +36,7 @@ double Neuron::calculateActivationEnergy(double _netSignal){
     
     switch(mActivationFunction){
         case SIGMOID:
-            output = 1/(1 + pow(e, -_netSignal));
+            output = 1/(1 + exp(-_netSignal));
             break;
         default:
             cout << "Error: unable to determine the activation function type" << endl;

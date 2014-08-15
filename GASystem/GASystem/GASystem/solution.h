@@ -33,6 +33,8 @@ public:
 
     void serialize(int*& _nodes, int*& _format, double*& _weights, int& _nodeSize, int& _formatSize, int& _weightSize);
 
+    void print();
+
 private:
     vector<NeuralNetwork> mNeuralNets;
     double mFitness, mRealFitness;

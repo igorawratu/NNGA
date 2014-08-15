@@ -96,8 +96,6 @@ Solution ESP::train(SimulationContainer* _simulationContainer, string _outputFil
                 for(map<uint, pair<ESPSubPopulation*, uint>>::iterator iter = mSubpopulations[i].begin(); iter != mSubpopulations[i].end(); ++iter){
                     if(iter->second.second != 0){
                         iter->second.first->nextGeneration();
-                        cout << "Subpop " << iter->first << " best-worst distance : "; 
-                        iter->second.first->printBestWorstDistance();
                     }
                 }
             }
@@ -400,6 +398,9 @@ void ESP::evaluateFitness(SimulationContainer* _simulationContainer){
                     updateFitness(k, improved);
 
                     saveUpdateVec(neuralNetPrimitives, k);
+
+		            mSimulationContainer->runFullSimulation(mSavedSolutions[k]);
+		            mSimulationContainer->resetSimulation();
 
                     delete mSavedSolutions[k];
                     mSavedSolutions.erase(k);

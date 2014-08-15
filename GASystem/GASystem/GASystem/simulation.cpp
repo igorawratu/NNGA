@@ -15,6 +15,7 @@ Simulation::Simulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPer
     mSolver = new btSequentialImpulseConstraintSolver();
 
     mWorld = new btDiscreteDynamicsWorld(mDispatcher, mBroadphase, mSolver, mCollisionConfig);
+    mWorld->setGravity(btVector3(0, 0, 0));
 }
 
 Simulation::Simulation(const Simulation& other){}

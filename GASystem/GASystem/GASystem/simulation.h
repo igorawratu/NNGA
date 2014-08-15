@@ -8,6 +8,7 @@
 #include "agent.h"
 #include "standardgaparameters.h"
 #include "espparameters.h"
+#include "cmaesparameters.h"
 
 #include <map>
 #include <vector>
@@ -59,6 +60,7 @@ public:
 
 	virtual ESPParameters getESPParams(string _nnFormatFile)=0;
 	virtual StandardGAParameters getSGAParameters(string _nnFormatFile)=0;
+    virtual CMAESParameters getCMAESParameters(string _nnFormatFile)=0;
 
 protected:
     vector3 getPositionInfo(string _entityName);

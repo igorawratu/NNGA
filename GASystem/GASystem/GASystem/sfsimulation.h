@@ -34,6 +34,7 @@ public:
     }
 	virtual ESPParameters getESPParams(string _nnFormatFile);
 	virtual StandardGAParameters getSGAParameters(string _nnFormatFile);
+    virtual CMAESParameters getCMAESParameters(string _nnFormatFile);
 
 protected:
     void applyUpdateRules(string _agentName, int _groupNum);

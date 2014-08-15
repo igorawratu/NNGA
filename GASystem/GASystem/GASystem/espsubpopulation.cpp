@@ -191,15 +191,13 @@ void ESPSubPopulation::setParameters(ESPParameters _params){
 }
 
 void ESPSubPopulation::generateDeltaCodes(double _deltaRange){
-    mBestLastFitness = mSubpopulation[0]->fitness();
     mLastDCRadius = _deltaRange;
     vector<Chromosome*> newPopulation;
-    newPopulation.push_back(mSubpopulation[0]->clone());
     mEvaluationCounter.clear();
-    mEvaluationCounter.push_back(0);
-    for(uint k = 1; k < mParameters.populationSize; ++k){
-        newPopulation.push_back(mSubpopulation[0]->clone());
 
+    for(uint k = mParameters.elitismCount; k < mParameters.populationSize; ++k){
+        newPopulation.push_back(mSubpopulation[0]->clone());
+        
         if(_deltaRange < 0)
             _deltaRange = -_deltaRange;
         else if(_deltaRange == 0)
@@ -218,7 +216,7 @@ void ESPSubPopulation::generateDeltaCodes(double _deltaRange){
         delta.push_back(map<uint, vector<double>>());
         delta[0][1] = deltaVector;
 
-        newPopulation[k]->addDelta(delta);
+        newPopulation[k - mParameters.elitismCount]->addDelta(delta);
         mEvaluationCounter.push_back(0);
     }
 
@@ -227,12 +225,12 @@ void ESPSubPopulation::generateDeltaCodes(double _deltaRange){
         mUnevaluatedSubpopulation[k] = 0;
     }
 
-    for(uint k = 0; k < mSubpopulation.size(); ++k){
+    for(uint k = mParameters.elitismCount; k < mSubpopulation.size(); ++k){
         delete mSubpopulation[k];
         mSubpopulation[k] = 0;
     }
 
-    mSubpopulation.clear();
+    mSubpopulation.erase(mSubpopulation.begin() + mParameters.elitismCount, mSubpopulation.end());
     mUnevaluatedSubpopulation.clear();
     mUnevaluatedSubpopulation = newPopulation;
 }

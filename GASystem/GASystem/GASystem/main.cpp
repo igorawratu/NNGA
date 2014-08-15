@@ -44,12 +44,14 @@
 #include <boost/lexical_cast.hpp>
 #include "slave.h"
 #include <boost/tuple/tuple.hpp>
+#include "cmaes.h"
+#include "cmaesparameters.h"
 
 #define TRAIN
 
 using namespace std;
 
-enum GAType{TYPE_STANDARD, TYPE_ESP};
+enum GAType{TYPE_STANDARD, TYPE_ESP, TYPE_CMAES};
 
 typedef boost::tuples::tuple<Simulation*, string, string> SimInfo;
 
@@ -157,9 +159,13 @@ void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inp
             StandardGAParameters params = _sim->getSGAParameters(_inputFile);
             ga = new StandardGA(params);
         }
-        else{
+        else if(_type == TYPE_ESP){
             ESPParameters params = _sim->getESPParams(_inputFile);
             ga = new ESP(params);
+        }
+        else if(_type == TYPE_CMAES){
+            CMAESParameters params = _sim->getCMAESParameters(_inputFile);
+            ga = new CMAES(params);
         }
 
         GAEngine gaengine;
@@ -221,13 +227,13 @@ int main(int argc, char** argv){
 
     srand(time(0));
 
-    string simName = "SFObstacleSim";
+    string simName = "BridgeCarSim";
 
     GraphicsEngine* engine = new GraphicsEngine(NULL);
 
     SimInfo simInfo = createSimulation(simName, engine);
 
-    runSim(engine, simInfo.get<0>(), TYPE_ESP, simInfo.get<1>(), simInfo.get<2>());
+    runSim(engine, simInfo.get<0>(), TYPE_CMAES, simInfo.get<1>(), simInfo.get<2>());
     //testCrossoverOp();
 
     delete engine;

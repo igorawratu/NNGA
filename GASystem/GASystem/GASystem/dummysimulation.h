@@ -70,6 +70,10 @@ public:
 		StandardGAParameters params;
 		return params;
 	}
+    virtual CMAESParameters getCMAESParameters(string _nnFormatFile){
+        CMAESParameters params;
+        return params;
+    }
 
 };
 
