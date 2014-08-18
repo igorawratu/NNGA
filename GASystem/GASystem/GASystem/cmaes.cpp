@@ -6,6 +6,13 @@ CMAES::CMAES(CMAESParameters _parameters){
     mParameters = _parameters;
 
     mWorkStatus = NOWORK;
+
+    mUpdateList = 0;
+    mRequests = 0;
+    mTeamRequests = 0;
+    mRetrievedFitnesses = 0;
+    mRetrievedCompetitiveFitnesses = 0;
+    mRetrievedTeamIDs = 0;
 }
     
 CMAES::~CMAES(){
@@ -15,35 +22,46 @@ CMAES::~CMAES(){
     if(mRequests)
         delete [] mRequests;
 
-    if(mRetrievedFitnesses)
+    if(mRetrievedFitnesses){
+        cout << "del ret fit" << endl;
         delete [] mRetrievedFitnesses;
+    }
 
-    if(mRetrievedCompetitiveFitnesses)
+    if(mRetrievedCompetitiveFitnesses){
+        cout << "del ret comp fit" << endl;
         delete [] mRetrievedCompetitiveFitnesses;
+    }
 
-    if(mRetrievedTeamIDs)
+    if(mRetrievedTeamIDs){
+        cout << "del ret teamid" << endl;
         delete [] mRetrievedTeamIDs;
+    }
 
-    if(mTeamRequests)
+    if(mTeamRequests){
+        cout << "del team req" << endl;
         delete [] mTeamRequests;
+    }
 
     mSimulationContainer = 0;
     
+    cout << "del pop" << endl;
     for(uint k = 0; k < mPopulation.size(); ++k)
         delete mPopulation[k];
 
+    cout << "del com pop" << endl;
     for(map<int, vector<Chromosome*>>::iterator iter = mCompetitivePopulations.begin(); iter != mCompetitivePopulations.end(); ++iter){
         for(uint k = 0; k < iter->second.size(); ++k){
             delete iter->second[k];
         }
     }
-
 }
 
 Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputFileName){
     //setup ANN structure
-    if(!setup())
+    if(!setup()){
+        stopSlaves();
         return Solution();
+    }
 
     mSimulationContainer = _simulationContainer;
     
@@ -56,6 +74,14 @@ Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputF
 
     for(mStage = 1; mStage <= mStages; ++mStage){ 
         if(mStage == 2){
+            delete [] mRequests;
+
+            int totalWork = mParameters.populationSize;
+            mTotalRequests = totalWork > mTotalSlaveProcs ? mTotalSlaveProcs : totalWork;
+
+            mRequests = new MPI_Request[mTotalRequests];
+            mRetrievedFitnesses = new double[mTotalRequests * 2];
+
             runDeltaCodes();
         }
 
@@ -109,6 +135,8 @@ Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputF
             if(mStages == 1){
                 generateOffspring(mPopulation, eigenVectors, eigenValuesSqrt, currMean, stepSize, dims);
             }
+
+            cout << "night before evals" << endl;
 
             //evaluate initial population
             evaluateFitness(mPopulation);
@@ -350,6 +378,7 @@ Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputF
                     for(uint i = 0; i < mParameters.parentSize; ++i){
                         rankMew += mParameters.weights(i, 0) * yilambdas[i] * yilambdas[i].transpose();
                     }
+                    rankMew *= cmews[iter->first];
 
                     covMats[iter->first] = mem + rankOne + rankMew;
 
@@ -406,22 +435,6 @@ bool CMAES::setup(){
     int dims = calcDims(chrom);
     delete chrom;
 
-    //set initial variables
-    mParameters.populationSize = 4 + 3 * log((double)dims);
-    mParameters.parentSize = mParameters.populationSize / 2;
-
-    MPI_Comm_size(MPI_COMM_WORLD, &mTotalSlaveProcs);
-    if(mTotalSlaveProcs == 0)
-        return false;
-
-    int totalWork = mParameters.evalsPerCompChrom * mParameters.populationSize;
-    mTotalRequests = totalWork > mTotalSlaveProcs ? mTotalSlaveProcs : totalWork;
-
-    mRequests = new MPI_Request[mTotalRequests];
-    mRetrievedFitnesses = new double[mTotalRequests];
-
-    setupWeights();
-    
     //determine how many teams
     set<int> teamIDs;
     for(pugi::xml_node currNetwork = root.first_child(); currNetwork; currNetwork = currNetwork.next_sibling()){
@@ -434,6 +447,22 @@ bool CMAES::setup(){
     }
     mNumTeams = teamIDs.size();
 
+    //set initial variables
+    mParameters.populationSize = 4 + 3 * log((double)dims);
+    mParameters.parentSize = mParameters.populationSize / 2;
+
+    MPI_Comm_size(MPI_COMM_WORLD, &mTotalSlaveProcs);
+    if(mTotalSlaveProcs == 0)
+        return false;
+
+    int totalWork = mNumTeams == 1 ? mParameters.populationSize : mParameters.evalsPerCompChrom * mParameters.populationSize;
+    mTotalRequests = totalWork > mTotalSlaveProcs ? mTotalSlaveProcs : totalWork;
+
+    mRequests = new MPI_Request[mTotalRequests];
+    mRetrievedFitnesses = new double[mTotalRequests * 2];
+
+    setupWeights();
+
     //if 1 team, initialize normal population, otherwise init competitive populations first(normal population will be constructed once runDeltaCodes() is called by the algorithm
     if(mNumTeams == 1){
 	    mUpdateList = new int[mTotalRequests];
@@ -445,6 +474,7 @@ bool CMAES::setup(){
                 return false;
             }
             else mPopulation.push_back(currChrom);
+            
         }
     }
     else{

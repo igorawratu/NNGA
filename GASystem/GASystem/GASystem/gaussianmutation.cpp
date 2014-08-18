@@ -32,5 +32,5 @@ void GaussianMutation::execute(vector<double>& _weights, map<string, double>& _p
             _weights[k] += genMutation();
     }
 
-    conformWeights(_weights, maxConstraint, minConstraint);
+    //conformWeights(_weights, maxConstraint, minConstraint);
 }
