@@ -25,7 +25,7 @@ bool SFObstacleSimulation::initialise(){
 
     mGoalpoint = vector3(80, 0, 0);
     mGoalRadius = 5;
-    mCrowdingRadius = 15;
+    mCrowdingRadius = 30;
 
     vector3 minDim(-100, -20, -10), maxDim(-80, 20, 10);
 
@@ -44,7 +44,7 @@ bool SFObstacleSimulation::initialise(){
     btQuaternion rot(0, 0, 0, 1);
 
     for(uint k = 0; k < mAgents.size(); k++){
-        mWorldEntities[mAgents[k]] = new StarFighterAgent(50, 2);
+        mWorldEntities[mAgents[k]] = new StarFighterAgent(25, 2);
         vector3 pos(genx(), geny(), genz());
         if(!mWorldEntities[mAgents[k]]->initialise("starfighter.mesh", vector3(1, 1, 1), rot, mResourceManager, pos, 0.01, mSeed))
             return false;

@@ -51,6 +51,7 @@ protected:
     double mGoalRadius;
     double mCrowdingRadius;
     double mAngularVelAcc;
+    double mCrowdingAcc;
 };
 
 #endif

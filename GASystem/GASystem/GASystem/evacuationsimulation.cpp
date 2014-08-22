@@ -8,7 +8,7 @@ EvacuationSimulation::EvacuationSimulation(double _rangefinderRadius, uint _numA
     mRangefinderVals = 0;
     mAngularVelAcc = 0;
 
-    for(uint k = 0; k < _numAgents; k++)
+    for(uint k = 0; k < 60; k++)
         mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 }
 
@@ -24,7 +24,7 @@ EvacuationSimulation::EvacuationSimulation(const EvacuationSimulation& other) : 
     mRangefinderVals = 0;
     mAngularVelAcc = 0;
 
-    for(uint k = 0; k < other.mAgents.size(); k++)
+    for(uint k = 0; k < 60; k++)
         mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 }
 
@@ -32,8 +32,27 @@ void EvacuationSimulation::iterate(){
     if(mCycleCounter > mNumCycles)
         return;
 
+    mObjectsToRemove.clear();
+
     for(int k = 0; k < mAgents.size(); k++)
         applyUpdateRules(mAgents[k], 0);
+
+    //remove dead agents from simulation
+    for(uint k = 0; k < mObjectsToRemove.size(); ++k){
+        if(mWorldEntities.find(mObjectsToRemove[k]) != mWorldEntities.end()){
+            mWorld->removeRigidBody(mWorldEntities[mObjectsToRemove[k]]->getRigidBody());
+            delete mWorldEntities[mObjectsToRemove[k]];
+            mWorldEntities.erase(mObjectsToRemove[k]);
+        }
+
+        //remove agent from list
+        int pos = -1;
+        for(uint i = 0; i < mAgents.size(); ++i)
+            if(mAgents[i] == mObjectsToRemove[k])
+                pos = i;
+        if(pos > -1)
+            mAgents.erase(mAgents.begin() + pos);
+    }
 
     mCycleCounter++;
 
@@ -48,15 +67,18 @@ double EvacuationSimulation::fitness(){
     map<string, double> dblAcc;
     dblAcc["FLFitnessWeight"] = 1;
     intAcc["Positive"] = 0;
-    dblAcc["ColFitnessWeight"] = 1;
-    dblAcc["Collisions"] = mCollisions + mRangefinderVals; 
     pos["LineP1"] = mExit.p1;
     pos["LineP2"] = mExit.p2;
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
-    //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
+
+    dblAcc["LowerBound"] = 13;
+    dblAcc["UpperBound"] = 15;
+    dblAcc["Value"] = mAgents.size();
+    dblAcc["EVWeight"] = 10;
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
 
     return finalFitness;
 }
@@ -71,13 +93,16 @@ double EvacuationSimulation::realFitness(){
     intAcc["Positive"] = 0;
     pos["LineP1"] = mExit.p1;
     pos["LineP2"] = mExit.p2;
-    dblAcc["ColFitnessWeight"] = 1;
-    dblAcc["Collisions"] = mCollisions; 
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
-    //finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
+    
+    dblAcc["LowerBound"] = 13;
+    dblAcc["UpperBound"] = 15;
+    dblAcc["Value"] = mAgents.size();
+    dblAcc["EVWeight"] = 10;
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
 
     return finalFitness;
 }
@@ -98,7 +123,7 @@ bool EvacuationSimulation::initialise(){
         return true;
 
     mFitnessFunctions.push_back(new FinishLineFitness());
-    mFitnessFunctions.push_back(new CollisionFitness());
+    mFitnessFunctions.push_back(new ExpectedValueFitness());
 
     //change
     mExit.p1 = vector3(-10, 0, -50);
@@ -108,54 +133,21 @@ bool EvacuationSimulation::initialise(){
 
     //set the vals
     vector3 a1minDim(-40, 0, -30), a1maxDim(40, 0, 40);
-    /*vector3 a1minDim(-40, 0, -40), a1maxDim(-20, 0, 40);
-    vector3 a2minDim(20, 0, -40), a2maxDim(40, 0, 40);
-    vector3 a3minDim(-20, 0, 20), a3maxDim(20, 0, 40);
-    vector3 a4minDim(-20, 0, -40), a4maxDim(20, 0, -20);*/
 
     boost::mt19937 rng(mSeed);
     boost::mt19937 rngz(mSeed + mSeed / 2);
-    //boost::mt19937 rnga(mSeed*2);
 
     boost::uniform_real<double> distxa1(a1minDim.x, a1maxDim.x);
     boost::uniform_real<double> distza1(a1minDim.z, a1maxDim.z);
-    /*boost::uniform_real<double> distxa2(a2minDim.x, a2maxDim.x);
-    boost::uniform_real<double> distza2(a2minDim.z, a2maxDim.z);
-    boost::uniform_real<double> distxa3(a3minDim.x, a3maxDim.x);
-    boost::uniform_real<double> distza3(a3minDim.z, a3maxDim.z);
-    boost::uniform_real<double> distxa4(a4minDim.x, a4maxDim.x);
-    boost::uniform_real<double> distza4(a4minDim.z, a4maxDim.z);
-    boost::uniform_int<> area(0, 3);*/
 
     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genxa1(rng, distxa1);
     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genza1(rngz, distza1);
-    /*boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genxa2(rng, distxa2);
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genza2(rngz, distza2);
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genxa3(rng, distxa3);
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genza3(rngz, distza3);
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genxa4(rng, distxa4);
-    boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genza4(rngz, distza4);
-    boost::variate_generator<boost::mt19937, boost::uniform_int<>> genarea(rnga, area);*/
 
     btQuaternion rot(0, 0, 0, 1);
     rot.setEuler(PI/2, 0, 0);
 
     for(uint k = 0; k < mAgents.size(); k++){
         mWorldEntities[mAgents[k]] = new HumanAgent(10, 2);
-        /*int area = genarea();
-        vector3 pos;
-        switch(area){
-            case 0: pos = vector3(genxa1(), 0, genza1());
-                break;
-            case 1: pos = vector3(genxa2(), 0, genza2());
-                break;
-            case 2: pos = vector3(genxa3(), 0, genza3());
-                break;
-            case 3: pos = vector3(genxa4(), 0, genza4());
-                break;
-            default: pos = vector3(0, 0, 0);
-                break;
-        }*/
         
         if(!mWorldEntities[mAgents[k]]->initialise("human.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(genxa1(), 0, genza1()), 0.01, mSeed))
             return false;
@@ -195,63 +187,6 @@ void EvacuationSimulation::tick(){
 
 		        const btCollisionObject* obA = contactManifold->getBody0();
 		        const btCollisionObject* obB = contactManifold->getBody1();
-                
-                /*Agent* currAgent = mWorldEntities[mAgents[k]];
-
-                if((currAgent->getRigidBody() == obA || currAgent->getRigidBody() == obB)){
-                    mCollisions++;
-                    if(!currAgent->getAnimationLoop())
-                        continue;
-
-                    if((mWorldEntities["environment"]->getRigidBody() == obA || mWorldEntities["environment"]->getRigidBody() == obB))
-                        currAgent->setAnimationInfo("staggerback", false);
-                    else{
-                        const btCollisionObject* other = currAgent->getRigidBody() == obA ? obB : obA;
-                        bool found = false;
-                        for(int j = 0; j < mAgents.size(); ++j){
-                            if(mWorldEntities[mAgents[j]]->getRigidBody() == other){
-                                //get orientation of agent for dot product
-                                vector3 orientation = currAgent->getVelocity();
-                                vector3 otherorientation = mWorldEntities[mAgents[j]]->getVelocity();
-                                vector3 position = getPositionInfo(mAgents[k]);
-                                vector3 otherPosition = getPositionInfo(mAgents[j]);
-
-                                //check if agent is stationary
-                                if(orientation.calcDistance(vector3(0, 0, 0)) == 0){
-                                    if(mWorldEntities[mAgents[j]]->getAnimationLoop())
-                                        mWorldEntities[mAgents[j]]->setAnimationInfo("shove", false);
-                                    if(orientation.dotValue(otherorientation) < 0)
-                                        currAgent->setAnimationInfo("staggerback", false);
-                                    else currAgent->setAnimationInfo("staggerforward", false);
-                                }
-                                else{
-                                    vector3 resultant = otherPosition - position;
-                                    double dot = resultant.dotValue(orientation);
-
-                                    if(dot > 0){
-                                        if(mWorldEntities[mAgents[j]]->getAnimationLoop()){
-                                            if(orientation.dotValue(otherorientation) < 0)
-                                                mWorldEntities[mAgents[j]]->setAnimationInfo("staggerback", false);
-                                            else mWorldEntities[mAgents[j]]->setAnimationInfo("staggerforward", false);
-                                        }
-                                        currAgent->setAnimationInfo("shove", false);
-                                    }
-                                    else{
-                                        if(mWorldEntities[mAgents[j]]->getAnimationLoop())
-                                            mWorldEntities[mAgents[j]]->setAnimationInfo("shove", false);
-                                        currAgent->setAnimationInfo("staggerforward", false);
-                                    }
-                                }
-                                found = true;
-                                break;
-                            }
-                        }
-                        if(!found){
-                            cout << "Error: shit collided with some unknown object" << endl;
-                            currAgent->setAnimationInfo("staggerback", false);
-                        }
-                    }
-                }*/
             }
         }
     }
@@ -261,6 +196,13 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
     //do nothing if agent still busy with non looping animation
     if(!mWorldEntities[_agentName]->getAnimationLoop())
         return;
+
+    if(mWorldEntities[_agentName]->getLastAnimation() == "shove"){
+        if(rand() % 2 == 0){
+            mObjectsToRemove.push_back(_agentName);
+            return;
+        }
+    }
 
     //query ANN
     map<uint, double> input;
@@ -324,15 +266,12 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
             vector3 goalmid = mExit.getMidpoint(); goalmid.y = 0;
             double distance = pos.calcDistance(goalmid) / 50;
 
-            input[18] = distance;
-            input[19] = avgVel.x;
-            input[20] = avgVel.z;
-            input[21] = density;
+            input[18] = mAgents.size();
 
             vector<double> output = mSolution->evaluateNeuralNetwork(_group, input);
             output.push_back(frontVal);
 
-            if(frontVal == 0 && output[2] > 0.5){
+            if(frontVal == 0/* && output[2] > 0.5*/){
                 for(uint k = 0; k < mAgents.size(); k++){
                     if(frontObject == mWorldEntities[mAgents[k]]->getRigidBody()){
                         frontObjectName = mAgents[k];
@@ -349,7 +288,7 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
                     btVector3 force = rot * uncorrectedForce;
                     force.setY(0);
 
-                    mWorldEntities[frontObjectName]->getRigidBody()->applyForce(force, relPos);
+                    mWorldEntities[frontObjectName]->setAnimationInfo("shove", false);
                 }
 
                 mWorldEntities[_agentName]->setAnimationInfo("shove", false);
@@ -360,7 +299,7 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
     }
 
     if(calcCrossVal(mExit.p1, mExit.p2, vector3(trans.getOrigin().getX(), trans.getOrigin().getY(), trans.getOrigin().getZ())) > 0 && mCycleCounter > 10){
-        mAngularVelAcc += fabs(angVel);
+        //mAngularVelAcc += fabs(angVel);
 
         for(uint k = 1; k <= 8; k++)
             if(input[k] * 50 < mRangefinderRadius)

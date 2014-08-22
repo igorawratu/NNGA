@@ -77,11 +77,11 @@ double MouseEscapeSimulation::fitness(){
     dblAcc["UpperBound"] = 13;
     dblAcc["Value"] = mMouseAgents.size();
     
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
 
     dblAcc["Collisions"] = mRangefinderVals + mCollisions; 
     dblAcc["ColFitnessWeight"] = 1;
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
+    finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, dblAcc, intAcc);
 
     return finalFitness;
 }
@@ -179,12 +179,12 @@ double MouseEscapeSimulation::realFitness(){
     dblAcc["UpperBound"] = 13;
     dblAcc["Value"] = mMouseAgents.size();
     
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
 
     //change max val
     dblAcc["Collisions"] = mCollisions; 
     dblAcc["ColFitnessWeight"] = 1;
-    finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
+    finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, dblAcc, intAcc);
 
     return finalFitness;
 }

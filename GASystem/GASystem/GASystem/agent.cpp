@@ -4,7 +4,7 @@ Agent::Agent() : mRNG(0), mDist(0, 1), generateRandInt(mRNG, mDist), mAvoidanceM
 }
 
 bool Agent::initialise(const string& _modelName, const vector3& _scale, const btQuaternion& _rotation, ResourceManager* _rm, const vector3& _position, const double& _mass, int _seed){
-    mAnimationName = "";
+    mAnimationName = mLastAnimation = "";
     mAnimationLoop = true;
 
     mModelName = _modelName;
@@ -63,7 +63,12 @@ bool Agent::getAnimationLoop(){
     return mAnimationLoop;
 }
 
+string Agent::getLastAnimation(){
+    return mLastAnimation;
+}
+
 void Agent::setAnimationInfo(string _animationName, bool _loop){
+    mLastAnimation = mAnimationName;
     mAnimationName = _animationName;
     mAnimationLoop = _loop;
 }   

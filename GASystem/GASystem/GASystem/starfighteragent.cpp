@@ -54,7 +54,7 @@ void StarFighterAgent::avoidCollisions(double _frontRayDistance, double _other, 
 void StarFighterAgent::update(const vector<double>& _nnOutput){
     assert(_nnOutput.size() >= 4);
 
-    btVector3 torque((_nnOutput[0] - 0.5)/2, (_nnOutput[1] - 0.5)/2, (_nnOutput[2] - 0.5)/2);
+    btVector3 torque(/*(_nnOutput[0] - 0.5)/2*/0, (_nnOutput[1] - 0.5)/2, (_nnOutput[2] - 0.5)/2);
     btVector3 correctedTorque = mRigidBody->getWorldTransform().getBasis() * torque;
     mRigidBody->applyTorque(correctedTorque);
 

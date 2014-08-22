@@ -49,6 +49,8 @@ public:
 
     virtual void setAnimationInfo(string _animationName, bool _loop);
 
+    string getLastAnimation();
+
 protected:
     virtual btCollisionShape* getCollisionShape(ResourceManager* _rm)=0;
     virtual void setRigidbodyProperties()=0;
@@ -68,7 +70,7 @@ protected:
     boost::variate_generator<boost::mt19937, boost::uniform_int<>> generateRandInt;
     bool mAvoidanceMode;
 
-    string mAnimationName;
+    string mAnimationName, mLastAnimation;
     bool mAnimationLoop;
 };
 

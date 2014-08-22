@@ -60,7 +60,7 @@ double BridgeSimulation::fitness(){
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
     dblAcc["LowerBound"] = 0;
-    dblAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 10;
+    dblAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 5;
     dblAcc["Value"] = mAngularVelAcc;
     dblAcc["EVWeight"] = 1;
 
@@ -120,7 +120,7 @@ double BridgeSimulation::realFitness(){
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
     dblAcc["LowerBound"] = 0;
-    dblAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 10;
+    dblAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 5;
     dblAcc["Value"] = mAngularVelAcc;
     dblAcc["EVWeight"] = 1;
 
@@ -315,7 +315,7 @@ StandardGAParameters BridgeSimulation::getSGAParameters(string _nnFormatFile){
     params.mutationParameters["MinConstraint"] = -1;
     params.crossoverAlgorithm = "LX";
     params.selectionAlgorithm = "LRankSelection";
-    params.elitismCount = 0;//params.populationSize/10;
+    params.elitismCount = params.populationSize/10;
     params.crossoverParameters["CrossoverProbability"] = 0.8;
 
     return params;
@@ -324,7 +324,7 @@ StandardGAParameters BridgeSimulation::getSGAParameters(string _nnFormatFile){
 CMAESParameters BridgeSimulation::getCMAESParameters(string _nnFormatFile){
     CMAESParameters params;
 
-    params.maxGenerations = 200;
+    params.maxGenerations = 1000;
     params.maxCompGenerations = 0;
     params.evalsPerCompChrom = 5;
     params.nnFormatFilename = _nnFormatFile;

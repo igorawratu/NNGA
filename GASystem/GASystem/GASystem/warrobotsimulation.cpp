@@ -76,24 +76,18 @@ double WarRobotSimulation::fitness(){
     dblAcc["LowerBound"] = 9;
     dblAcc["UpperBound"] = 11;
     dblAcc["Value"] = mGroupOneAgents.size();
-    dblAcc["EVWeight"] = 1;
+    dblAcc["EVWeight"] = 20;
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
     dblAcc["LowerBound"] = 9;
     dblAcc["UpperBound"] = 11;
     dblAcc["Value"] = mGroupTwoAgents.size();
-    dblAcc["EVWeight"] = 1;
+    dblAcc["EVWeight"] = 20;
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
-
-    /*dblAcc["LowerBound"] = mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 3;
-    dblAcc["UpperBound"] = mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;
-    dblAcc["Value"] = mVelocityAcc;
-    dblAcc["EVWeight"] = 1;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc) : mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;*/
 
     dblAcc["Collisions"] = mRangefinderVals + mCollisions; 
     dblAcc["ColFitnessWeight"] = 1;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 5000;
+    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
 
     return finalFitness;
 }
@@ -176,24 +170,18 @@ double WarRobotSimulation::realFitness(){
     dblAcc["LowerBound"] = 9;
     dblAcc["UpperBound"] = 11;
     dblAcc["Value"] = mGroupOneAgents.size();
-    dblAcc["EVWeight"] = 1;
+    dblAcc["EVWeight"] = 20;
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
 
     dblAcc["LowerBound"] = 9;
     dblAcc["UpperBound"] = 11;
     dblAcc["Value"] = mGroupTwoAgents.size();
-    dblAcc["EVWeight"] = 1;
+    dblAcc["EVWeight"] = 20;
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc);
-
-    /*dblAcc["LowerBound"] = mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;
-    dblAcc["UpperBound"] = mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 10; 
-    dblAcc["Value"] = mVelocityAcc;
-    dblAcc["EVWeight"] = 1;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[0]->evaluateFitness(pos, dblAcc, intAcc) : mGroupTwoAgents.size() * (mNumCycles/mCyclesPerDecision) * 5;*/
 
     dblAcc["Collisions"] = mCollisions; 
     dblAcc["ColFitnessWeight"] = 1;
-    finalFitness += finalFitness == 0 ? mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc) : 5000;
+    finalFitness += finalFitness == mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
 
     return finalFitness;
 }

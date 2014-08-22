@@ -127,8 +127,3 @@ btVector3 HumanAgent::calculateInertia(double _mass, btCollisionShape* _shape){
 
     return inertia;
 }
-
-void HumanAgent::setAnimationInfo(string _animationName, bool _loop){
-    mAnimationName = _animationName;
-    mAnimationLoop = _loop;
-}

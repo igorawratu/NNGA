@@ -74,7 +74,7 @@ double SFSimulation::fitness(){
     map<string, long> intAcc;
     map<string, double> doubleAcc;
     doubleAcc["Collisions"] = mRangefinderVals + mCollisions; 
-    doubleAcc["ColFitnessWeight"] = 1;
+    doubleAcc["ColFitnessWeight"] = 10;
     intAcc["Positive"] = 0;
 
     doubleAcc["GPWeight"] = 2;
@@ -94,7 +94,7 @@ double SFSimulation::fitness(){
     finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
 
     doubleAcc["LowerBound"] = 0;
-    doubleAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 10;
+    doubleAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 4;
     doubleAcc["Value"] = mAngularVelAcc;
     doubleAcc["EVWeight"] = 0.2;
 
@@ -114,8 +114,8 @@ double SFSimulation::realFitness(){
     map<string, vector3> pos;
     map<string, long> intAcc;
     map<string, double> doubleAcc;
-    doubleAcc["Collisions"] = mRangefinderVals + mCollisions; 
-    doubleAcc["ColFitnessWeight"] = 1;
+    doubleAcc["Collisions"] = mCollisions; 
+    doubleAcc["ColFitnessWeight"] = 10;
     intAcc["Positive"] = 0;
 
     doubleAcc["GPWeight"] = 2;
@@ -135,7 +135,7 @@ double SFSimulation::realFitness(){
     finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
 
     doubleAcc["LowerBound"] = 0;
-    doubleAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 10;
+    doubleAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 4;
     doubleAcc["Value"] = mAngularVelAcc;
     doubleAcc["EVWeight"] = 0.2;
 
@@ -170,7 +170,7 @@ void SFSimulation::applyUpdateRules(string _agentName, int _groupNum){
 
     for(int k = -100; k <= 100; k += 50){
         for(int i = -100; i <= 100; i+= 50){
-            input[inputIndex++] = getRayCollisionDistance(_agentName, btVector3(k, i, 5), AGENT);
+            input[inputIndex++] = getRayCollisionDistance(_agentName, btVector3(k, i, 5), AGENT) / 50;
         }
     }
 
@@ -201,15 +201,16 @@ void SFSimulation::applyUpdateRules(string _agentName, int _groupNum){
         mWorldEntities[_agentName]->update(output);
     //}
 
-    if(!reached(_agentName) && getPositionInfo(_agentName).calcDistance(mGoalpoint) < mGoalRadius)
+    if(!reached(_agentName) && getPositionInfo(_agentName).calcDistance(mGoalpoint) < mCrowdingRadius)
         mReached.push_back(_agentName);
 
     if(!reached(_agentName) && mCycleCounter > 10){
         mAngularVelAcc += angVelDist;
 
-        for(uint k = 1; k < inputIndex; k++)
+        for(uint k = 1; k < inputIndex; k++){
             if(input[k] * 50 < mRangefinderRadius)
                 mRangefinderVals += (mRangefinderRadius - (input[k] * 50))/mRangefinderRadius;
+        }
         
         //gets collision data
         int numManifolds = mWorld->getDispatcher()->getNumManifolds();

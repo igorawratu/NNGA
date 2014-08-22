@@ -23,8 +23,6 @@ public:
 
     virtual void avoidCollisions(double _distanceLeft, double _distanceRight, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody);
 
-    virtual void setAnimationInfo(string _animationName, bool _loop);
-
 protected:
     virtual btCollisionShape* getCollisionShape(ResourceManager* _rm);
 

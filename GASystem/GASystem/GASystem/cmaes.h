@@ -55,6 +55,8 @@ private:
     std::vector<Chromosome*> mPopulation;
     std::map<int, vector<Chromosome*>> mCompetitivePopulations;
     double mEff;
+    double mBestFitnessObtained;
+    Solution mBestSolution;
 
 private:
     CMAES(const CMAES& _other){}

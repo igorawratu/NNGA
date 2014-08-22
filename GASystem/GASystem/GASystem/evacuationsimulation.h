@@ -6,7 +6,7 @@
 #include "staticworldagent.h"
 #include "common.h"
 #include "finishlinefitness.h"
-#include "collisionfitness.h"
+#include "expectedvaluefitness.h"
 
 #include <vector>
 #include <iostream>
@@ -34,6 +34,11 @@ public:
 	virtual StandardGAParameters getSGAParameters(string _nnFormatFile);
     virtual CMAESParameters getCMAESParameters(string _nnFormatFile);
 
+    virtual vector<string> getRemoveList(){
+        return mObjectsToRemove;
+    }
+
+
 private:
     void applyUpdateRules(string _agentName, uint _group);
     double calcCrossVal(vector3 a, vector3 b, vector3 c){
@@ -49,6 +54,7 @@ private:
     int mSeed;
     double mRangefinderRadius, mRangefinderVals;
     vector<Line> mLines;
+    vector<string> mObjectsToRemove;
     double mAngularVelAcc;
 };
 

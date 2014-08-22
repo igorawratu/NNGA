@@ -68,14 +68,14 @@ double CorneringSim::fitness(){
     }
 
     doubleAcc["LowerBound"] = 0;
-    doubleAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 15;
+    doubleAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 5;
     doubleAcc["Value"] = mAngularVelAcc;
     doubleAcc["EVWeight"] = 1;
 
     
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
     finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
-    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, doubleAcc, intAcc);
 
     return finalFitness;
 }
@@ -99,13 +99,13 @@ double CorneringSim::realFitness(){
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
 
     doubleAcc["LowerBound"] = 0;
-    doubleAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 10;
+    doubleAcc["UpperBound"] = (mAgents.size() * mNumCycles / mCyclesPerDecision) / 5;
     doubleAcc["Value"] = mAngularVelAcc;
     doubleAcc["EVWeight"] = 1;
 
     finalFitness += mFitnessFunctions[0]->evaluateFitness(pos, doubleAcc, intAcc);
     finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
-    finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, doubleAcc, intAcc);
+    finalFitness += mFitnessFunctions[2]->evaluateFitness(pos, doubleAcc, intAcc);
 
 
     return finalFitness;

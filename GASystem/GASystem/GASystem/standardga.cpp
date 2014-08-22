@@ -107,23 +107,13 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer, string _ou
 
         //checks if the fitness of the solution is below the epsilon threshold, if it is, stop training
         if(mPopulation[0]->realFitness() <= mParameters.fitnessEpsilonThreshold){
-            Solution finalSolution(dynamic_cast<NNChromosome*>(mPopulation[0])->getNeuralNets());
-            finalSolution.fitness() = mPopulation[0]->fitness();
-
 			mWorkStatus = COMPLETE;
 			stopSlaves();
 			workerThread.join();
 
-            cout << "final population fitnesses..." << endl;
-	        for(uint i = 0; i < mPopulation.size(); i++){
-		        Solution* sol = mSavedSolution;//new Solution(dynamic_cast<NNChromosome*>(mPopulation[i])->getNeuralNets());
-		        mSimulationContainer->runFullSimulation(sol);
-		        mSimulationContainer->resetSimulation();
-                cout << sol->fitness() << " " << sol->realFitness() << " | ";
-                delete sol;
-                mSavedSolution = 0;
-	        }
-            cout << endl;
+            Solution finalSolution(dynamic_cast<NNChromosome*>(mPopulation[0])->getNeuralNets());
+            mSimulationContainer->runFullSimulation(&finalSolution);
+	        mSimulationContainer->resetSimulation();
 
             for(uint j = 0; j < mPopulation.size(); ++j)
                 delete mPopulation[j];
@@ -145,7 +135,6 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer, string _ou
 	workerThread.join();
 
     quicksort(mPopulation, 0, mPopulation.size() - 1);
-
 	Solution finalSolution(dynamic_cast<NNChromosome*>(mPopulation[0])->getNeuralNets());
 	mSimulationContainer->runFullSimulation(&finalSolution);
 	mSimulationContainer->resetSimulation();

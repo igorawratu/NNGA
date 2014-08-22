@@ -286,7 +286,7 @@ StandardGAParameters CarCrashSimulation::getSGAParameters(string _nnFormatFile){
     params.mutationParameters["Deviation"] = 0.1;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "LX";
+    params.crossoverAlgorithm = "BLX";
     params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = params.populationSize/10;
     params.crossoverParameters["CrossoverProbability"] = 0.8;

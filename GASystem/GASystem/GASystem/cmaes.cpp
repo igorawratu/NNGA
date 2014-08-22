@@ -13,6 +13,7 @@ CMAES::CMAES(CMAESParameters _parameters){
     mRetrievedFitnesses = 0;
     mRetrievedCompetitiveFitnesses = 0;
     mRetrievedTeamIDs = 0;
+    mBestFitnessObtained = 99999999999;
 }
     
 CMAES::~CMAES(){
@@ -145,6 +146,9 @@ Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputF
                 time_t t = time(0);
                 
                 cout << "Generation " << k << endl;
+
+                cout << "Best Fitness: " << mBestFitnessObtained << endl;
+                cout << "Step Size: " << stepSize << endl;
 
                 //selection and recombination
                 Eigen::MatrixXd newMean(dims, 1);
@@ -406,14 +410,11 @@ Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputF
         }
     }
 
-    Solution finalSolution(dynamic_cast<NNChromosome*>(mPopulation[0])->getNeuralNets());
-    finalSolution.fitness() = mPopulation[0]->fitness();
-
     mWorkStatus = COMPLETE;
     stopSlaves();
     workerThread.join();
 
-    return finalSolution;
+    return mBestSolution;
 }
 
 bool CMAES::setup(){
@@ -571,6 +572,13 @@ void CMAES::evaluateFitness(vector<Chromosome*>& _population){
                     _population[mUpdateList[k]]->realFitness() = mRetrievedFitnesses[k*2];
 					_population[mUpdateList[k]]->fitness() = mRetrievedFitnesses[k*2 + 1];
 
+                    if(mRetrievedFitnesses[k*2 + 1] < mBestFitnessObtained){
+                        mBestFitnessObtained = mRetrievedFitnesses[k*2 + 1];
+                        mBestSolution = Solution(dynamic_cast<NNChromosome*>(_population[mUpdateList[k]])->getNeuralNets());
+                        mBestSolution.fitness() = mRetrievedFitnesses[k*2 + 1];
+                        mBestSolution.realFitness() = mRetrievedFitnesses[k*2];
+                    }
+
 					mUpdateList[k] = currPos++;
 
                     sendData(currSolution, k);
@@ -601,6 +609,13 @@ void CMAES::evaluateFitness(vector<Chromosome*>& _population){
 			if(completed){
                 _population[mUpdateList[k]]->realFitness() = mRetrievedFitnesses[k*2];
 				_population[mUpdateList[k]]->fitness() = mRetrievedFitnesses[k*2 + 1];
+
+                if(mRetrievedFitnesses[k*2 + 1] < mBestFitnessObtained){
+                    mBestFitnessObtained = mRetrievedFitnesses[k*2 + 1];
+                    mBestSolution = Solution(dynamic_cast<NNChromosome*>(_population[mUpdateList[k]])->getNeuralNets());
+                    mBestSolution.fitness() = mRetrievedFitnesses[k*2 + 1];
+                    mBestSolution.realFitness() = mRetrievedFitnesses[k*2];
+                }
 			}
         }
     }

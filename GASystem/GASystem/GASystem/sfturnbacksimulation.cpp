@@ -25,7 +25,7 @@ bool SFTurnbackSimulation::initialise(){
 
     mGoalpoint = vector3(-30, 0, 0);
     mGoalRadius = 5;
-    mCrowdingRadius = 15;
+    mCrowdingRadius = 30;
 
     //set the vals
     vector3 minDim(20, -10, -10), maxDim(30, 10, 10);
