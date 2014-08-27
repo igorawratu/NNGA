@@ -47,7 +47,7 @@
 #include "cmaes.h"
 #include "cmaesparameters.h"
 
-#define TRAIN
+//#define TRAIN
 
 using namespace std;
 
@@ -227,7 +227,7 @@ int main(int argc, char** argv){
 
     srand(time(0));
 
-    string simName = "BridgeMouseSim";
+    string simName = "CarRaceSim";
 
     GraphicsEngine* engine = new GraphicsEngine(NULL);
 

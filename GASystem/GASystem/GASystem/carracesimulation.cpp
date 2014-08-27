@@ -78,11 +78,11 @@ bool CarRaceSimulation::initialise(){
     
 
     //set finish like here
-    mFinishLine.p1.x = -20;
+    mFinishLine.p1.x = -40;
     mFinishLine.p1.y = 0;
     mFinishLine.p1.z = -40;
 
-    mFinishLine.p2.x = 20;
+    mFinishLine.p2.x = 40;
     mFinishLine.p2.y = 0;
     mFinishLine.p2.z = -40;
 
@@ -90,21 +90,21 @@ bool CarRaceSimulation::initialise(){
     rot.setEuler(PI/2, 0, 0);
 
     mWorldEntities[mAgents[0]] = new CarAgent(10, 0.5);
-    if(!mWorldEntities[mAgents[0]]->initialise("carone.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(-7.5, 0, 38), 0.01, mSeed))
+    if(!mWorldEntities[mAgents[0]]->initialise("carone.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(8.5, 0, 42), 0.01, mSeed))
         return false;
     mWorld->addRigidBody(mWorldEntities[mAgents[0]]->getRigidBody());
 
     for(uint k = 1; k < mAgents.size(); k++){
         vector3 pos;
         if(k < 6){
-            pos.x = ((double)k - 1) * 3 - 7.5;
-            pos.y = 0;
-            pos.z = 34;
-        }
-        else{
-            pos.x = ((double)k - 5) * 3 - 7.5;
+            pos.x = ((double)k - 1) * 3 + 8.5;
             pos.y = 0;
             pos.z = 38;
+        }
+        else{
+            pos.x = ((double)k - 5) * 3 + 8.5;
+            pos.y = 0;
+            pos.z = 42;
         }
 
         mWorldEntities[mAgents[k]] = new CarAgent(10, 0.5);
@@ -115,7 +115,7 @@ bool CarRaceSimulation::initialise(){
     }
     
     mWorldEntities["environment"] = new StaticWorldAgent(0.5, 0.1);
-    if(!mWorldEntities["environment"]->initialise("racetrack.mesh", vector3(50, 50, 50), btQuaternion(0, 0, 0, 1), mResourceManager, vector3(0, 3, 0), 0, mSeed))
+    if(!mWorldEntities["environment"]->initialise("carraceenv.mesh", vector3(50, 50, 50), rot, mResourceManager, vector3(0, 3, 0), 0, mSeed))
         return false;
     mWorld->addRigidBody(mWorldEntities["environment"]->getRigidBody());
 

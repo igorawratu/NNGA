@@ -197,11 +197,16 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
     if(!mWorldEntities[_agentName]->getAnimationLoop())
         return;
 
-    if(mWorldEntities[_agentName]->getLastAnimation() == "shove"){
+    if(mWorldEntities[_agentName]->getLastAnimation() == "staggerforward"){
         if(rand() % 2 == 0){
-            mObjectsToRemove.push_back(_agentName);
+            mWorldEntities[_agentName]->setAnimationInfo("Die", false);
             return;
         }
+    }
+
+    if(mWorldEntities[_agentName]->getLastAnimation() == "Die"){  
+        mObjectsToRemove.push_back(_agentName);
+        return;
     }
 
     //query ANN
@@ -282,16 +287,12 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
                 if(frontObjectName == "")
                     cout << "some shitty bug" << endl;
                 else{
-                    btVector3 uncorrectedForce(2, 0, 0);
-                    btVector3 relPos = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getOrigin();
-                    btMatrix3x3& rot = mWorldEntities[_agentName]->getRigidBody()->getWorldTransform().getBasis();
-                    btVector3 force = rot * uncorrectedForce;
-                    force.setY(0);
-
-                    mWorldEntities[frontObjectName]->setAnimationInfo("shove", false);
+                    if(mWorldEntities[frontObjectName]->getAnimationLoop()){
+                        mWorldEntities[frontObjectName]->setAnimationInfo("staggerforward", false);
+                        mWorldEntities[frontObjectName]->setVelocity(vector3(0, 0, 0));
+                        mWorldEntities[_agentName]->setAnimationInfo("shove", false);
+                    }
                 }
-
-                mWorldEntities[_agentName]->setAnimationInfo("shove", false);
             }
 
             mWorldEntities[_agentName]->update(output);
