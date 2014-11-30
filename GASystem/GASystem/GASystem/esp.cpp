@@ -1,6 +1,6 @@
 #include "esp.h"
 
-ESP::ESP(ESPParameters _parameters){
+ESP::ESP(ESPParameters _parameters, string _fileName){
     mParameters = _parameters;
 
     setupSubpopulationStructure();
@@ -21,6 +21,10 @@ ESP::ESP(ESPParameters _parameters){
     }
 
     mWorkStatus = NOWORK;
+
+    pBestOverallFit = 999999999;
+    pNumFitEval = 0;
+    pFileName = _fileName;
 }
 
 ESP::~ESP(){
@@ -103,8 +107,7 @@ Solution ESP::train(SimulationContainer* _simulationContainer, string _outputFil
             cout << "Time taken for this generation : " << time(0) - t << endl;
 
             if(mStages == 1 || mStage == 2){
-                if(mBestRealFitness <= mParameters.fitnessEpsilonThreshold){
-                    stopSlaves();
+                if(mBestRealFitness <= mParameters.fitnessEpsilonThreshold || pNumFitEval => pTotalFitnessEvals){
                     mWorkStatus = COMPLETE;
                     workerThread.join();
                     return mBestSolution;
@@ -115,7 +118,7 @@ Solution ESP::train(SimulationContainer* _simulationContainer, string _outputFil
 
     mWorkStatus = COMPLETE;
     workerThread.join();
-    stopSlaves();
+
     return mBestSolution;
 }
 
@@ -263,7 +266,12 @@ void ESP::updateFitness(int _slave, bool& _improved){
         mBestRealFitness = realFitness;
         mBestSolution = *mSavedSolutions[_slave];
         _improved = true;
+        pBestOverallFit = mBestFitness;
     }
+
+    pNumFitEval++;
+    if(pNumFitEval > 0 && pNumFitEval % 10 == 0)
+        FileWriter::writeToFile(pFileName, boost::lexical_cast<string>(pBestOverallFit));
 }
 
 void ESP::evaluateCompetitiveFitness(SimulationContainer* _simulationContainer){

@@ -20,10 +20,12 @@ using namespace std;
 class ESP : public GeneticAlgorithm
 {
 public:
-    ESP(ESPParameters _parameters);
+    ESP(ESPParameters _parameters, string _fileName);
     virtual ~ESP();
 
     virtual Solution train(SimulationContainer* _simulationContainer, string _outputFileName);
+
+    virtual void stopSlaves();
 
 private:
     void setupSubpopulationStructure();
@@ -32,7 +34,6 @@ private:
     void evaluateFitness(SimulationContainer* _simulationContainer);
     void evaluateCompetitiveFitness(SimulationContainer* _simulationContainer);
     void runDeltaCodes();
-    void stopSlaves();
 
     void hostwork();
 

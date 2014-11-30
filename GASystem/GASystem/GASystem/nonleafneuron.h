@@ -19,15 +19,15 @@ public:
     ~NonLeafNeuron();
     
     virtual double evaluate(long _counter);
-    virtual bool setInput(set<uint> _inputs, bool _checkForLoops);
+    virtual bool setInput(vector<uint> _inputs, bool _checkForLoops);
     virtual bool setInput(double _inputs);
     virtual bool checkLoop(Neuron* _loopNeuron);
     virtual NeuronType getNeuronType(){return NONLEAF;}
-    virtual set<uint> getPredecessors(){return mPredecessors;}
+    virtual vector<uint> getPredecessors(){return mPredecessors;}
     virtual Neuron* clone();
 
 private:
-    set<uint> mPredecessors;
+    vector<uint> mPredecessors;
 
 private:
     NonLeafNeuron(){}

@@ -28,6 +28,7 @@ void CrossoverFactory::startup(){
     crossoverFactory.mFactory.registerCreator("OPX", OPX::createOPX);
     crossoverFactory.mFactory.registerCreator("HX", HX::createHX);
     crossoverFactory.mFactory.registerCreator("LX", LX::createLX);
+    crossoverFactory.mFactory.registerCreator("NEATX", NEATX::createNEATX);
 }
 
 void CrossoverFactory::shutdown(){

@@ -24,7 +24,7 @@ void ESPChromosome::reInitialize(){
 
 bool ESPChromosome::initialize(pugi::xml_node* _root){
     vector<double> weights;
-    set<uint> predecessors;
+    vector<uint> predecessors;
 
     //assign activation function
     if(_root->attribute("ActivationFunction").empty()){
@@ -52,7 +52,7 @@ bool ESPChromosome::initialize(pugi::xml_node* _root){
             cerr << "Error: Predecessors must have an ID" << endl;
             return false;
         }
-        predecessors.insert(atoi(predecessorNode.attribute("ID").value()));
+        predecessors.push_back(atoi(predecessorNode.attribute("ID").value()));
     }
 
     //assign weights

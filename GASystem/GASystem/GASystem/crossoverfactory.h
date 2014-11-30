@@ -20,6 +20,7 @@
 #include "opx.h"
 #include "tpx.h"
 #include "lx.h"
+#include "neatx.h"
 
 using namespace std;
 

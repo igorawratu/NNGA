@@ -86,6 +86,7 @@ Solution::Solution(int* _nodes, int* _format, double* _weights, int _formatSize,
         int lastFormatPos = currFormatPos;
 
 		currFormatPos++;
+        currFormatPos += currNNNodes[0];
         
         for(uint i = 0; i < currNNNodes[1] + currNNNodes[2]; ++i){
             currWeightPos += _format[currFormatPos + 2] + 1;

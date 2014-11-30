@@ -2,9 +2,20 @@
 
 using namespace std;
 
-CMAES::CMAES(CMAESParameters _parameters){
+CMAES::CMAES(CMAESParameters _parameters, string _fileName){
     mParameters = _parameters;
+    startup();
 
+    pBestOverallFit = 999999999;
+    pNumFitEval = 0;
+    pFileName = _fileName;
+}
+    
+CMAES::~CMAES(){
+    shutdown();
+}
+
+CMAES::startup(){
     mWorkStatus = NOWORK;
 
     mUpdateList = 0;
@@ -15,8 +26,8 @@ CMAES::CMAES(CMAESParameters _parameters){
     mRetrievedTeamIDs = 0;
     mBestFitnessObtained = 99999999999;
 }
-    
-CMAES::~CMAES(){
+
+CMAES::shutdown(){
     if(mUpdateList)
         delete [] mUpdateList;
 
@@ -24,32 +35,26 @@ CMAES::~CMAES(){
         delete [] mRequests;
 
     if(mRetrievedFitnesses){
-        cout << "del ret fit" << endl;
         delete [] mRetrievedFitnesses;
     }
 
     if(mRetrievedCompetitiveFitnesses){
-        cout << "del ret comp fit" << endl;
         delete [] mRetrievedCompetitiveFitnesses;
     }
 
     if(mRetrievedTeamIDs){
-        cout << "del ret teamid" << endl;
         delete [] mRetrievedTeamIDs;
     }
 
     if(mTeamRequests){
-        cout << "del team req" << endl;
         delete [] mTeamRequests;
     }
 
     mSimulationContainer = 0;
     
-    cout << "del pop" << endl;
     for(uint k = 0; k < mPopulation.size(); ++k)
         delete mPopulation[k];
 
-    cout << "del com pop" << endl;
     for(map<int, vector<Chromosome*>>::iterator iter = mCompetitivePopulations.begin(); iter != mCompetitivePopulations.end(); ++iter){
         for(uint k = 0; k < iter->second.size(); ++k){
             delete iter->second[k];
@@ -60,7 +65,6 @@ CMAES::~CMAES(){
 Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputFileName){
     //setup ANN structure
     if(!setup()){
-        stopSlaves();
         return Solution();
     }
 
@@ -136,8 +140,6 @@ Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputF
             if(mStages == 1){
                 generateOffspring(mPopulation, eigenVectors, eigenValuesSqrt, currMean, stepSize, dims);
             }
-
-            cout << "night before evals" << endl;
 
             //evaluate initial population
             evaluateFitness(mPopulation);
@@ -237,14 +239,13 @@ Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputF
                 cout << "Time taken for this generation : " << time(0) - t << endl;
                 
                 //checks for termination
-                if(mPopulation[0]->realFitness() <= mParameters.fitnessEpsilonThreshold){
+                if(mPopulation[0]->realFitness() <= mParameters.fitnessEpsilonThreshold || pNumFitEval => pTotalFitnessEvals){
                     cout << "Termination criteria met, fitness obtained below epsilon" << endl;
 
                     Solution finalSolution(dynamic_cast<NNChromosome*>(mPopulation[0])->getNeuralNets());
                     finalSolution.fitness() = mPopulation[0]->fitness();
 
 		            mWorkStatus = COMPLETE;
-		            stopSlaves();
 		            workerThread.join();
 
                     return finalSolution;
@@ -411,7 +412,6 @@ Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputF
     }
 
     mWorkStatus = COMPLETE;
-    stopSlaves();
     workerThread.join();
 
     return mBestSolution;
@@ -574,10 +574,15 @@ void CMAES::evaluateFitness(vector<Chromosome*>& _population){
 
                     if(mRetrievedFitnesses[k*2 + 1] < mBestFitnessObtained){
                         mBestFitnessObtained = mRetrievedFitnesses[k*2 + 1];
+                        pBestOverallFit = mBestFitnessObtained;
                         mBestSolution = Solution(dynamic_cast<NNChromosome*>(_population[mUpdateList[k]])->getNeuralNets());
                         mBestSolution.fitness() = mRetrievedFitnesses[k*2 + 1];
                         mBestSolution.realFitness() = mRetrievedFitnesses[k*2];
                     }
+
+                    pNumFitEval++;
+                    if(pNumFitEval > 0 && pNumFitEval % 10 == 0)
+                        FileWriter::writeToFile(pFileName, boost::lexical_cast<string>(pBestOverallFit));
 
 					mUpdateList[k] = currPos++;
 
@@ -615,7 +620,12 @@ void CMAES::evaluateFitness(vector<Chromosome*>& _population){
                     mBestSolution = Solution(dynamic_cast<NNChromosome*>(_population[mUpdateList[k]])->getNeuralNets());
                     mBestSolution.fitness() = mRetrievedFitnesses[k*2 + 1];
                     mBestSolution.realFitness() = mRetrievedFitnesses[k*2];
+                    pBestOverallFit = mBestFitnessObtained;
                 }
+
+                pNumFitEval++;
+                if(pNumFitEval > 0 && pNumFitEval % 10 == 0)
+                    FileWriter::writeToFile(pFileName, boost::lexical_cast<string>(pBestOverallFit));
 			}
         }
     }

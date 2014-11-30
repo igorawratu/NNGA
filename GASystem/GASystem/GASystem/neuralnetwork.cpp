@@ -10,19 +10,23 @@ bool NeuralNetwork::initialize(pugi::xml_node* _nnRoot, bool _checkLoops){
 
 //change this to neuroinfo
 NeuralNetwork::NeuralNetwork(map<uint, NeuronInfo> _neuronInfo){
+    map<uint, vector<uint>> predecessorMap;
 
     for(map<uint, NeuronInfo>::iterator iter = _neuronInfo.begin(); iter != _neuronInfo.end(); iter++){
         if(iter->second.neuronType == LEAF)
             mNeuronCache[iter->first] = new LeafNeuron(&mNeuronCache, vector<double>(), iter->second.teamID);
         else{
             Neuron* currNeuron = new NonLeafNeuron(&mNeuronCache, iter->second.weights, iter->second.activationFunction, iter->second.teamID);
-            currNeuron->setInput(iter->second.predecessors, false);
+            predecessorMap[iter->first] = iter->second.predecessors;
             mNeuronCache[iter->first] = currNeuron;
             if(iter->second.neuronType == OUTPUT)
                 mOutput[iter->first] = currNeuron;
         }
     }
 
+    for(map<uint, vector<uint>>::iterator iter = predecessorMap.begin(); iter != predecessorMap.end(); iter++)
+        if(!mNeuronCache[iter->first]->setInput(iter->second, false))
+            cerr << "Error linking nodes for neuron ID " << iter->first << endl;
 }
 
 void NeuralNetwork::setStructure(map<uint, Neuron*> _neuronCache, map<uint, Neuron*> _output){
@@ -36,7 +40,7 @@ void NeuralNetwork::setStructure(map<uint, Neuron*> _neuronCache, map<uint, Neur
     mNeuronCache.clear();
     mOutput.clear();
 
-    mCounter = 0;
+    mCounter = -1;
     for(map<uint, Neuron*>::iterator iter = _neuronCache.begin(); iter != _neuronCache.end(); ++iter){
         mNeuronCache[iter->first] = iter->second->clone();
         for(map<uint, Neuron*>::iterator outIter = _output.begin(); outIter != _output.end(); ++outIter){
@@ -61,21 +65,27 @@ void NeuralNetwork::setStructure(map<uint, NeuronInfo> _neuronInfo){
     mNeuronCache.clear();
     mOutput.clear();
 
+    map<uint, vector<uint>> predecessorMap;
+
     for(map<uint, NeuronInfo>::iterator iter = _neuronInfo.begin(); iter != _neuronInfo.end(); iter++){
         if(iter->second.neuronType == LEAF)
             mNeuronCache[iter->first] = new LeafNeuron(&mNeuronCache, vector<double>(), iter->second.teamID);
         else{
             Neuron* currNeuron = new NonLeafNeuron(&mNeuronCache, iter->second.weights, iter->second.activationFunction, iter->second.teamID);
-            currNeuron->setInput(iter->second.predecessors, false);
+            predecessorMap[iter->first] = iter->second.predecessors;
             mNeuronCache[iter->first] = currNeuron;
             if(iter->second.neuronType == OUTPUT)
                 mOutput[iter->first] = currNeuron;
         }
     }
+
+    for(map<uint, vector<uint>>::iterator iter = predecessorMap.begin(); iter != predecessorMap.end(); iter++)
+        if(!mNeuronCache[iter->first]->setInput(iter->second, false))
+            cerr << "Error linking nodes for neuron ID " << iter->first << endl;
 }
 
 bool NeuralNetwork::constructNNStructure(pugi::xml_node* _nnRootNode, bool _checkLoops){
-    map<uint, set<uint>> predecessorMap;
+    map<uint, vector<uint>> predecessorMap;
 
 	uint teamID;
 	if(_nnRootNode->attribute("TeamID").empty()){
@@ -103,7 +113,7 @@ bool NeuralNetwork::constructNNStructure(pugi::xml_node* _nnRootNode, bool _chec
             neuron = new LeafNeuron(&mNeuronCache, vector<double>(), teamID);
         else{
             vector<double> weights;
-            set<uint> predecessors;
+            vector<uint> predecessors;
 
             //assign activation function
             if(node.attribute("ActivationFunction").empty()){
@@ -131,7 +141,7 @@ bool NeuralNetwork::constructNNStructure(pugi::xml_node* _nnRootNode, bool _chec
                     cerr << "Error: Predecessors must have an ID" << endl;
                     return false;
                 }
-                predecessors.insert(atoi(predecessorNode.attribute("ID").value()));
+                predecessors.push_back(atoi(predecessorNode.attribute("ID").value()));
             }
             predecessorMap[neuronID] = predecessors;
 
@@ -201,7 +211,7 @@ bool NeuralNetwork::constructNNStructure(pugi::xml_node* _nnRootNode, bool _chec
     }
 
     //link the predecessors
-    for(map<uint, set<uint>>::iterator iter = predecessorMap.begin(); iter != predecessorMap.end(); iter++)
+    for(map<uint, vector<uint>>::iterator iter = predecessorMap.begin(); iter != predecessorMap.end(); iter++)
         if(!mNeuronCache[iter->first]->setInput(iter->second, _checkLoops))
             return false;
 
@@ -316,9 +326,9 @@ void NeuralNetwork::getXMLStructure(pugi::xml_node& _root){
 
             //set predecessor data
             pugi::xml_node predecessorRoot = currentNeuron.append_child("Predecessors");
-            set<uint> predecessors = iter->second->getPredecessors();
-            for(set<uint>::iterator predIter = predecessors.begin(); predIter != predecessors.end(); predIter++)
-                predecessorRoot.append_child("Predecessor").append_attribute("ID") = *predIter;
+            vector<uint> predecessors = iter->second->getPredecessors();
+            for(uint k = 0; k < predecessors.size(); ++k)
+                predecessorRoot.append_child("Predecessor").append_attribute("ID") = predecessors[k];
 
         }
     }
@@ -373,8 +383,10 @@ void NeuralNetwork::serialize(int*& _nodes, int*& _format, double*& _weights, in
 
     //calculate buffer sizes required
     for(map<uint, Neuron*>::iterator iter = mNeuronCache.begin(); iter != mNeuronCache.end(); iter++){
-        if(iter->second->getNeuronType() == LEAF)
+        if(iter->second->getNeuronType() == LEAF){
             _nodes[0]++;
+            _formatSize++;
+        }
         else{
             _formatSize+=3;
 
@@ -397,6 +409,12 @@ void NeuralNetwork::serialize(int*& _nodes, int*& _format, double*& _weights, in
 	_format[currentFormatPos++] = getTeamID();
 
     for(map<uint, Neuron*>::iterator iter = mNeuronCache.begin(); iter != mNeuronCache.end(); iter++){
+        if(iter->second->getNeuronType() == LEAF){
+            _format[currentFormatPos++] = iter->first;
+        }
+    }
+
+    for(map<uint, Neuron*>::iterator iter = mNeuronCache.begin(); iter != mNeuronCache.end(); iter++){
         if(iter->second->getNeuronType() != LEAF){
             _format[currentFormatPos++] = iter->first;
 
@@ -407,10 +425,10 @@ void NeuralNetwork::serialize(int*& _nodes, int*& _format, double*& _weights, in
 
             _format[currentFormatPos++] = iter->second->getPredecessors().size();
 
-            set<uint> currPredecessors = iter->second->getPredecessors();
+            vector<uint> currPredecessors = iter->second->getPredecessors();
 
-            for(set<uint>::iterator formatIter = currPredecessors.begin(); formatIter != currPredecessors.end(); formatIter++)
-                _format[currentFormatPos++] = *formatIter;
+            for(uint k = 0; k < currPredecessors.size(); ++k)
+                _format[currentFormatPos++] = currPredecessors[k];
 
             for(uint k = 0; k < iter->second->getWeights().size(); ++k)
                 _weights[currentWeightPos++] = iter->second->getWeights()[k];
@@ -426,31 +444,38 @@ NeuralNetwork::NeuralNetwork(int* _nodes, int* _format, double* _weights, int _f
 
 	uint teamID = _format[currentFormatPos++];
 
-    for(uint k = 1; k <= input; ++k)
-        mNeuronCache[k] = new LeafNeuron(&mNeuronCache, vector<double>(), 1);
+    for(uint k = 0; k < input; ++k){
+        mNeuronCache[_format[currentFormatPos++]] = new LeafNeuron(&mNeuronCache, vector<double>(), teamID);
+    }
+
+    map<uint, vector<uint>> predecessorMap;
 
     for(uint k = 0; k < hidden + output; ++k){
         int nodeid = _format[currentFormatPos++];
         int nodetype = _format[currentFormatPos++];
         int numPredecessors = _format[currentFormatPos++];
 
-        set<uint> predecessors;
+        vector<uint> predecessors;
         vector<double> weights;
 
         for(uint i = 0; i < numPredecessors; ++i){
-            predecessors.insert(_format[currentFormatPos++]);
+            predecessors.push_back(_format[currentFormatPos++]);
             weights.push_back(_weights[currentWeightPos++]);
         }
         //+1 for bias
         weights.push_back(_weights[currentWeightPos++]);
 
         Neuron* currNeuron = new NonLeafNeuron(&mNeuronCache, weights, SIGMOID, teamID);
-        currNeuron->setInput(predecessors, false);
+        predecessorMap[nodeid] = predecessors;
         mNeuronCache[nodeid] = currNeuron;
 
         if(nodetype == 1)
             mOutput[nodeid] = currNeuron;
     }
+
+    for(map<uint, vector<uint>>::iterator iter = predecessorMap.begin(); iter != predecessorMap.end(); iter++)
+        if(!mNeuronCache[iter->first]->setInput(iter->second, false))
+            cerr << "Error linking nodes for neuron ID " << iter->first << endl;
 
     delete [] _nodes;
     delete [] _format;

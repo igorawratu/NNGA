@@ -456,6 +456,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\neatx.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\neatx.h"
+				>
+			</File>
+			<File
 				RelativePath=".\opx.cpp"
 				>
 			</File>
@@ -749,6 +757,26 @@
 			</File>
 			<File
 				RelativePath=".\leafneuron.h"
+				>
+			</File>
+			<File
+				RelativePath=".\neat.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\neat.h"
+				>
+			</File>
+			<File
+				RelativePath=".\neatchromosome.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\neatchromosome.h"
+				>
+			</File>
+			<File
+				RelativePath=".\neatparameters.h"
 				>
 			</File>
 			<File

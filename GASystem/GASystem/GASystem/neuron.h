@@ -19,7 +19,7 @@ struct NeuronInfo
 {
     NeuronType neuronType;
     ActivationFunction activationFunction;
-    set<uint> predecessors;
+    vector<uint> predecessors;
     vector<double> weights;
 	uint teamID;
 };
@@ -35,7 +35,7 @@ public:
     virtual double evaluate(long _counter)=0;
 
     //sets the inputs allowed for the neuron
-    virtual bool setInput(set<uint> _inputs, bool _checkForLoops)=0;
+    virtual bool setInput(vector<uint> _inputs, bool _checkForLoops)=0;
     virtual bool setInput(double _inputs)=0;
 
     virtual bool checkLoop(Neuron* _loopNeuron)=0;
@@ -54,7 +54,7 @@ public:
     ActivationFunction getActivationFunction();
 
     virtual NeuronType getNeuronType()=0;
-    virtual set<uint> getPredecessors()=0;
+    virtual vector<uint> getPredecessors()=0;
 
 protected:
     double calculateActivationEnergy(double _netSignal);

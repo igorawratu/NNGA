@@ -25,17 +25,17 @@ using namespace std;
 class StandardGA : public GeneticAlgorithm
 {
 public:
-    StandardGA(StandardGAParameters _parameters);
+    StandardGA(StandardGAParameters _parameters, string _fileName);
     StandardGA(const StandardGA& other);
     StandardGA& operator = (const StandardGA& other);
     virtual ~StandardGA();
 
     virtual Solution train(SimulationContainer* _simulationContainer, string _outputFileName);
+    virtual void stopSlaves();
 
 private:
     void quicksort(vector<Chromosome*>& elements, int left, int right);
 	void hostwork();
-	void stopSlaves();
 	void sendData(Solution* _solution, int _slave);
 	void evaluatePopulation(vector<Chromosome*>& _population);
 

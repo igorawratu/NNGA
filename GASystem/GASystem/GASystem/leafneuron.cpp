@@ -31,7 +31,7 @@ double LeafNeuron::evaluate(long _counter){
     return mLastOutput;
 }
 
-bool LeafNeuron::setInput(set<uint> _inputs, bool _checkForLoops){
+bool LeafNeuron::setInput(vector<uint> _inputs, bool _checkForLoops){
     cerr << "Error: Cannot set a predecessor nodes for an input node" << endl;
     return true;
 }

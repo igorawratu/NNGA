@@ -19,16 +19,17 @@
 
 class CMAES : public GeneticAlgorithm{
 public:
-    CMAES(CMAESParameters _parameters);
+    CMAES(CMAESParameters _parameters, string _fileName);
     virtual ~CMAES();
 
     virtual Solution train(SimulationContainer* _simulationContainer, string _outputFileName);
+
+    virtual void stopSlaves();
 
 private:
     void evaluateFitness(vector<Chromosome*>& _population);
     void evaluateCompetitiveFitness();
     void runDeltaCodes();
-    void stopSlaves();
     void hostwork();
     void sendCompData(Solution* _solution, int _slave);
     void sendData(Solution* _solution, int _slave);
@@ -39,6 +40,8 @@ private:
     void setupWeights();
     int calcDims(Chromosome* _chrom);
     void generateOffspring(vector<Chromosome*>& _population, const Eigen::MatrixXd& _eigenVectors, const Eigen::MatrixXd& _eigenValuesSqrt, Eigen::MatrixXd& _means, double _stepSize, int _dims);
+    void shutdown();
+    void startup();
 
 private:
     CMAESParameters mParameters;

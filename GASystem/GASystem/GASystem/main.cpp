@@ -46,12 +46,14 @@
 #include <boost/tuple/tuple.hpp>
 #include "cmaes.h"
 #include "cmaesparameters.h"
+#include "neat.h"
+#include "neatparameters.h"
 
-//#define TRAIN
+#define TRAIN
 
 using namespace std;
 
-enum GAType{TYPE_STANDARD, TYPE_ESP, TYPE_CMAES};
+enum GAType{TYPE_STANDARD, TYPE_ESP, TYPE_CMAES, TYPE_NEAT};
 
 typedef boost::tuples::tuple<Simulation*, string, string> SimInfo;
 
@@ -138,7 +140,7 @@ void testCrossoverOp(){
 
 }
 
-void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inputFile, string _outputFile){
+void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inputFile, string _outputFile, int iterations, string _simName){
     if(!_sim){
         cout << "Simulation not created" << endl;
         return;
@@ -150,30 +152,39 @@ void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inp
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 #ifdef TRAIN
-    Solution solution;
+    for(uint k = 0; k < iterations; ++k){
+        Solution solution;
+        string resultFileName = _simName + boost::lexical_cast<string>(k);
 
-    if(rank == 0){
-        GeneticAlgorithm* ga;
+        if(rank == 0){
+            GeneticAlgorithm* ga;
 
-        if(_type == TYPE_STANDARD){
-            StandardGAParameters params = _sim->getSGAParameters(_inputFile);
-            ga = new StandardGA(params);
+            if(_type == TYPE_STANDARD){
+                StandardGAParameters params = _sim->getSGAParameters(_inputFile, resultFileName);
+                ga = new StandardGA(params);
+            }
+            else if(_type == TYPE_ESP){
+                ESPParameters params = _sim->getESPParams(_inputFile, resultFileName);
+                ga = new ESP(params);
+            }
+            else if(_type == TYPE_CMAES){
+                CMAESParameters params = _sim->getCMAESParameters(_inputFile, resultFileName);
+                ga = new CMAES(params);
+            }
+            else if(_type == TYPE_NEAT){
+                NEATParameters params = _sim->getNEATParameters(_inputFile, resultFileName);
+                ga = new NEAT(params);
+            }
+
+            GAEngine gaengine;
+            SimulationContainer cont(_sim);
+            solution = gaengine.train(ga, &cont, "");
+
+            cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
+            solution.printToFile(_outputFile);
         }
-        else if(_type == TYPE_ESP){
-            ESPParameters params = _sim->getESPParams(_inputFile);
-            ga = new ESP(params);
-        }
-        else if(_type == TYPE_CMAES){
-            CMAESParameters params = _sim->getCMAESParameters(_inputFile);
-            ga = new CMAES(params);
-        }
 
-        GAEngine gaengine;
-        SimulationContainer cont(_sim);
-        solution = gaengine.train(ga, &cont, "");
-
-        cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
-        solution.printToFile(_outputFile);
+        gaengine.stopSlaves();
 
         cont.resetSimulation();
         cont.setSolution(&solution);
@@ -206,10 +217,10 @@ SimInfo createSimulation(string _simName, GraphicsEngine* _engine){
     int seed = 120;
 
     if (_simName == "BridgeCarSim") return SimInfo(new BridgeSimulation(2, 10, CAR, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/bridgesimulation/car/input6h.xml", "neuralxmls/bridgesimulation/car/output.xml");
-    else if(_simName == "BridgeMouseSim") return SimInfo(new BridgeSimulation(2, 30, MOUSE, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/bridgesimulation/mouse/input6h.xml", "neuralxmls/bridgesimulation/mouse/output.xml");
+    else if(_simName == "BridgeMouseSim") return SimInfo(new BridgeSimulation(2, 30, MOUSE, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/bridgesimulation/mouse/input0h.xml", "neuralxmls/bridgesimulation/mouse/output.xml");
     else if(_simName == "CorneringSim") return SimInfo(new CorneringSim(2, 4, 400, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/corneringsimulation/input6h.xml", "neuralxmls/corneringsimulation/output.xml");
     else if(_simName == "CarCrashSim") return SimInfo(new CarCrashSimulation(2, 10, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/carcrashsimulation/input6h.xml", "neuralxmls/carcrashsimulation/output.xml");
-    else if(_simName == "CarRaceSim") return SimInfo(new CarRaceSimulation(2, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/carracesimulation/input6h_het.xml", "neuralxmls/carracesimulation/output.xml");//change env
+    else if(_simName == "CarRaceSim") return SimInfo(new CarRaceSimulation(2, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/carracesimulation/input6h_het.xml", "neuralxmls/carracesimulation/output.xml");
     else if(_simName == "WarRobotSim") return SimInfo(new WarRobotSimulation(2, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/warrobotsimulation/input6h.xml", "neuralxmls/warrobotsimulation/output.xml");
     else if(_simName == "MouseEscapeSim") return SimInfo(new MouseEscapeSimulation(2, 450, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/mouseescapesimulation/input6h.xml", "neuralxmls/mouseescapesimulation/output.xml");
     else if(_simName == "SFObstacleSim") return SimInfo(new SFObstacleSimulation(2, 40, 300, 5, 30, NULL, _engine->getResourceManager(), seed), "neuralxmls/sfobstaclesimulation/input6h.xml", "neuralxmls/sfobstaclesimulation/output.xml");
@@ -227,13 +238,13 @@ int main(int argc, char** argv){
 
     srand(time(0));
 
-    string simName = "CarRaceSim";
+    string simName = "BridgeMouseSim";
 
     GraphicsEngine* engine = new GraphicsEngine(NULL);
 
     SimInfo simInfo = createSimulation(simName, engine);
 
-    runSim(engine, simInfo.get<0>(), TYPE_CMAES, simInfo.get<1>(), simInfo.get<2>());
+    runSim(engine, simInfo.get<0>(), TYPE_STANDARD, simInfo.get<1>(), simInfo.get<2>(), 30, simName);
     //testCrossoverOp();
 
     delete engine;

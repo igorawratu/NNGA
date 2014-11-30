@@ -1,6 +1,6 @@
 #include "standardga.h"
 
-StandardGA::StandardGA(StandardGAParameters _parameters){
+StandardGA::StandardGA(StandardGAParameters _parameters, string _fileName){
     mParameters = _parameters;
 
 	MPI_Comm_size(MPI_COMM_WORLD, &mTotalSlaveProcs);
@@ -17,6 +17,10 @@ StandardGA::StandardGA(StandardGAParameters _parameters){
         mRetrievedFitnesses[k] = 0;
 
     mWorkStatus = NOWORK;
+
+    pBestOverallFit = 999999999;
+    pNumFitEval = 0;
+    pFileName = _fileName;
 }
 
 
@@ -94,8 +98,8 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer, string _ou
         cout << "Merging population..." << endl;
 
         quicksort(mPopulation, 0, mPopulation.size() - 1);
-        for(uint k = mParameters.elitismCount; k < mPopulation.size(); ++k)
-            delete mPopulation[k];
+        for(uint i = mParameters.elitismCount; i < mPopulation.size(); ++i)
+            delete mPopulation[i];
         mPopulation.erase(mPopulation.begin() + mParameters.elitismCount, mPopulation.end());
         mPopulation.insert(mPopulation.end(), offspring.begin(), offspring.end());
         quicksort(mPopulation, 0, mPopulation.size() - 1);
@@ -106,9 +110,8 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer, string _ou
         cout << endl;
 
         //checks if the fitness of the solution is below the epsilon threshold, if it is, stop training
-        if(mPopulation[0]->realFitness() <= mParameters.fitnessEpsilonThreshold){
+        if(mPopulation[0]->realFitness() <= mParameters.fitnessEpsilonThreshold || pNumFitEval => pTotalFitnessEvals){
 			mWorkStatus = COMPLETE;
-			stopSlaves();
 			workerThread.join();
 
             Solution finalSolution(dynamic_cast<NNChromosome*>(mPopulation[0])->getNeuralNets());
@@ -131,7 +134,6 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer, string _ou
     }
 
 	mWorkStatus = COMPLETE;
-	stopSlaves();
 	workerThread.join();
 
     quicksort(mPopulation, 0, mPopulation.size() - 1);
@@ -207,6 +209,13 @@ void StandardGA::evaluatePopulation(vector<Chromosome*>& _population){
                     _population[mUpdateList[k]]->realFitness() = mRetrievedFitnesses[k*2];
 					_population[mUpdateList[k]]->fitness() = mRetrievedFitnesses[k*2 + 1];
 
+                    if(mRetrievedFitnesses[k*2 + 1] < pBestOverallFit)
+                        pBestOverallFit = mRetrievedFitnesses[k*2 + 1];
+
+                    pNumFitEval++;
+                    if(pNumFitEval > 0 && pNumFitEval % 10 == 0)
+                        FileWriter::writeToFile(pFileName, boost::lexical_cast<string>(pBestOverallFit));
+
                     mRetrievedFitnesses[k*2] = 0;
                     mRetrievedFitnesses[k*2 + 1] = 0;
 
@@ -241,6 +250,13 @@ void StandardGA::evaluatePopulation(vector<Chromosome*>& _population){
 			if(completed){
                 _population[mUpdateList[k]]->realFitness() = mRetrievedFitnesses[k*2];
 				_population[mUpdateList[k]]->fitness() = mRetrievedFitnesses[k*2 + 1];
+
+                if(mRetrievedFitnesses[k*2 + 1] < pBestOverallFit)
+                    pBestOverallFit = mRetrievedFitnesses[k*2 + 1];
+
+                pNumFitEval++;
+                if(pNumFitEval > 0 && pNumFitEval % 10 == 0)
+                    FileWriter::writeToFile(pFileName, boost::lexical_cast<string>(pBestOverallFit));
 			}
         }
     }
