@@ -25,6 +25,7 @@ protected:
     double pBestOverallFit;
     uint pNumFitEval;
     uint pTotalFitnessEvals;
+    string pFileName;
 };
 
 #endif

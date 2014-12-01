@@ -15,7 +15,7 @@ CMAES::~CMAES(){
     shutdown();
 }
 
-CMAES::startup(){
+void CMAES::startup(){
     mWorkStatus = NOWORK;
 
     mUpdateList = 0;
@@ -27,7 +27,7 @@ CMAES::startup(){
     mBestFitnessObtained = 99999999999;
 }
 
-CMAES::shutdown(){
+void CMAES::shutdown(){
     if(mUpdateList)
         delete [] mUpdateList;
 
@@ -239,7 +239,7 @@ Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputF
                 cout << "Time taken for this generation : " << time(0) - t << endl;
                 
                 //checks for termination
-                if(mPopulation[0]->realFitness() <= mParameters.fitnessEpsilonThreshold || pNumFitEval => pTotalFitnessEvals){
+                if(mPopulation[0]->realFitness() <= mParameters.fitnessEpsilonThreshold || pNumFitEval >= pTotalFitnessEvals){
                     cout << "Termination criteria met, fitness obtained below epsilon" << endl;
 
                     Solution finalSolution(dynamic_cast<NNChromosome*>(mPopulation[0])->getNeuralNets());

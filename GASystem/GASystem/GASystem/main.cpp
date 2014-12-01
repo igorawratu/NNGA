@@ -5,6 +5,7 @@
 #include <vector>
 #include <mpi.h>
 #include <fstream>
+#include <ctime>
 
 #include "common.h"
 #include "neuralnetwork.h"
@@ -152,47 +153,56 @@ void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inp
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 #ifdef TRAIN
-    for(uint k = 0; k < iterations; ++k){
+    if(rank == 0){
+        GAEngine gaengine;
+        SimulationContainer cont(_sim);
         Solution solution;
-        string resultFileName = _simName + boost::lexical_cast<string>(k);
 
-        if(rank == 0){
-            GeneticAlgorithm* ga;
+        GeneticAlgorithm* ga = 0;
+
+        for(uint k = 0; k < iterations; ++k){
+            clock_t start;
+            double duration;
+            start = clock();
+
+            string resultFileName = _simName + boost::lexical_cast<string>(k);
+
+            if(ga)
+                delete ga;
 
             if(_type == TYPE_STANDARD){
-                StandardGAParameters params = _sim->getSGAParameters(_inputFile, resultFileName);
-                ga = new StandardGA(params);
+                StandardGAParameters params = cont.getSim()->getSGAParameters(_inputFile);
+                ga = new StandardGA(params, resultFileName);
             }
             else if(_type == TYPE_ESP){
-                ESPParameters params = _sim->getESPParams(_inputFile, resultFileName);
-                ga = new ESP(params);
+                ESPParameters params = cont.getSim()->getESPParams(_inputFile);
+                ga = new ESP(params, resultFileName);
             }
             else if(_type == TYPE_CMAES){
-                CMAESParameters params = _sim->getCMAESParameters(_inputFile, resultFileName);
-                ga = new CMAES(params);
+                CMAESParameters params = cont.getSim()->getCMAESParameters(_inputFile);
+                ga = new CMAES(params, resultFileName);
             }
             else if(_type == TYPE_NEAT){
-                NEATParameters params = _sim->getNEATParameters(_inputFile, resultFileName);
-                ga = new NEAT(params);
+                NEATParameters params = cont.getSim()->getNEATParameters(_inputFile);
+                ga = new NEAT(params, resultFileName);
             }
 
-            GAEngine gaengine;
-            SimulationContainer cont(_sim);
             solution = gaengine.train(ga, &cont, "");
 
             cout << "FINAL TRAINED FITNESS: " << solution.fitness() << endl;
             solution.printToFile(_outputFile);
+            duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+            string dat = "Time taken: " + boost::lexical_cast<string>(duration);
+            FileWriter::writeToFile(resultFileName, dat);
         }
-
-        gaengine.stopSlaves();
+        ga->stopSlaves();
+        delete ga;
 
         cont.resetSimulation();
         cont.setSolution(&solution);
         _engine->setSimulation(&cont);
         
         _engine->renderSimulation();
-
-        delete ga;
     }
     else{
         Slave slave(_sim);
@@ -244,7 +254,7 @@ int main(int argc, char** argv){
 
     SimInfo simInfo = createSimulation(simName, engine);
 
-    runSim(engine, simInfo.get<0>(), TYPE_STANDARD, simInfo.get<1>(), simInfo.get<2>(), 30, simName);
+    runSim(engine, simInfo.get<0>(), TYPE_ESP, simInfo.get<1>(), simInfo.get<2>(), 30, simName);
     //testCrossoverOp();
 
     delete engine;

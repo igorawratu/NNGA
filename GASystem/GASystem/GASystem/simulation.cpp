@@ -278,7 +278,7 @@ NEATParameters Simulation::getNEATParameters(string _nnFormatFile){
     NEATParameters params;
 
     params.populationSize = 100;
-    params.maxGenerations = 200;
+    params.maxGenerations = 1;
     params.nnFormatFilename = _nnFormatFile;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "NEATMutation";

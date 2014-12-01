@@ -740,6 +740,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\filewriter.h"
+				>
+			</File>
+			<File
 				RelativePath=".\gaengine.cpp"
 				>
 			</File>

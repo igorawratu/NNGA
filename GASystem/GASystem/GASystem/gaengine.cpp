@@ -16,7 +16,3 @@ GAEngine::~GAEngine(){
 Solution GAEngine::train(GeneticAlgorithm* _geneticAlgorithm, SimulationContainer* _simulation, string _filename){
     return _geneticAlgorithm->train(_simulation, _filename);
 }
-
-void GAEngine::stopSlaves(){
-    _geneticAlgorithm->stopSlaves();
-}

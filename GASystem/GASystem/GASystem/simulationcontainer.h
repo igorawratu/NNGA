@@ -34,6 +34,8 @@ public:
 
     vector<Line> getLines();
 
+    Simulation* getSim(){return mSim;}
+
 protected:
     Simulation* mSim;
 };

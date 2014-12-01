@@ -107,7 +107,7 @@ Solution ESP::train(SimulationContainer* _simulationContainer, string _outputFil
             cout << "Time taken for this generation : " << time(0) - t << endl;
 
             if(mStages == 1 || mStage == 2){
-                if(mBestRealFitness <= mParameters.fitnessEpsilonThreshold || pNumFitEval => pTotalFitnessEvals){
+                if(mBestRealFitness <= mParameters.fitnessEpsilonThreshold || pNumFitEval >= pTotalFitnessEvals){
                     mWorkStatus = COMPLETE;
                     workerThread.join();
                     return mBestSolution;
@@ -404,11 +404,7 @@ void ESP::evaluateFitness(SimulationContainer* _simulationContainer){
 
                 if(assigned){
                     updateFitness(k, improved);
-
                     saveUpdateVec(neuralNetPrimitives, k);
-
-		            mSimulationContainer->runFullSimulation(mSavedSolutions[k]);
-		            mSimulationContainer->resetSimulation();
 
                     delete mSavedSolutions[k];
                     mSavedSolutions.erase(k);

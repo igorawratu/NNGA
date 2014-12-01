@@ -152,7 +152,7 @@ Solution NEAT::train(SimulationContainer* _simulationContainer, string _outputFi
         cout << endl;
 
         //checks if the fitness of the solution is below the epsilon threshold, if it is, stop training
-        if(mPopulation[0]->realFitness() <= mParameters.fitnessEpsilonThreshold || pNumFitEval => pTotalFitnessEvals){
+        if(mPopulation[0]->realFitness() <= mParameters.fitnessEpsilonThreshold || pNumFitEval >= pTotalFitnessEvals){
 			mWorkStatus = COMPLETE;
 			workerThread.join();
 

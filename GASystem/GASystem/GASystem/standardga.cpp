@@ -7,11 +7,12 @@ StandardGA::StandardGA(StandardGAParameters _parameters, string _fileName){
     assert(mTotalSlaveProcs > 0);
 
     int totalWork = _parameters.populationSize;
-    mTotalRequests = totalWork > mTotalSlaveProcs ? mTotalSlaveProcs : totalWork;
 
+    mTotalRequests = totalWork > mTotalSlaveProcs ? mTotalSlaveProcs : totalWork;
     mRequests = new MPI_Request[mTotalRequests];
 	mUpdateList = new int[mTotalRequests];
     mRetrievedFitnesses = new double[mTotalRequests * 2];
+
 
     for(uint k = 0; k < mTotalRequests * 2; ++k)
         mRetrievedFitnesses[k] = 0;
@@ -110,7 +111,7 @@ Solution StandardGA::train(SimulationContainer* _simulationContainer, string _ou
         cout << endl;
 
         //checks if the fitness of the solution is below the epsilon threshold, if it is, stop training
-        if(mPopulation[0]->realFitness() <= mParameters.fitnessEpsilonThreshold || pNumFitEval => pTotalFitnessEvals){
+        if((mPopulation[0]->realFitness() <= mParameters.fitnessEpsilonThreshold) || (pNumFitEval >= pTotalFitnessEvals)){
 			mWorkStatus = COMPLETE;
 			workerThread.join();
 

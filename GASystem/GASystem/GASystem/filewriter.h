@@ -10,7 +10,7 @@ class FileWriter{
 public:
     static void writeToFile(string _fileName, string _dat){
         ofstream file;
-        file.open(fileName, ios_base::app);
+        file.open(_fileName.c_str(), ios_base::app);
         file << _dat << endl;
         file.close();
     }

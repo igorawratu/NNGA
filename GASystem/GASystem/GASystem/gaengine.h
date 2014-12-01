@@ -21,8 +21,6 @@ public:
 
     Solution train(GeneticAlgorithm* _geneticAlgorithm, SimulationContainer* _simulation, string _filename);
 
-    void stopSlaves();
-
 private:
     GAEngine(const GAEngine& other){}
     GAEngine& operator = (const GAEngine& other){}
