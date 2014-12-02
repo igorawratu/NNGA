@@ -281,7 +281,7 @@ vector<Line> BridgeSimulation::getLines(){
 ESPParameters BridgeSimulation::getESPParams(string _nnFormatFile){
 	ESPParameters params;
     params.populationSize = 50;
-    params.maxGenerations = 1;
+    params.maxGenerations = 200;
     params.maxCompGenerations = 0;
     params.nnFormatFilename = _nnFormatFile;
     params.stagnationThreshold = 0;
@@ -304,7 +304,7 @@ ESPParameters BridgeSimulation::getESPParams(string _nnFormatFile){
 StandardGAParameters BridgeSimulation::getSGAParameters(string _nnFormatFile){
 	StandardGAParameters params;
     params.populationSize = 100;
-    params.maxGenerations = 1;
+    params.maxGenerations = 200;
     params.nnFormatFilename = _nnFormatFile;
     params.stagnationThreshold = 50;
     params.fitnessEpsilonThreshold = 0;
@@ -324,11 +324,11 @@ StandardGAParameters BridgeSimulation::getSGAParameters(string _nnFormatFile){
 CMAESParameters BridgeSimulation::getCMAESParameters(string _nnFormatFile){
     CMAESParameters params;
 
-    params.maxGenerations = 1;
+    params.maxGenerations = 200;
     params.maxCompGenerations = 0;
     params.evalsPerCompChrom = 5;
     params.nnFormatFilename = _nnFormatFile;
-    params.fitnessEpsilonThreshold = 0;
+    params.fitnessEpsilonThreshold = -1;
     params.deltaCodeRadius = 0.2;
     params.initStepsize = 0.2;
 

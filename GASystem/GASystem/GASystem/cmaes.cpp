@@ -581,7 +581,7 @@ void CMAES::evaluateFitness(vector<Chromosome*>& _population){
                     }
 
                     pNumFitEval++;
-                    if(pNumFitEval > 0 && pNumFitEval % 10 == 0)
+                    if(pNumFitEval > 0 && pNumFitEval % 10 == 0 && pNumFitEval <= pTotalFitnessEvals)
                         FileWriter::writeToFile(pFileName, boost::lexical_cast<string>(pBestOverallFit));
 
 					mUpdateList[k] = currPos++;
@@ -624,7 +624,7 @@ void CMAES::evaluateFitness(vector<Chromosome*>& _population){
                 }
 
                 pNumFitEval++;
-                if(pNumFitEval > 0 && pNumFitEval % 10 == 0)
+                if(pNumFitEval > 0 && pNumFitEval % 10 == 0 && pNumFitEval <= pTotalFitnessEvals)
                     FileWriter::writeToFile(pFileName, boost::lexical_cast<string>(pBestOverallFit));
 			}
         }

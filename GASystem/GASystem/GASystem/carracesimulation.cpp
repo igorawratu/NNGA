@@ -39,7 +39,7 @@ double CarRaceSimulation::fitness(){
     doubleAcc["Collisions"] = mRangefinderVals + mCollisions; 
     doubleAcc["FLFitnessWeight"] = 1;
     doubleAcc["ColFitnessWeight"] = 1;
-    doubleAcc["WinnerFitnessWeight"] = 10;
+    doubleAcc["WinnerFitnessWeight"] = 20;
     
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
@@ -89,7 +89,7 @@ bool CarRaceSimulation::initialise(){
     btQuaternion rot(0, 0, 0, 1);
     rot.setEuler(PI/2, 0, 0);
 
-    mWorldEntities[mAgents[0]] = new CarAgent(10, 0.5);
+    mWorldEntities[mAgents[0]] = new CarAgent(15, 0.5);
     if(!mWorldEntities[mAgents[0]]->initialise("carone.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(8.5, 0, 42), 0.01, mSeed))
         return false;
     mWorld->addRigidBody(mWorldEntities[mAgents[0]]->getRigidBody());
@@ -107,7 +107,7 @@ bool CarRaceSimulation::initialise(){
             pos.z = 42;
         }
 
-        mWorldEntities[mAgents[k]] = new CarAgent(10, 0.5);
+        mWorldEntities[mAgents[k]] = new CarAgent(15, 0.5);
         if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, pos, 0.01, mSeed))
             return false;
         mWorldEntities[mAgents[k]]->setVelocity(vector3(0, 0, 0.5));
@@ -115,7 +115,7 @@ bool CarRaceSimulation::initialise(){
     }
     
     mWorldEntities["environment"] = new StaticWorldAgent(0.5, 0.1);
-    if(!mWorldEntities["environment"]->initialise("carraceenv.mesh", vector3(50, 50, 50), rot, mResourceManager, vector3(0, 3, 0), 0, mSeed))
+    if(!mWorldEntities["environment"]->initialise("carraceenv.mesh", vector3(50, 10, 50), rot, mResourceManager, vector3(0, 0, 0), 0, mSeed))
         return false;
     mWorld->addRigidBody(mWorldEntities["environment"]->getRigidBody());
 
@@ -138,7 +138,7 @@ double CarRaceSimulation::realFitness(){
     doubleAcc["Collisions"] = mCollisions; 
     doubleAcc["FLFitnessWeight"] = 1;
     doubleAcc["ColFitnessWeight"] = 1;
-    doubleAcc["WinnerFitnessWeight"] = 10;
+    doubleAcc["WinnerFitnessWeight"] = 20;
     
     for(uint k = 0; k < mAgents.size(); k++)
         pos[mAgents[k]] = getPositionInfo(mAgents[k]);
@@ -291,7 +291,7 @@ ESPParameters CarRaceSimulation::getESPParams(string _nnFormatFile){
 	ESPParameters params;
     params.populationSize = 30;
     params.maxGenerations = 200;
-    params.maxCompGenerations = 400;
+    params.maxCompGenerations = 0;
     params.nnFormatFilename = _nnFormatFile;
     params.stagnationThreshold = 0;
     params.fitnessEpsilonThreshold = 0;

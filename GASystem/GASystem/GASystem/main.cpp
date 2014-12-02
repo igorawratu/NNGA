@@ -248,13 +248,13 @@ int main(int argc, char** argv){
 
     srand(time(0));
 
-    string simName = "BridgeMouseSim";
+    string simName = "BridgeCarSim";
 
     GraphicsEngine* engine = new GraphicsEngine(NULL);
 
     SimInfo simInfo = createSimulation(simName, engine);
 
-    runSim(engine, simInfo.get<0>(), TYPE_ESP, simInfo.get<1>(), simInfo.get<2>(), 30, simName);
+    runSim(engine, simInfo.get<0>(), TYPE_ESP, simInfo.get<1>(), simInfo.get<2>(), 1, simName);
     //testCrossoverOp();
 
     delete engine;

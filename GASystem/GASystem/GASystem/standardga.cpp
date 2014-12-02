@@ -214,7 +214,7 @@ void StandardGA::evaluatePopulation(vector<Chromosome*>& _population){
                         pBestOverallFit = mRetrievedFitnesses[k*2 + 1];
 
                     pNumFitEval++;
-                    if(pNumFitEval > 0 && pNumFitEval % 10 == 0)
+                    if(pNumFitEval > 0 && pNumFitEval % 10 == 0 && pNumFitEval <= pTotalFitnessEvals)
                         FileWriter::writeToFile(pFileName, boost::lexical_cast<string>(pBestOverallFit));
 
                     mRetrievedFitnesses[k*2] = 0;
@@ -256,7 +256,7 @@ void StandardGA::evaluatePopulation(vector<Chromosome*>& _population){
                     pBestOverallFit = mRetrievedFitnesses[k*2 + 1];
 
                 pNumFitEval++;
-                if(pNumFitEval > 0 && pNumFitEval % 10 == 0)
+                if(pNumFitEval > 0 && pNumFitEval % 10 == 0 && pNumFitEval <= pTotalFitnessEvals)
                     FileWriter::writeToFile(pFileName, boost::lexical_cast<string>(pBestOverallFit));
 			}
         }

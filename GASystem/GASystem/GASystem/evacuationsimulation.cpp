@@ -40,7 +40,6 @@ void EvacuationSimulation::iterate(){
     //remove dead agents from simulation
     for(uint k = 0; k < mObjectsToRemove.size(); ++k){
         if(mWorldEntities.find(mObjectsToRemove[k]) != mWorldEntities.end()){
-            mWorld->removeRigidBody(mWorldEntities[mObjectsToRemove[k]]->getRigidBody());
             delete mWorldEntities[mObjectsToRemove[k]];
             mWorldEntities.erase(mObjectsToRemove[k]);
         }
@@ -147,7 +146,7 @@ bool EvacuationSimulation::initialise(){
     rot.setEuler(PI/2, 0, 0);
 
     for(uint k = 0; k < mAgents.size(); k++){
-        mWorldEntities[mAgents[k]] = new HumanAgent(10, 2);
+        mWorldEntities[mAgents[k]] = new HumanAgent(15, 2);
         
         if(!mWorldEntities[mAgents[k]]->initialise("human.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(genxa1(), 0, genza1()), 0.01, mSeed))
             return false;
@@ -200,6 +199,7 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
     if(mWorldEntities[_agentName]->getLastAnimation() == "staggerforward"){
         if(rand() % 2 == 0){
             mWorldEntities[_agentName]->setAnimationInfo("Die", false);
+            mWorld->removeRigidBody(mWorldEntities[_agentName]->getRigidBody());
             return;
         }
     }
@@ -287,7 +287,7 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
                 if(frontObjectName == "")
                     cout << "some shitty bug" << endl;
                 else{
-                    if(mWorldEntities[frontObjectName]->getAnimationLoop()){
+                    if(mWorldEntities[frontObjectName]->getAnimationLoop() && mWorldEntities[frontObjectName]->getLastAnimation() != "Die" && mWorldEntities[frontObjectName]->getAnimationName() != ""){
                         mWorldEntities[frontObjectName]->setAnimationInfo("staggerforward", false);
                         mWorldEntities[frontObjectName]->setVelocity(vector3(0, 0, 0));
                         mWorldEntities[_agentName]->setAnimationInfo("shove", false);
@@ -390,17 +390,17 @@ ESPParameters EvacuationSimulation::getESPParams(string _nnFormatFile){
 
 StandardGAParameters EvacuationSimulation::getSGAParameters(string _nnFormatFile){
 	StandardGAParameters params;
-    params.populationSize = 20;
+    params.populationSize = 100;
     params.maxGenerations = 200;
     params.nnFormatFilename = _nnFormatFile;
-    params.stagnationThreshold = 50;
+    params.stagnationThreshold = 1000;
     params.fitnessEpsilonThreshold = 0;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.1;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "LX";
+    params.crossoverAlgorithm = "BLX";
     params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = params.populationSize/10;
     params.crossoverParameters["CrossoverProbability"] = 0.8;
