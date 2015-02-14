@@ -190,6 +190,9 @@ void NeatChromosome::mutateAddNode(double _mutationProb){
             boost::uniform_int<> distCon(0, mGenotype[k].size() - 1);
             boost::variate_generator<boost::mt19937, boost::uniform_int<>> genCon(rngCon, distCon);
 
+            boost::uniform_real<double> distBias(-1, 1);
+            boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genBias(rngCon, distBias);
+
             int pos = genCon();
 
             mGenotype[k][pos].enabled = false;
@@ -198,7 +201,7 @@ void NeatChromosome::mutateAddNode(double _mutationProb){
             newnode.ID = mNodes[k][mNodes[k].size() - 1].ID + 1;
             newnode.teamID = mNodes[k][0].teamID;
             newnode.geneType = NONLEAF;
-            newnode.biasWeight = 1;
+            newnode.biasWeight = genBias();
             newnode.activationFunc = SIGMOID;
             mNodes[k].push_back(newnode);
 

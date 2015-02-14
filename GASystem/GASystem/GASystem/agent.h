@@ -38,7 +38,7 @@ public:
 
     virtual void tick()=0;
 
-    void setVelocity(vector3 _velocity);
+    virtual void setVelocity(vector3 _velocity);
 
     void avoided();
 

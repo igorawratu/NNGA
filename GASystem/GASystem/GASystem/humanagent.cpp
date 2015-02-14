@@ -2,10 +2,18 @@
 
 using namespace std;
 
-HumanAgent::HumanAgent(double _maxLinearVel, double _maxAngularVel){
+HumanAgent::HumanAgent(double _maxLinearVel, double _maxAngularVel, int _ticksPerSecond){
     mMaxLinearVel = _maxLinearVel;
     mMaxAngularVel = _maxAngularVel;
     mCurrVel = 0;
+
+    mAnimationTimings["shove"] = 30.0f/24.0f;
+    mAnimationTimings["Recover"] = 35.0f/24.0f;
+    mAnimationTimings["staggerforward"] = 15.0f/24.0f;
+    mAnimationTimings["Die"] = 17.0f/24.0f;
+
+    mCurrTimer = 0;
+    mTimePerTick = 1.0f/(float)_ticksPerSecond;
 }
 
 void HumanAgent::update(const vector<double>& _nnOutput){
@@ -54,6 +62,14 @@ void HumanAgent::tick(){
     btVector3 currLinVel = mRigidBody->getLinearVelocity();
 
     mCurrVel = vector3(0, 0, 0).calcDistance(vector3(currLinVel.getX(), currLinVel.getY(), currLinVel.getZ()));
+
+    if(!mAnimationLoop){
+        mCurrTimer += mTimePerTick;
+        if(mCurrTimer > mAnimationTimings[mAnimationName]){
+            mCurrTimer = 0;
+            setAnimationInfo("", true);
+        }
+    }
 }
 
 vector3 HumanAgent::getVelocity(){

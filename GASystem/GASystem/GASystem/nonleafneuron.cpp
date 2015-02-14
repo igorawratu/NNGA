@@ -35,7 +35,7 @@ Neuron* NonLeafNeuron::clone(){
 }
 
 double NonLeafNeuron::evaluate(long _counter){
-    if(!mCurrentCounter != _counter){
+    if(mCurrentCounter != _counter){
         double netInputSignal = 0;
 
         uint k = 0;

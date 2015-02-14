@@ -16,6 +16,9 @@ public:
 
     virtual void avoidCollisions(double _distanceLeft, double _distanceRight, uint _cyclesPerSecond, uint _cyclesPerDecision, btDiscreteDynamicsWorld* _world, btRigidBody* _envRigidBody);
 
+    virtual void setVelocity(vector3 _velocity);
+
+
 protected:
     virtual btCollisionShape* getCollisionShape(ResourceManager* _rm);
 

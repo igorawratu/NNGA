@@ -110,7 +110,7 @@ bool CarRaceSimulation::initialise(){
         mWorldEntities[mAgents[k]] = new CarAgent(15, 0.5);
         if(!mWorldEntities[mAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rot, mResourceManager, pos, 0.01, mSeed))
             return false;
-        mWorldEntities[mAgents[k]]->setVelocity(vector3(0, 0, 0.5));
+        mWorldEntities[mAgents[k]]->setVelocity(vector3(5, 0, 0));
         mWorld->addRigidBody(mWorldEntities[mAgents[k]]->getRigidBody());
     }
     
@@ -204,14 +204,14 @@ void CarRaceSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     mWorldEntities[mAgents[0]]->getRigidBody()->getMotionState()->getWorldTransform(winnerTrans);
     input[19] = winnerTrans.getOrigin().getX() / 50;
     input[20] = winnerTrans.getOrigin().getZ() / 50;
-    input[21] = _groupNum == 0 ? -1 : 1;
+    input[21] = _groupNum == 0 ? 1 : 1;
 
     if(frontDist < 10)
         mWorldEntities[_agentName]->avoidCollisions(d2, d1, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
     else{
         mWorldEntities[_agentName]->avoided();
-        //vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
-        vector<double> output = mSolution->evaluateNeuralNetwork(0, input, _groupNum + 1);
+        vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
+        //vector<double> output = mSolution->evaluateNeuralNetwork(0, input, _groupNum + 1);
         mWorldEntities[_agentName]->update(output);
     }
 
@@ -289,18 +289,18 @@ vector<CompetitiveFitness> CarRaceSimulation::competitiveFitness(){
 
 ESPParameters CarRaceSimulation::getESPParams(string _nnFormatFile){
 	ESPParameters params;
-    params.populationSize = 30;
-    params.maxGenerations = 200;
+    params.populationSize = 50;
+    params.maxGenerations = 999999;
     params.maxCompGenerations = 0;
     params.nnFormatFilename = _nnFormatFile;
-    params.stagnationThreshold = 0;
-    params.fitnessEpsilonThreshold = 0;
+    params.stagnationThreshold = 20;
+    params.fitnessEpsilonThreshold = -1;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.1;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "LX";
+    params.crossoverAlgorithm = "BLX";
     params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = params.populationSize/10;
     params.sampleEvaluationsPerChromosome = 5;
@@ -313,16 +313,16 @@ ESPParameters CarRaceSimulation::getESPParams(string _nnFormatFile){
 StandardGAParameters CarRaceSimulation::getSGAParameters(string _nnFormatFile){
 	StandardGAParameters params;
     params.populationSize = 100;
-    params.maxGenerations = 200;
+    params.maxGenerations = 999999;
     params.nnFormatFilename = _nnFormatFile;
     params.stagnationThreshold = 50;
-    params.fitnessEpsilonThreshold = 0;
+    params.fitnessEpsilonThreshold = -1;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.1;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "LX";
+    params.crossoverAlgorithm = "BLX";
     params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = params.populationSize/10;
     params.crossoverParameters["CrossoverProbability"] = 0.8;
@@ -333,7 +333,7 @@ StandardGAParameters CarRaceSimulation::getSGAParameters(string _nnFormatFile){
 CMAESParameters CarRaceSimulation::getCMAESParameters(string _nnFormatFile){
     CMAESParameters params;
 
-    params.maxGenerations = 600;
+    params.maxGenerations = 999999;
     params.maxCompGenerations = 0;
     params.evalsPerCompChrom = 5;
     params.nnFormatFilename = _nnFormatFile;

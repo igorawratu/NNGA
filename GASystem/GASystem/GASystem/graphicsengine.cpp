@@ -275,13 +275,6 @@ bool GraphicsEngine::frameRenderingQueued(const Ogre::FrameEvent& event){
                 ent->getAnimationState(iter->second->getAnimationName())->setTimePosition(0);
                 ent->getAnimationState(iter->second->getAnimationName())->setWeight(1);
             }
-            else{
-                //check for looping/nonlooping
-                if(!iter->second->getAnimationLoop()){
-                    if(ent->getAnimationState(mLastAnimationPlayed[entityName])->hasEnded())
-                        iter->second->setAnimationInfo("", true);
-                }
-            }
 
             //step animation
             ent->getAnimationState(mLastAnimationPlayed[entityName])->addTime(event.timeSinceLastFrame);

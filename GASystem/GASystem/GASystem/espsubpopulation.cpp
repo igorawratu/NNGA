@@ -205,8 +205,8 @@ void ESPSubPopulation::generateDeltaCodes(double _deltaRange){
 
         vector<double> deltaVector;
         boost::mt19937 rng(rand());
-        boost::uniform_real<double> dist(-_deltaRange, _deltaRange);
-        boost::variate_generator<boost::mt19937, boost::uniform_real<double>> gen(rng, dist);
+        boost::cauchy_distribution<> dist(0, _deltaRange);
+        boost::variate_generator<boost::mt19937, boost::cauchy_distribution<>> gen(rng, dist);
 
         vector<map<uint, vector<double>>> weightDims = mSubpopulation[0]->getWeightData();
         for(uint i = 0; i < weightDims[0][1].size(); ++i)

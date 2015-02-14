@@ -278,14 +278,14 @@ NEATParameters Simulation::getNEATParameters(string _nnFormatFile){
     NEATParameters params;
 
     params.populationSize = 100;
-    params.maxGenerations = 200;
+    params.maxGenerations = 500;
     params.nnFormatFilename = _nnFormatFile;
-    params.fitnessEpsilonThreshold = 0;
+    params.fitnessEpsilonThreshold = -1;
     params.mutationAlgorithm = "NEATMutation";
     params.crossoverAlgorithm = "NEATX";
     params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = 5;
-    params.compatibilityThreshold = 3;
+    params.compatibilityThreshold = 0.5;
     params.mutationParameters["MutationProbability"] = 0.05;
     params.mutationParameters["MutationAddProbability"] = 0.03;
     params.mutationParameters["WeightMutationProbability"] = 0.8;

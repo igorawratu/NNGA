@@ -134,7 +134,7 @@ Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputF
                 pc(k, 0) = 0;
                 psig(k, 0) = 0;
             }
-
+        
             //regenerates population so that it samples from a multivariate normal(this is a bit of a hack, the system originally was made so that initial population is sampled off a 
             //uniform distribution. DOES NOT get run if this is run after the competitive step, reason being we will lose delta coding effects)
             if(mStages == 1){
@@ -171,7 +171,7 @@ Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputF
                 for(uint i = 0; i < dims; ++i){
                     diagEigenValsSqrt(i, i) = eigenValuesSqrt(i, 0);
                 }
-                cNegHalf = eigenVectors * diagEigenValsSqrt * eigenVectors.transpose();
+                cNegHalf = eigenVectors * diagEigenValsSqrt.inverse() * eigenVectors.transpose();
 
                 psig = (1 - csig) * psig + sqrt(csig * (2 - csig) * mParameters.mewEff) * cNegHalf * yw;
                 
@@ -242,13 +242,10 @@ Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputF
                 if(mPopulation[0]->realFitness() <= mParameters.fitnessEpsilonThreshold || pNumFitEval >= pTotalFitnessEvals){
                     cout << "Termination criteria met, fitness obtained below epsilon" << endl;
 
-                    Solution finalSolution(dynamic_cast<NNChromosome*>(mPopulation[0])->getNeuralNets());
-                    finalSolution.fitness() = mPopulation[0]->fitness();
-
 		            mWorkStatus = COMPLETE;
 		            workerThread.join();
 
-                    return finalSolution;
+                    return mBestSolution;
                 }
             }
         }
@@ -347,7 +344,7 @@ Solution CMAES::train(SimulationContainer* _simulationContainer, string _outputF
                         diagEigenValsSqrt(i, i) = eigenValuesSqrt[iter->first](i, 0);
                     }
 
-                    cNegHalf = eigenVectors[iter->first] * diagEigenValsSqrt * eigenVectors[iter->first].transpose();
+                    cNegHalf = eigenVectors[iter->first] * diagEigenValsSqrt.inverse() * eigenVectors[iter->first].transpose();
 
                     psigs[iter->first] = (1 - csigs[iter->first]) * psigs[iter->first] + sqrt(csigs[iter->first] * (2 - csigs[iter->first]) * mParameters.mewEff) * cNegHalf * yw;
 
@@ -465,7 +462,7 @@ bool CMAES::setup(){
     setupWeights();
 
     //if 1 team, initialize normal population, otherwise init competitive populations first(normal population will be constructed once runDeltaCodes() is called by the algorithm
-    if(mNumTeams == 1){
+    if(mNumTeams == 1 || mParameters.maxCompGenerations == 0){
 	    mUpdateList = new int[mTotalRequests];
         
         for(uint k = 0; k < mParameters.populationSize; k++){
@@ -974,6 +971,21 @@ void CMAES::calcMean(const vector<Chromosome*>& _population, Eigen::MatrixXd& _w
     //calculates new mean, adds yilambdas to vector of matrices as they are needed to calculate new covariance matrix
     for(uint k = 0; k < mParameters.parentSize; ++k){
         int currPos = 0;
+
+        vector<map<uint, vector<double>>> pw = _population[k]->getWeightData();
+
+        for(uint l = 0; l < pw.size(); ++l){
+            for(map<uint, vector<double>>::iterator iter = pw[l].begin(); iter != pw[l].end(); ++iter){
+                for(uint i = 0; i < iter->second.size(); ++i){
+                    _weightedMean(currPos, 0) += mParameters.weights(k, 0) * iter->second[i];
+                    currPos++;
+                }
+            }
+        }
+    }
+
+    for(uint k = 0; k < mParameters.parentSize; ++k){
+        int currPos = 0;
         Eigen::MatrixXd yilambda(_dims, 1);
 
         vector<map<uint, vector<double>>> pw = _population[k]->getWeightData();
@@ -982,8 +994,6 @@ void CMAES::calcMean(const vector<Chromosome*>& _population, Eigen::MatrixXd& _w
             for(map<uint, vector<double>>::iterator iter = pw[l].begin(); iter != pw[l].end(); ++iter){
                 for(uint i = 0; i < iter->second.size(); ++i){
                     yilambda(currPos, 0) = (iter->second[i] - _weightedMean(currPos, 0)) / _stepSize;
-                    _weightedMean(currPos, 0) += mParameters.weights(k, 0) * iter->second[i];
-                    
                     currPos++;
                 }
             }

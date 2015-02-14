@@ -3,13 +3,15 @@
 
 #include "agent.h"
 #include <iostream>
+#include <map>
+#include <string>
 
 enum HumanState{IDLE, WALK, RUN, PUSH, STAGGER_BACK, STAGGER_FORWARD, AVOIDING};
 
 class HumanAgent : public Agent
 {
 public:
-    HumanAgent(double _maxLinearVel, double _maxAngularVel);
+    HumanAgent(double _maxLinearVel, double _maxAngularVel, int _ticksPerSecond);
 
     virtual void update(const vector<double>& _nnOutput);
 
@@ -35,6 +37,8 @@ private:
     double mMaxAngularVel;
     double mCurrVel;
     btVector3 mAvoidanceTorque;
+    std::map<std::string, float> mAnimationTimings;
+    float mCurrTimer, mTimePerTick;
 };
 
 #endif

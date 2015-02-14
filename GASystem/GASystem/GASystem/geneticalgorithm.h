@@ -13,7 +13,7 @@ class GeneticAlgorithm
 {
 public:
     GeneticAlgorithm(){
-        pTotalFitnessEvals = 1000;
+        pTotalFitnessEvals = 20000;
     }
     virtual ~GeneticAlgorithm(){}
 

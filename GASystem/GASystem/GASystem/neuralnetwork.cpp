@@ -10,6 +10,7 @@ bool NeuralNetwork::initialize(pugi::xml_node* _nnRoot, bool _checkLoops){
 
 //change this to neuroinfo
 NeuralNetwork::NeuralNetwork(map<uint, NeuronInfo> _neuronInfo){
+    mCounter = -1;
     map<uint, vector<uint>> predecessorMap;
 
     for(map<uint, NeuronInfo>::iterator iter = _neuronInfo.begin(); iter != _neuronInfo.end(); iter++){
@@ -219,7 +220,7 @@ bool NeuralNetwork::constructNNStructure(pugi::xml_node* _nnRootNode, bool _chec
 }
 
 NeuralNetwork::NeuralNetwork(const NeuralNetwork& _other){
-
+    mCounter = -1;
     for(map<uint, Neuron*>::const_iterator iter = _other.mNeuronCache.begin(); iter != _other.mNeuronCache.end(); iter++){
         mNeuronCache[iter->first] = iter->second->clone();
         mNeuronCache[iter->first]->setNeuronCache(&mNeuronCache);
@@ -278,8 +279,9 @@ vector<double> NeuralNetwork::evaluate(map<uint, double> _inputs){
         mNeuronCache[iter->first]->setInput(iter->second);
     }
 
+    ++mCounter;
     for(map<uint, Neuron*>::iterator iter = mOutput.begin(); iter != mOutput.end(); iter++)
-        output.push_back(iter->second->evaluate(++mCounter));
+        output.push_back(iter->second->evaluate(mCounter));
 
     return output;
 }
@@ -437,6 +439,7 @@ void NeuralNetwork::serialize(int*& _nodes, int*& _format, double*& _weights, in
 }
 
 NeuralNetwork::NeuralNetwork(int* _nodes, int* _format, double* _weights, int _formatSize, int _weightSize){
+    mCounter = -1;
     int input = _nodes[0], hidden = _nodes[1], output = _nodes[2];
 
 	int currentFormatPos = 0;

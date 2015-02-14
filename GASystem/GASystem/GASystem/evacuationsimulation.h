@@ -56,6 +56,9 @@ private:
     vector<Line> mLines;
     vector<string> mObjectsToRemove;
     double mAngularVelAcc;
+    boost::mt19937 mDeathRng;
+    boost::uniform_int<> deathDist;
+    boost::variate_generator<boost::mt19937, boost::uniform_int<>> genDeath;
 };
 
 #endif

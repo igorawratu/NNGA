@@ -338,12 +338,12 @@ vector<CompetitiveFitness> WarRobotSimulation::competitiveFitness(){
 
 ESPParameters WarRobotSimulation::getESPParams(string _nnFormatFile){
 	ESPParameters params;
-    params.populationSize = 40;
-    params.maxGenerations = 200;
-    params.maxCompGenerations = 400;
+    params.populationSize = 50;
+    params.maxGenerations = 999999;
+    params.maxCompGenerations = 0;
     params.nnFormatFilename = _nnFormatFile;
-    params.stagnationThreshold = 0;
-    params.fitnessEpsilonThreshold = 0;
+    params.stagnationThreshold = 20;
+    params.fitnessEpsilonThreshold = -1;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.1;
@@ -352,7 +352,7 @@ ESPParameters WarRobotSimulation::getESPParams(string _nnFormatFile){
     params.crossoverAlgorithm = "LX";
     params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = params.populationSize/10;
-    params.sampleEvaluationsPerChromosome = 3;
+    params.sampleEvaluationsPerChromosome = 5;
     params.crossoverParameters["CrossoverProbability"] = 0.8;
     params.deltaCodeRadius = 0.2;
 
@@ -362,16 +362,16 @@ ESPParameters WarRobotSimulation::getESPParams(string _nnFormatFile){
 StandardGAParameters WarRobotSimulation::getSGAParameters(string _nnFormatFile){
 	StandardGAParameters params;
     params.populationSize = 100;
-    params.maxGenerations = 200;
+    params.maxGenerations = 99999;
     params.nnFormatFilename = _nnFormatFile;
-    params.stagnationThreshold = 50;
-    params.fitnessEpsilonThreshold = 0;
+    params.stagnationThreshold = 10000;
+    params.fitnessEpsilonThreshold = -1;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.1;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "LX";
+    params.crossoverAlgorithm = "BLX";
     params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = params.populationSize/10;
     params.crossoverParameters["CrossoverProbability"] = 0.8;
@@ -382,11 +382,11 @@ StandardGAParameters WarRobotSimulation::getSGAParameters(string _nnFormatFile){
 CMAESParameters WarRobotSimulation::getCMAESParameters(string _nnFormatFile){
     CMAESParameters params;
 
-    params.maxGenerations = 600;
+    params.maxGenerations = 999999;
     params.maxCompGenerations = 0;
     params.evalsPerCompChrom = 5;
     params.nnFormatFilename = _nnFormatFile;
-    params.fitnessEpsilonThreshold = 0;
+    params.fitnessEpsilonThreshold = -1;
     params.deltaCodeRadius = 0.2;
     params.initStepsize = 0.2;
 

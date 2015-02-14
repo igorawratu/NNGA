@@ -1,6 +1,6 @@
 #include "evacuationsimulation.h"
 
-EvacuationSimulation::EvacuationSimulation(double _rangefinderRadius, uint _numAgents, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager){
+EvacuationSimulation::EvacuationSimulation(double _rangefinderRadius, uint _numAgents, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager), mDeathRng(_seed), deathDist(0, 1), genDeath(mDeathRng, deathDist){
     mWorld->setInternalTickCallback(EvacuationSimulation::tickCallBack, this, true);
     mCollisions = 0;
     mSeed = _seed;
@@ -16,7 +16,7 @@ EvacuationSimulation::~EvacuationSimulation(){
     
 }
 
-EvacuationSimulation::EvacuationSimulation(const EvacuationSimulation& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager){
+EvacuationSimulation::EvacuationSimulation(const EvacuationSimulation& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager), mDeathRng(other.mSeed), deathDist(0, 1), genDeath(mDeathRng, deathDist){
     mWorld->setInternalTickCallback(EvacuationSimulation::tickCallBack, this, true);
     mCollisions = 0;
     mSeed = other.mSeed;
@@ -76,7 +76,7 @@ double EvacuationSimulation::fitness(){
     dblAcc["LowerBound"] = 13;
     dblAcc["UpperBound"] = 15;
     dblAcc["Value"] = mAgents.size();
-    dblAcc["EVWeight"] = 10;
+    dblAcc["EVWeight"] = 30;
     finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
 
     return finalFitness;
@@ -100,7 +100,7 @@ double EvacuationSimulation::realFitness(){
     dblAcc["LowerBound"] = 13;
     dblAcc["UpperBound"] = 15;
     dblAcc["Value"] = mAgents.size();
-    dblAcc["EVWeight"] = 10;
+    dblAcc["EVWeight"] = 30;
     finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
 
     return finalFitness;
@@ -146,7 +146,7 @@ bool EvacuationSimulation::initialise(){
     rot.setEuler(PI/2, 0, 0);
 
     for(uint k = 0; k < mAgents.size(); k++){
-        mWorldEntities[mAgents[k]] = new HumanAgent(15, 2);
+        mWorldEntities[mAgents[k]] = new HumanAgent(15, 2, mCyclesPerSecond);
         
         if(!mWorldEntities[mAgents[k]]->initialise("human.mesh", vector3(1, 1, 1), rot, mResourceManager, vector3(genxa1(), 0, genza1()), 0.01, mSeed))
             return false;
@@ -197,11 +197,15 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
         return;
 
     if(mWorldEntities[_agentName]->getLastAnimation() == "staggerforward"){
-        if(rand() % 2 == 0){
+        //if(genDeath() == 0){
             mWorldEntities[_agentName]->setAnimationInfo("Die", false);
             mWorld->removeRigidBody(mWorldEntities[_agentName]->getRigidBody());
             return;
-        }
+        /*}
+        else{
+            mWorldEntities[_agentName]->setAnimationInfo("Recover", false);
+            return;
+        }*/
     }
 
     if(mWorldEntities[_agentName]->getLastAnimation() == "Die"){  
@@ -237,7 +241,7 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
             const btCollisionObject* frontObject;
             string frontObjectName = "";
 
-            double frontVal = getRayCollisionDistanceNonEnv(_agentName, btVector3(100, 0.1, 0), frontObject, hitpos) > 1 ? 1 : 0;
+            double frontVal = getRayCollisionDistanceNonEnv(_agentName, btVector3(100, 0.1, 0), frontObject, hitpos) > 2 ? 1 : 0;
            
             input[1] = getRayCollisionDistance(_agentName, btVector3(100, 0, 105), AGENT) / 50;
             input[2] = getRayCollisionDistance(_agentName, btVector3(100, 0, 75), AGENT) / 50;
@@ -265,18 +269,18 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
             input[17] = angVel;
 
             //for pushing behavior
-            double density = calculateDensity(_agentName, 10);
-            vector3 avgVel = calculateAverageVelocity(_agentName, 10);
-            vector3 pos = getPositionInfo(_agentName); pos.y = 0;
-            vector3 goalmid = mExit.getMidpoint(); goalmid.y = 0;
-            double distance = pos.calcDistance(goalmid) / 50;
+            //double density = calculateDensity(_agentName, 10);
+            //vector3 avgVel = calculateAverageVelocity(_agentName, 10);
+            //vector3 pos = getPositionInfo(_agentName); pos.y = 0;
+            //vector3 goalmid = mExit.getMidpoint(); goalmid.y = 0;
+            //double distance = pos.calcDistance(goalmid) / 50;
 
-            input[18] = mAgents.size();
+            input[18] = (double)mAgents.size() / 60.0;
 
             vector<double> output = mSolution->evaluateNeuralNetwork(_group, input);
             output.push_back(frontVal);
 
-            if(frontVal == 0/* && output[2] > 0.5*/){
+            if(frontVal == 0 && output[2] > 0.5){
                 for(uint k = 0; k < mAgents.size(); k++){
                     if(frontObject == mWorldEntities[mAgents[k]]->getRigidBody()){
                         frontObjectName = mAgents[k];
@@ -287,7 +291,7 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
                 if(frontObjectName == "")
                     cout << "some shitty bug" << endl;
                 else{
-                    if(mWorldEntities[frontObjectName]->getAnimationLoop() && mWorldEntities[frontObjectName]->getLastAnimation() != "Die" && mWorldEntities[frontObjectName]->getAnimationName() != ""){
+                    if(mWorldEntities[frontObjectName]->getAnimationLoop() && mWorldEntities[frontObjectName]->getLastAnimation() != "Die" && mWorldEntities[frontObjectName]->getAnimationName() != "" && mWorldEntities[frontObjectName]->getAnimationName() != "staggerforward"){
                         mWorldEntities[frontObjectName]->setAnimationInfo("staggerforward", false);
                         mWorldEntities[frontObjectName]->setVelocity(vector3(0, 0, 0));
                         mWorldEntities[_agentName]->setAnimationInfo("shove", false);

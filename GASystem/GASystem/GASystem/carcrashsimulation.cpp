@@ -142,14 +142,14 @@ bool CarCrashSimulation::initialise(){
     boost::variate_generator<boost::mt19937, boost::uniform_real<double>> genztwo(rngz2, distztwo);
 
     for(uint k = 0; k < mGroupOneAgents.size(); k++){
-        mWorldEntities[mGroupOneAgents[k]] = new CarAgent(10, 1);
+        mWorldEntities[mGroupOneAgents[k]] = new CarAgent(15, 1);
         if(!mWorldEntities[mGroupOneAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rotGroupOne, mResourceManager, vector3(genxone(), 0, genzone()), 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupOneAgents[k]]->getRigidBody());
     }
 
     for(uint k = 0; k < mGroupTwoAgents.size(); k++){
-        mWorldEntities[mGroupTwoAgents[k]] = new CarAgent(10, 1);
+        mWorldEntities[mGroupTwoAgents[k]] = new CarAgent(15, 1);
         if(!mWorldEntities[mGroupTwoAgents[k]]->initialise("car.mesh", vector3(1, 1, 1), rotGroupTwo, mResourceManager, vector3(genxtwo(), 0, genztwo()), 0.01, mSeed))
             return false;
         mWorld->addRigidBody(mWorldEntities[mGroupTwoAgents[k]]->getRigidBody());
@@ -222,7 +222,7 @@ void CarCrashSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     input[16] = agentVel.z;
 
     mWorldEntities[_agentName]->avoided();
-    vector<double> output = mSolution->evaluateNeuralNetwork(_groupNum, input);
+    vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
     mWorldEntities[_agentName]->update(output);
 
     Line finishLine = _groupNum == 0 ? mGroupOneFinish : mGroupTwoFinish;
@@ -254,22 +254,22 @@ void CarCrashSimulation::applyUpdateRules(string _agentName, uint _groupNum){
 ESPParameters CarCrashSimulation::getESPParams(string _nnFormatFile){
 	ESPParameters params;
     params.populationSize = 50;
-    params.maxGenerations = 200;
+    params.maxGenerations = 9999999;
     params.maxCompGenerations = 0;
     params.nnFormatFilename = _nnFormatFile;
-    params.stagnationThreshold = 0;
-    params.fitnessEpsilonThreshold = 0; 
+    params.stagnationThreshold = 20;
+    params.fitnessEpsilonThreshold = -1; 
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.1;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "LX";
+    params.crossoverAlgorithm = "BLX";
     params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = params.populationSize/10;
     params.sampleEvaluationsPerChromosome = 5;
     params.crossoverParameters["CrossoverProbability"] = 0.8;
-    params.deltaCodeRadius = 0.05;
+    params.deltaCodeRadius = 0.1;
 
     return params;
 }
@@ -277,10 +277,10 @@ ESPParameters CarCrashSimulation::getESPParams(string _nnFormatFile){
 StandardGAParameters CarCrashSimulation::getSGAParameters(string _nnFormatFile){
 	StandardGAParameters params;
     params.populationSize = 100;
-    params.maxGenerations = 200;
+    params.maxGenerations = 99999;
     params.nnFormatFilename = _nnFormatFile;
-    params.stagnationThreshold = 50;
-    params.fitnessEpsilonThreshold = 0;
+    params.stagnationThreshold = 999999;
+    params.fitnessEpsilonThreshold = -1;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.1;
@@ -297,11 +297,11 @@ StandardGAParameters CarCrashSimulation::getSGAParameters(string _nnFormatFile){
 CMAESParameters CarCrashSimulation::getCMAESParameters(string _nnFormatFile){
     CMAESParameters params;
 
-    params.maxGenerations = 600;
+    params.maxGenerations = 999999;
     params.maxCompGenerations = 0;
     params.evalsPerCompChrom = 5;
     params.nnFormatFilename = _nnFormatFile;
-    params.fitnessEpsilonThreshold = 0;
+    params.fitnessEpsilonThreshold = -1;
     params.deltaCodeRadius = 0.2;
     params.initStepsize = 0.2;
 

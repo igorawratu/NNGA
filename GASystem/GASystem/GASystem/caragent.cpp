@@ -109,6 +109,10 @@ void CarAgent::setRigidbodyProperties(){
     mRigidBody->setLinearFactor(btVector3(1, 0, 1));
 }
 
+void CarAgent::setVelocity(vector3 _velocity){
+    mCurrVel = _velocity.x;
+}
+
 btVector3 CarAgent::calculateInertia(double _mass, btCollisionShape* _shape){
     btVector3 inertia(0, 0, 0);
     _shape->calculateLocalInertia(_mass, inertia);

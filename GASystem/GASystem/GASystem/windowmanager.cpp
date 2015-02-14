@@ -32,7 +32,7 @@ WindowManager::~WindowManager(){
 
 void WindowManager::addViewport(Ogre::Viewport*& _viewport, Ogre::Camera*& _camera){
     _viewport = mWindow->addViewport(_camera);
-    _viewport->setBackgroundColour(Ogre::ColourValue(0, 0, 0));
+    _viewport->setBackgroundColour(Ogre::ColourValue(1, 1, 1));
     _camera->setAspectRatio(Ogre::Real(_viewport->getActualWidth()) / Ogre::Real(_viewport->getActualHeight()));
 }
 

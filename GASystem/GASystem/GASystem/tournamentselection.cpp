@@ -9,7 +9,7 @@ vector<Chromosome*> TournamentSelection::execute(vector<Chromosome*> _selectionP
     vector<Chromosome*> output;
 
     while(output.size() < _selectionCount)
-        output.push_back(runTournament(_selectionPool, 8));
+        output.push_back(runTournament(_selectionPool, 4));
 
     _unselected = _selectionPool;
 
