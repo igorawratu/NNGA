@@ -1,6 +1,6 @@
 #include "mousescattersimulation.h"
 
-MouseScatterSimulation::MouseScatterSimulation(double _rangefinderRadius, uint _numAgents, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager){
+MouseScatterSimulation::MouseScatterSimulation(double _rangefinderRadius, uint _numAgents, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed, TeamSetup _setup) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager, _setup){
     mWorld->setInternalTickCallback(MouseScatterSimulation::tickCallBack, this, true);
     mCollisions = 0;
     mSeed = _seed;
@@ -11,7 +11,7 @@ MouseScatterSimulation::MouseScatterSimulation(double _rangefinderRadius, uint _
         mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 }
 
-MouseScatterSimulation::MouseScatterSimulation(const MouseScatterSimulation& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager){
+MouseScatterSimulation::MouseScatterSimulation(const MouseScatterSimulation& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager, other.mTeamSetup){
     mWorld->setInternalTickCallback(MouseScatterSimulation::tickCallBack, this, true);
     mCollisions = 0;
     mSeed = other.mSeed;

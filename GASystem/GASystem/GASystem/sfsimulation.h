@@ -19,7 +19,7 @@
 class SFSimulation : public Simulation
 {
 public:
-    SFSimulation(double _rangefinderRadius, uint _numAgents, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed);
+    SFSimulation(double _rangefinderRadius, uint _numAgents, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed, TeamSetup _setup);
     SFSimulation(const SFSimulation& other);
     virtual ~SFSimulation();
     virtual void iterate();

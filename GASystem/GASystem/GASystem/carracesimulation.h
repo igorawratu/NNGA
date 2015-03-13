@@ -21,7 +21,7 @@
 class CarRaceSimulation : public Simulation
 {
 public:
-    CarRaceSimulation(double _rangefinderRadius, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed);
+    CarRaceSimulation(double _rangefinderRadius, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed, TeamSetup _setup);
     virtual ~CarRaceSimulation();
     virtual void iterate();
     virtual double fitness();

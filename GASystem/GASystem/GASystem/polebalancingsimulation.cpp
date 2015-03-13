@@ -1,13 +1,13 @@
 #include "polebalancingsimulation.h"
 
-PoleBalancingSimulation::PoleBalancingSimulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager){
+PoleBalancingSimulation::PoleBalancingSimulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager, TeamSetup::HET){
     mWorld->setInternalTickCallback(PoleBalancingSimulation::tickCallBack, this, true);
     mComplete = false;
     mLastAppliedForce = 0;
     mSeed = _seed;
 }
 
-PoleBalancingSimulation::PoleBalancingSimulation(const PoleBalancingSimulation& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager){
+PoleBalancingSimulation::PoleBalancingSimulation(const PoleBalancingSimulation& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager, TeamSetup::HET){
     mWorld->setInternalTickCallback(PoleBalancingSimulation::tickCallBack, this, true);
     mComplete = false;
     mLastAppliedForce = 0;

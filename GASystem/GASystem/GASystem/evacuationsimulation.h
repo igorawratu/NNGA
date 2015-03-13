@@ -16,7 +16,7 @@ using namespace std;
 class EvacuationSimulation : public Simulation
 {
 public:
-    EvacuationSimulation(double _rangefinderRadius, uint _numAgents, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed);
+    EvacuationSimulation(double _rangefinderRadius, uint _numAgents, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed, TeamSetup _setup);
     virtual ~EvacuationSimulation();
     EvacuationSimulation(const EvacuationSimulation& other);
     virtual void iterate();
@@ -59,6 +59,7 @@ private:
     boost::mt19937 mDeathRng;
     boost::uniform_int<> deathDist;
     boost::variate_generator<boost::mt19937, boost::uniform_int<>> genDeath;
+    float mDeathDistance;
 };
 
 #endif

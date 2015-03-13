@@ -21,7 +21,7 @@
 class WarRobotSimulation : public Simulation
 {
 public:
-    WarRobotSimulation(double _rangefinderRadius, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed);
+    WarRobotSimulation(double _rangefinderRadius, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed, TeamSetup _setup);
     virtual ~WarRobotSimulation();
     virtual void iterate();
     virtual double fitness();
@@ -49,7 +49,7 @@ public:
     virtual CMAESParameters getCMAESParameters(string _nnFormatFile);
 
 private:
-    void applyUpdateRules(string _agentName, uint _agentNum);
+    void applyUpdateRules(string _agentName, uint _agentNum, uint _index);
     void checkRayObject(int _groupNum, const btCollisionObject* _obj, int& _team, string& _entityName);
 
 private:

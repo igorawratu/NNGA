@@ -21,7 +21,7 @@
 class MouseScatterSimulation : public Simulation
 {
 public:
-    MouseScatterSimulation(double _rangerfinderRadius, uint _numAgents, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed);
+    MouseScatterSimulation(double _rangerfinderRadius, uint _numAgents, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed, TeamSetup _setup);
     MouseScatterSimulation(const MouseScatterSimulation& other);
     virtual ~MouseScatterSimulation();
     virtual void iterate();

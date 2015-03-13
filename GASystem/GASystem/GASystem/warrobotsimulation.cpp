@@ -1,7 +1,7 @@
 #include "warrobotsimulation.h"
 
-WarRobotSimulation::WarRobotSimulation(double _rangefinderRadius, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed)
-: Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager){
+WarRobotSimulation::WarRobotSimulation(double _rangefinderRadius, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed, TeamSetup _setup)
+: Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager, _setup){
     mWorld->setInternalTickCallback(WarRobotSimulation::tickCallBack, this, true);
     mCollisions = mRangefinderVals = 0;
     mSeed = _seed;
@@ -27,13 +27,39 @@ void WarRobotSimulation::iterate(){
 
     if(mCycleCounter % mCyclesPerDecision == 0){
         mRaysShot.clear();
-        for(uint k = 0; k < mGroupOneAgents.size(); ++k){
-            int group = k / 10;
-            applyUpdateRules(mGroupOneAgents[k], 0);
-        }
-        for(uint k = 0; k < mGroupTwoAgents.size(); ++k){
-            int group = k / 10 + 4;
-            applyUpdateRules(mGroupTwoAgents[k], 1);
+        if(mCycleCounter % mCyclesPerDecision == 0){
+            if(mTeamSetup == TeamSetup::HET){
+                for(uint k = 0; k < mGroupOneAgents.size(); ++k){
+                    applyUpdateRules(mGroupOneAgents[k], 0, k);
+                }
+                for(uint k = 0; k < mGroupTwoAgents.size(); ++k){
+                    applyUpdateRules(mGroupTwoAgents[k], 1, k);
+                }
+            }
+            else if(mTeamSetup == TeamSetup::QUARTHET){
+                for(uint k = 0; k < mGroupOneAgents.size(); ++k){
+                    applyUpdateRules(mGroupOneAgents[k], 0, k / 4);
+                }
+                for(uint k = 0; k < mGroupTwoAgents.size(); ++k){
+                    applyUpdateRules(mGroupTwoAgents[k], 1, k / 4);
+                }
+            }
+            else if(mTeamSetup == TeamSetup::SEMIHET){
+                for(uint k = 0; k < mGroupOneAgents.size(); ++k){
+                    applyUpdateRules(mGroupOneAgents[k], 0, k / 10);
+                }
+                for(uint k = 0; k < mGroupTwoAgents.size(); ++k){
+                    applyUpdateRules(mGroupTwoAgents[k], 1, k / 10);
+                }
+            }
+            else if(mTeamSetup == TeamSetup::HOM){
+                for(uint k = 0; k < mGroupOneAgents.size(); ++k){
+                    applyUpdateRules(mGroupOneAgents[k], 0, 0);
+                }
+                for(uint k = 0; k < mGroupTwoAgents.size(); ++k){
+                    applyUpdateRules(mGroupTwoAgents[k], 1, 0);
+                }
+            }
         }
 
         //remove dead agents from simulation
@@ -93,7 +119,7 @@ double WarRobotSimulation::fitness(){
 }
 
 Simulation* WarRobotSimulation::getNewCopy(){
-    Simulation* sim = new WarRobotSimulation(mRangefinderRadius, mNumCycles, mCyclesPerDecision, mCyclesPerSecond, mSolution, mResourceManager, mSeed);
+    Simulation* sim = new WarRobotSimulation(mRangefinderRadius, mNumCycles, mCyclesPerDecision, mCyclesPerSecond, mSolution, mResourceManager, mSeed, mTeamSetup);
     sim->initialise();
     
     return sim;
@@ -207,7 +233,8 @@ void WarRobotSimulation::checkRayObject(int _groupNum, const btCollisionObject* 
     _entityName = "env";
 }
 
-void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum){
+void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum, uint _index){
+    cout << _groupNum << " " << _index;
     btTransform trans;
     mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
     const btCollisionObject* obj;
@@ -279,7 +306,7 @@ void WarRobotSimulation::applyUpdateRules(string _agentName, uint _groupNum){
     else{
         mWorldEntities[_agentName]->avoided();
         uint team = _groupNum == 0 ? 1 : 2;
-        vector<double> output = mSolution->evaluateNeuralNetwork(0, input, team);
+        vector<double> output = mSolution->evaluateNeuralNetwork(_index, input, team);
         mWorldEntities[_agentName]->update(output);
     }
 
@@ -349,7 +376,7 @@ ESPParameters WarRobotSimulation::getESPParams(string _nnFormatFile){
     params.mutationParameters["Deviation"] = 0.1;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "LX";
+    params.crossoverAlgorithm = "BLX";
     params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = params.populationSize/10;
     params.sampleEvaluationsPerChromosome = 5;

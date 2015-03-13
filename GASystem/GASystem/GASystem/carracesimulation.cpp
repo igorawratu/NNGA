@@ -1,7 +1,7 @@
 #include "carracesimulation.h"
 
-CarRaceSimulation::CarRaceSimulation(double _rangefinderRadius, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed)
-: Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager){
+CarRaceSimulation::CarRaceSimulation(double _rangefinderRadius, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed, TeamSetup _setup)
+: Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager, _setup){
     mWorld->setInternalTickCallback(CarRaceSimulation::tickCallBack, this, true);
     mCollisions = mRangefinderVals = 0;
     mSeed = _seed;
@@ -20,9 +20,23 @@ void CarRaceSimulation::iterate(){
         return;
 
     if(mCycleCounter % mCyclesPerDecision == 0){
-        for(uint k = 0; k < mAgents.size(); k++)
-            applyUpdateRules(mAgents[k], k);
-        //applyUpdateRules(mAgents[0], 0);
+        if(mTeamSetup == TeamSetup::HET){
+            for(uint k = 0; k < mAgents.size(); k++)
+                applyUpdateRules(mAgents[k], k);
+        }
+        else if(mTeamSetup == TeamSetup::QUARTHET){
+            for(uint k = 0; k < mAgents.size(); k++)
+                applyUpdateRules(mAgents[k], k / 2);
+        }
+        else if(mTeamSetup == TeamSetup::SEMIHET){
+            for(uint k = 1; k < mAgents.size(); k++)
+                applyUpdateRules(mAgents[k], 0);
+            applyUpdateRules(mAgents[0], 1);
+        }
+        else if(mTeamSetup == TeamSetup::HOM){
+            for(uint k = 0; k < mAgents.size(); k++)
+                applyUpdateRules(mAgents[k], 0);
+        }
     }
 
     mCycleCounter++;
@@ -58,7 +72,7 @@ double CarRaceSimulation::fitness(){
 }
 
 Simulation* CarRaceSimulation::getNewCopy(){
-    Simulation* sim = new CarRaceSimulation(mRangefinderRadius, mNumCycles, mCyclesPerDecision, mCyclesPerSecond, mSolution, mResourceManager, mSeed);
+    Simulation* sim = new CarRaceSimulation(mRangefinderRadius, mNumCycles, mCyclesPerDecision, mCyclesPerSecond, mSolution, mResourceManager, mSeed, mTeamSetup);
     sim->initialise();
     
     return sim;

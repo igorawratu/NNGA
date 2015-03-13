@@ -21,7 +21,7 @@ using namespace std;
 class CarCrashSimulation : public Simulation
 {
 public:
-    CarCrashSimulation(double _rangefinderRadius, uint _agentsPerSide, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed);
+    CarCrashSimulation(double _rangefinderRadius, uint _agentsPerSide, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed, TeamSetup _setup);
     virtual ~CarCrashSimulation();
     virtual void iterate();
     virtual double fitness();

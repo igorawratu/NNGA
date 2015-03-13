@@ -1,6 +1,6 @@
 #include "corneringsim.h"
 
-CorneringSim::CorneringSim(double _rangefinderRadius, uint _numAgents, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager){
+CorneringSim::CorneringSim(double _rangefinderRadius, uint _numAgents, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed, TeamSetup _setup) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager, _setup){
     mWorld->setInternalTickCallback(CorneringSim::tickCallBack, this, true);
     mCollisions = 0;
     mSeed = _seed;
@@ -18,7 +18,7 @@ CorneringSim::~CorneringSim(){
 
 }
 
-CorneringSim::CorneringSim(const CorneringSim& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager){
+CorneringSim::CorneringSim(const CorneringSim& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager, other.mTeamSetup){
     mWorld->setInternalTickCallback(CorneringSim::tickCallBack, this, true);
     mCollisions = 0;
     mSeed = other.mSeed;
@@ -37,9 +37,21 @@ void CorneringSim::iterate(){
         return;
 
     if(mCycleCounter % mCyclesPerDecision == 0){
-        for(int k = 0; k < mAgents.size(); k++){
-            applyUpdateRules(mAgents[k]);
-            //calcCollisions(mAgents[k]);
+        if(mTeamSetup == TeamSetup::HET){
+            for(uint k = 0; k < mAgents.size(); k++)
+                applyUpdateRules(mAgents[k], k);
+        }
+        else if(mTeamSetup == TeamSetup::QUARTHET){
+            for(uint k = 0; k < mAgents.size(); k++)
+                applyUpdateRules(mAgents[k], k / 2);
+        }
+        else if(mTeamSetup == TeamSetup::SEMIHET){
+            for(uint k = 0; k < mAgents.size(); k++)
+                applyUpdateRules(mAgents[k], k / 2);
+        }
+        else if(mTeamSetup == TeamSetup::HOM){
+            for(uint k = 0; k < mAgents.size(); k++)
+                applyUpdateRules(mAgents[k], 0);
         }
     }
 
@@ -167,7 +179,7 @@ bool CorneringSim::initialise(){
     return true;
 }
 
-void CorneringSim::applyUpdateRules(string _agentName){
+void CorneringSim::applyUpdateRules(string _agentName, uint _index){
     btTransform trans;
     mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
     double frontVal = -1;
@@ -217,7 +229,7 @@ void CorneringSim::applyUpdateRules(string _agentName){
         mWorldEntities[_agentName]->avoidCollisions(d2, d1, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
     else{
         mWorldEntities[_agentName]->avoided();
-        vector<double> output = mSolution->evaluateNeuralNetwork(0, input);
+        vector<double> output = mSolution->evaluateNeuralNetwork(_index, input);
         mWorldEntities[_agentName]->update(output);
     }
 

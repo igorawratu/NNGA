@@ -1,6 +1,6 @@
 #include "bridgesimulation.h"
 
-BridgeSimulation::BridgeSimulation(double _rangefinderRadius, uint _numAgents, AgentType _agentType, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager){
+BridgeSimulation::BridgeSimulation(double _rangefinderRadius, uint _numAgents, AgentType _agentType, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed, TeamSetup _setup) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager, _setup){
     mWorld->setInternalTickCallback(BridgeSimulation::tickCallBack, this, true);
     mCollisions = 0;
     mAgentType = _agentType;
@@ -13,7 +13,7 @@ BridgeSimulation::BridgeSimulation(double _rangefinderRadius, uint _numAgents, A
         mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 }
 
-BridgeSimulation::BridgeSimulation(const BridgeSimulation& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager){
+BridgeSimulation::BridgeSimulation(const BridgeSimulation& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager, other.mTeamSetup){
     mWorld->setInternalTickCallback(BridgeSimulation::tickCallBack, this, true);
     mCollisions = 0;
     mAgentType = other.mAgentType;
@@ -34,8 +34,18 @@ void BridgeSimulation::iterate(){
 
     if(mCycleCounter % mCyclesPerDecision == 0){
         for(int k = 0; k < mAgents.size(); k++){
-            int group = k / 10;
-            applyUpdateRules(mAgents[k], 0);
+            if(mTeamSetup == TeamSetup::HET){
+                applyUpdateRules(mAgents[k], k);
+            }
+            else if(mTeamSetup == TeamSetup::QUARTHET){
+                applyUpdateRules(mAgents[k], k / 2);
+            }
+            else if(mTeamSetup == TeamSetup::SEMIHET){
+                applyUpdateRules(mAgents[k], k / 5);
+            }
+            else if(mTeamSetup == TeamSetup::HOM){
+                applyUpdateRules(mAgents[k], 0);
+            }
         }
     }
 

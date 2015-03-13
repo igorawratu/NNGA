@@ -1,11 +1,11 @@
 #include "sfturnbacksimulation.h"
 
-SFTurnbackSimulation::SFTurnbackSimulation(double _rangefinderRadius, uint _numAgents, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed)
-: SFSimulation(_rangefinderRadius, _numAgents, _numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager, _seed){
+SFTurnbackSimulation::SFTurnbackSimulation(double _rangefinderRadius, uint _numAgents, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed, TeamSetup _setup)
+: SFSimulation(_rangefinderRadius, _numAgents, _numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager, _seed, _setup){
 }
 
 
-SFTurnbackSimulation::SFTurnbackSimulation(const SFTurnbackSimulation& other) : SFSimulation(other.mRangefinderRadius, other.mAgents.size(), other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager, other.mSeed){
+SFTurnbackSimulation::SFTurnbackSimulation(const SFTurnbackSimulation& other) : SFSimulation(other.mRangefinderRadius, other.mAgents.size(), other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager, other.mSeed, other.mTeamSetup){
 }
 
 

@@ -1,6 +1,6 @@
 #include "formationsimulation.h"
 
-FormationSimulation::FormationSimulation(double _rangefinderRadius, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager){
+FormationSimulation::FormationSimulation(double _rangefinderRadius, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager, TeamSetup::HET){
     mWorld->setInternalTickCallback(FormationSimulation::tickCallBack, this, true);
     mCollisions = 0;
     mSeed = _seed;
@@ -11,7 +11,7 @@ FormationSimulation::FormationSimulation(double _rangefinderRadius, uint _numCyc
         mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
 }
 
-FormationSimulation::FormationSimulation(const FormationSimulation& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager){
+FormationSimulation::FormationSimulation(const FormationSimulation& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager, TeamSetup::HET){
     mWorld->setInternalTickCallback(FormationSimulation::tickCallBack, this, true);
     mCollisions = 0;
     mSeed = other.mSeed;

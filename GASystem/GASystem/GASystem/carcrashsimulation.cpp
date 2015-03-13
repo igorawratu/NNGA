@@ -1,7 +1,7 @@
 #include "carcrashsimulation.h"
 
-CarCrashSimulation::CarCrashSimulation(double _rangefinderRadius, uint _agentsPerSide, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed)
- : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager){
+CarCrashSimulation::CarCrashSimulation(double _rangefinderRadius, uint _agentsPerSide, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed, TeamSetup _setup)
+ : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager, _setup){
     mWorld->setInternalTickCallback(CarCrashSimulation::tickCallBack, this, true);
     mCollisions = mRangefinderVals = 0;
     mSeed = _seed;
@@ -27,6 +27,36 @@ void CarCrashSimulation::iterate(){
             applyUpdateRules(mGroupOneAgents[k], 0);
         for(uint k = 0; k < mGroupTwoAgents.size(); k++)
             applyUpdateRules(mGroupTwoAgents[k], 1);
+
+        for(int k = 0; k < mGroupOneAgents.size(); k++){
+            if(mTeamSetup == TeamSetup::HET){
+                applyUpdateRules(mGroupOneAgents[k], k);
+            }
+            else if(mTeamSetup == TeamSetup::QUARTHET){
+                applyUpdateRules(mGroupOneAgents[k], k / 5);
+            }
+            else if(mTeamSetup == TeamSetup::SEMIHET){
+                applyUpdateRules(mGroupOneAgents[k], 0);
+            }
+            else if(mTeamSetup == TeamSetup::HOM){
+                applyUpdateRules(mGroupOneAgents[k], 0);
+            }
+        }
+
+        for(int k = 0; k < mGroupTwoAgents.size(); k++){
+            if(mTeamSetup == TeamSetup::HET){
+                applyUpdateRules(mGroupTwoAgents[k], k + mGroupOneAgents.size());
+            }
+            else if(mTeamSetup == TeamSetup::QUARTHET){
+                applyUpdateRules(mGroupTwoAgents[k], (k / 5) + mGroupOneAgents.size() / 5);
+            }
+            else if(mTeamSetup == TeamSetup::SEMIHET){
+                applyUpdateRules(mGroupTwoAgents[k], 1);
+            }
+            else if(mTeamSetup == TeamSetup::HOM){
+                applyUpdateRules(mGroupTwoAgents[k], 0);
+            }
+        }
     }
 
     mCycleCounter++;
@@ -101,7 +131,7 @@ double CarCrashSimulation::realFitness(){
 }
 
 Simulation* CarCrashSimulation::getNewCopy(){
-    Simulation* sim = new CarCrashSimulation(mRangefinderRadius, mGroupOneAgents.size(), mNumCycles, mCyclesPerDecision, mCyclesPerSecond, mSolution, mResourceManager, mSeed);
+    Simulation* sim = new CarCrashSimulation(mRangefinderRadius, mGroupOneAgents.size(), mNumCycles, mCyclesPerDecision, mCyclesPerSecond, mSolution, mResourceManager, mSeed, mTeamSetup);
     sim->initialise();
     
     return sim;

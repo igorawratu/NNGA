@@ -1,6 +1,6 @@
 #include "prototypesimulation.h"
 
-PrototypeSimulation::PrototypeSimulation(vector<vector3> _waypoints, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager){
+PrototypeSimulation::PrototypeSimulation(vector<vector3> _waypoints, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager, TeamSetup::HET){
     mWorld->setInternalTickCallback(PrototypeSimulation::tickCallBack, this, true);
     mWaypoints = _waypoints;
     mCollisions = 0;

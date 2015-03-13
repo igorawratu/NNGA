@@ -1,7 +1,7 @@
 #include "mouseescapesimulation.h"
 
-MouseEscapeSimulation::MouseEscapeSimulation(double _rangefinderRadius, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed)
-: Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager){
+MouseEscapeSimulation::MouseEscapeSimulation(double _rangefinderRadius, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed, TeamSetup _setup)
+: Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager, _setup){
     mWorld->setInternalTickCallback(MouseEscapeSimulation::tickCallBack, this, true);
     mCollisions = mRangefinderVals = 0;
     mSeed = _seed;
@@ -28,10 +28,31 @@ void MouseEscapeSimulation::iterate(){
 
     if(mCycleCounter % mCyclesPerDecision == 0){
         mRaysShot.clear();
-        for(uint k = 0; k < mMouseAgents.size(); ++k)
-            applyUpdateRules(mMouseAgents[k], 0);
-        for(uint k = 0; k < mRobotAgents.size(); ++k)
-            applyUpdateRules(mRobotAgents[k], 1);
+
+        if(mTeamSetup == TeamSetup::HET){
+            for(uint k = 0; k < mMouseAgents.size(); ++k)
+                applyUpdateRules(mMouseAgents[k], 0, k);
+            for(uint k = 0; k < mRobotAgents.size(); ++k)
+                applyUpdateRules(mRobotAgents[k], 1, k);
+        }
+        else if(mTeamSetup == TeamSetup::QUARTHET){
+            for(uint k = 0; k < mMouseAgents.size(); ++k)
+                applyUpdateRules(mMouseAgents[k], 0, k / 5);
+            for(uint k = 0; k < mRobotAgents.size(); ++k)
+                applyUpdateRules(mRobotAgents[k], 1, k);
+        }
+        else if(mTeamSetup == TeamSetup::SEMIHET){
+            for(uint k = 0; k < mMouseAgents.size(); ++k)
+                applyUpdateRules(mMouseAgents[k], 0, k / 7);
+            for(uint k = 0; k < mRobotAgents.size(); ++k)
+                applyUpdateRules(mRobotAgents[k], 1, 0);
+        }
+        else if(mTeamSetup == TeamSetup::HOM){
+            for(uint k = 0; k < mMouseAgents.size(); ++k)
+                applyUpdateRules(mMouseAgents[k], 0, 0);
+            for(uint k = 0; k < mRobotAgents.size(); ++k)
+                applyUpdateRules(mRobotAgents[k], 1, 0);
+        }
 
         //remove dead agents from simulation
         for(uint k = 0; k < mObjectsToRemove.size(); ++k){
@@ -87,7 +108,7 @@ double MouseEscapeSimulation::fitness(){
 }
 
 Simulation* MouseEscapeSimulation::getNewCopy(){
-    Simulation* sim = new MouseEscapeSimulation(mRangefinderRadius, mNumCycles, mCyclesPerDecision, mCyclesPerSecond, mSolution, mResourceManager, mSeed);
+    Simulation* sim = new MouseEscapeSimulation(mRangefinderRadius, mNumCycles, mCyclesPerDecision, mCyclesPerSecond, mSolution, mResourceManager, mSeed, mTeamSetup);
     sim->initialise();
     
     return sim;
@@ -210,7 +231,7 @@ void MouseEscapeSimulation::checkRayObject(int _groupNum, const btCollisionObjec
     _entityName = "env";
 }
 
-void MouseEscapeSimulation::applyUpdateRules(string _agentName, uint _groupNum){
+void MouseEscapeSimulation::applyUpdateRules(string _agentName, uint _groupNum, uint _index){
     btTransform trans;
     mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
     const btCollisionObject* obj;
@@ -297,7 +318,7 @@ void MouseEscapeSimulation::applyUpdateRules(string _agentName, uint _groupNum){
         mWorldEntities[_agentName]->avoidCollisions(d2, d1, mCyclesPerSecond, mCyclesPerDecision, mWorld, mWorldEntities["environment"]->getRigidBody());
     else{
         mWorldEntities[_agentName]->avoided();
-        vector<double> output = mSolution->evaluateNeuralNetwork(0, input, _groupNum + 1);
+        vector<double> output = mSolution->evaluateNeuralNetwork(_index, input, _groupNum + 1);
         if(_groupNum == 0){
             double frontVal = Simulation::getRayCollisionDistance(_agentName, btVector3(100, 0, 0), AGENT) > 3 ? 1 : 0;
             output.push_back(frontVal);

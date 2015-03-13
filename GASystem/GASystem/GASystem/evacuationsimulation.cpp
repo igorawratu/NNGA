@@ -1,12 +1,13 @@
 #include "evacuationsimulation.h"
 
-EvacuationSimulation::EvacuationSimulation(double _rangefinderRadius, uint _numAgents, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager), mDeathRng(_seed), deathDist(0, 1), genDeath(mDeathRng, deathDist){
+EvacuationSimulation::EvacuationSimulation(double _rangefinderRadius, uint _numAgents, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed, TeamSetup _setup) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, _solution, _resourceManager, _setup), mDeathRng(_seed), deathDist(0, 1), genDeath(mDeathRng, deathDist){
     mWorld->setInternalTickCallback(EvacuationSimulation::tickCallBack, this, true);
     mCollisions = 0;
     mSeed = _seed;
     mRangefinderRadius = _rangefinderRadius;
     mRangefinderVals = 0;
     mAngularVelAcc = 0;
+    mDeathDistance = 0;
 
     for(uint k = 0; k < 60; k++)
         mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
@@ -16,13 +17,14 @@ EvacuationSimulation::~EvacuationSimulation(){
     
 }
 
-EvacuationSimulation::EvacuationSimulation(const EvacuationSimulation& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager), mDeathRng(other.mSeed), deathDist(0, 1), genDeath(mDeathRng, deathDist){
+EvacuationSimulation::EvacuationSimulation(const EvacuationSimulation& other) : Simulation(other.mNumCycles, other.mCyclesPerDecision, other.mCyclesPerSecond, other.mSolution, other.mResourceManager, other.mTeamSetup), mDeathRng(other.mSeed), deathDist(0, 1), genDeath(mDeathRng, deathDist){
     mWorld->setInternalTickCallback(EvacuationSimulation::tickCallBack, this, true);
     mCollisions = 0;
     mSeed = other.mSeed;
     mRangefinderRadius = other.mRangefinderRadius;
     mRangefinderVals = 0;
     mAngularVelAcc = 0;
+    mDeathDistance = 0;
 
     for(uint k = 0; k < 60; k++)
         mAgents.push_back("Agent" + boost::lexical_cast<string>(k));
@@ -34,23 +36,39 @@ void EvacuationSimulation::iterate(){
 
     mObjectsToRemove.clear();
 
-    for(int k = 0; k < mAgents.size(); k++)
-        applyUpdateRules(mAgents[k], 0);
-
-    //remove dead agents from simulation
-    for(uint k = 0; k < mObjectsToRemove.size(); ++k){
-        if(mWorldEntities.find(mObjectsToRemove[k]) != mWorldEntities.end()){
-            delete mWorldEntities[mObjectsToRemove[k]];
-            mWorldEntities.erase(mObjectsToRemove[k]);
+    if(mCycleCounter % mCyclesPerDecision == 0){
+        if(mTeamSetup == TeamSetup::HET){
+            for(uint k = 0; k < mAgents.size(); k++)
+                applyUpdateRules(mAgents[k], k);
+        }
+        else if(mTeamSetup == TeamSetup::QUARTHET){
+            for(uint k = 0; k < mAgents.size(); k++)
+                applyUpdateRules(mAgents[k], k / 5);
+        }
+        else if(mTeamSetup == TeamSetup::SEMIHET){
+            for(uint k = 0; k < mAgents.size(); k++)
+                applyUpdateRules(mAgents[k], k / 10);
+        }
+        else if(mTeamSetup == TeamSetup::HOM){
+            for(int k = 0; k < mAgents.size(); k++)
+                applyUpdateRules(mAgents[k], 0);
         }
 
-        //remove agent from list
-        int pos = -1;
-        for(uint i = 0; i < mAgents.size(); ++i)
-            if(mAgents[i] == mObjectsToRemove[k])
-                pos = i;
-        if(pos > -1)
-            mAgents.erase(mAgents.begin() + pos);
+        //remove dead agents from simulation
+        for(uint k = 0; k < mObjectsToRemove.size(); ++k){
+            if(mWorldEntities.find(mObjectsToRemove[k]) != mWorldEntities.end()){
+                delete mWorldEntities[mObjectsToRemove[k]];
+                mWorldEntities.erase(mObjectsToRemove[k]);
+            }
+
+            //remove agent from list
+            int pos = -1;
+            for(uint i = 0; i < mAgents.size(); ++i)
+                if(mAgents[i] == mObjectsToRemove[k])
+                    pos = i;
+            if(pos > -1)
+                mAgents.erase(mAgents.begin() + pos);
+        }
     }
 
     mCycleCounter++;
@@ -76,8 +94,10 @@ double EvacuationSimulation::fitness(){
     dblAcc["LowerBound"] = 13;
     dblAcc["UpperBound"] = 15;
     dblAcc["Value"] = mAgents.size();
-    dblAcc["EVWeight"] = 30;
+    dblAcc["EVWeight"] = 60;
     finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
+
+    finalFitness += mDeathDistance;
 
     return finalFitness;
 }
@@ -100,8 +120,10 @@ double EvacuationSimulation::realFitness(){
     dblAcc["LowerBound"] = 13;
     dblAcc["UpperBound"] = 15;
     dblAcc["Value"] = mAgents.size();
-    dblAcc["EVWeight"] = 30;
+    dblAcc["EVWeight"] = 60;
     finalFitness += mFitnessFunctions[1]->evaluateFitness(pos, dblAcc, intAcc);
+
+    finalFitness += mDeathDistance;
 
     return finalFitness;
 }
@@ -200,6 +222,13 @@ void EvacuationSimulation::applyUpdateRules(string _agentName, uint _group){
         //if(genDeath() == 0){
             mWorldEntities[_agentName]->setAnimationInfo("Die", false);
             mWorld->removeRigidBody(mWorldEntities[_agentName]->getRigidBody());
+            
+            btTransform trans;
+            mWorldEntities[_agentName]->getRigidBody()->getMotionState()->getWorldTransform(trans);
+
+            float dist = vector3(trans.getOrigin().getX(), 0, trans.getOrigin().getZ()).calcDistance(mExit.getMidpoint());
+
+            mDeathDistance += dist;
             return;
         /*}
         else{
@@ -372,22 +401,22 @@ double EvacuationSimulation::calculateDensity(string _agentName, double _radius)
 ESPParameters EvacuationSimulation::getESPParams(string _nnFormatFile){
 	ESPParameters params;
     params.populationSize = 50;
-    params.maxGenerations = 200;
+    params.maxGenerations = 999999;
     params.maxCompGenerations = 0;
     params.nnFormatFilename = _nnFormatFile;
-    params.stagnationThreshold = 0;
-    params.fitnessEpsilonThreshold = 0;
+    params.stagnationThreshold = 20;
+    params.fitnessEpsilonThreshold = -1;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.1;
     params.mutationParameters["MaxConstraint"] = 1;
     params.mutationParameters["MinConstraint"] = -1;
-    params.crossoverAlgorithm = "LX";
+    params.crossoverAlgorithm = "BLX";
     params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = params.populationSize/10;
     params.sampleEvaluationsPerChromosome = 5;
     params.crossoverParameters["CrossoverProbability"] = 0.8;
-    params.deltaCodeRadius = 0.05;
+    params.deltaCodeRadius = 0.1;
 
     return params;
 }
@@ -395,10 +424,10 @@ ESPParameters EvacuationSimulation::getESPParams(string _nnFormatFile){
 StandardGAParameters EvacuationSimulation::getSGAParameters(string _nnFormatFile){
 	StandardGAParameters params;
     params.populationSize = 100;
-    params.maxGenerations = 200;
+    params.maxGenerations = 999999;
     params.nnFormatFilename = _nnFormatFile;
     params.stagnationThreshold = 1000;
-    params.fitnessEpsilonThreshold = 0;
+    params.fitnessEpsilonThreshold = -1;
     params.mutationAlgorithm = "GaussianMutation";
     params.mutationParameters["MutationProbability"] = 0.02;
     params.mutationParameters["Deviation"] = 0.1;
@@ -415,12 +444,12 @@ StandardGAParameters EvacuationSimulation::getSGAParameters(string _nnFormatFile
 CMAESParameters EvacuationSimulation::getCMAESParameters(string _nnFormatFile){
     CMAESParameters params;
 
-    params.maxGenerations = 600;
+    params.maxGenerations = 9999999;
     params.maxCompGenerations = 0;
     params.evalsPerCompChrom = 5;
     params.nnFormatFilename = _nnFormatFile;
-    params.fitnessEpsilonThreshold = 0;
-    params.deltaCodeRadius = 0.2;
+    params.fitnessEpsilonThreshold = -1;
+    params.deltaCodeRadius = 0.1;
     params.initStepsize = 0.2;
 
     return params;

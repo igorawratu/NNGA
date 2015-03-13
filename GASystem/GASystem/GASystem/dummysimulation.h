@@ -12,7 +12,7 @@ using namespace std;
 class DummySimulation : public Simulation
 {
 public:
-    DummySimulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, ResourceManager* _resourceManager) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, 0, _resourceManager){}
+    DummySimulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, ResourceManager* _resourceManager) : Simulation(_numCycles, _cyclesPerDecision, _cyclesPerSecond, 0, _resourceManager, TeamSetup::HET){}
     virtual ~DummySimulation(){}
 
     virtual void iterate(){

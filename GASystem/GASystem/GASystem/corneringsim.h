@@ -18,7 +18,7 @@ using namespace std;
 class CorneringSim : public Simulation
 {
 public:
-    CorneringSim(double _rangefinderRadius, uint _numAgents, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed);
+    CorneringSim(double _rangefinderRadius, uint _numAgents, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed, TeamSetup _setup);
     virtual ~CorneringSim();
     CorneringSim(const CorneringSim& other);
     virtual void iterate();
@@ -36,7 +36,7 @@ public:
     virtual CMAESParameters getCMAESParameters(string _nnFormatFile);
 
 private:
-    void applyUpdateRules(string _agentName);
+    void applyUpdateRules(string _agentName, uint _index);
 
 private:
     vector<vector3> mWaypoints;

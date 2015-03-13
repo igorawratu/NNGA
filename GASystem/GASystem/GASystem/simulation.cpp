@@ -1,6 +1,6 @@
 #include "simulation.h"
 
-Simulation::Simulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager){
+Simulation::Simulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, TeamSetup _setup){
     mNumCycles = _numCycles;
     mCyclesPerDecision = _cyclesPerDecision;
     mCycleCounter = 0;
@@ -16,6 +16,7 @@ Simulation::Simulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPer
 
     mWorld = new btDiscreteDynamicsWorld(mDispatcher, mBroadphase, mSolver, mCollisionConfig);
     mWorld->setGravity(btVector3(0, 0, 0));
+    mTeamSetup = _setup;
 }
 
 Simulation::Simulation(const Simulation& other){}
@@ -285,11 +286,11 @@ NEATParameters Simulation::getNEATParameters(string _nnFormatFile){
     params.crossoverAlgorithm = "NEATX";
     params.selectionAlgorithm = "LRankSelection";
     params.elitismCount = 5;
-    params.compatibilityThreshold = 0.5;
+    params.compatibilityThreshold = 1;
     params.mutationParameters["MutationProbability"] = 0.05;
     params.mutationParameters["MutationAddProbability"] = 0.03;
     params.mutationParameters["WeightMutationProbability"] = 0.8;
-    params.mutationParameters["Deviation"] = 0.1;
+    params.mutationParameters["Deviation"] = 0.2;
     params.crossoverParameters["CrossoverProbability"] = 1;
     
 

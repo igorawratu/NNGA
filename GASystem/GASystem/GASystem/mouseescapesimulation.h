@@ -22,7 +22,7 @@
 class MouseEscapeSimulation : public Simulation
 {
 public:
-    MouseEscapeSimulation(double _rangefinderRadius, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed);
+    MouseEscapeSimulation(double _rangefinderRadius, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed, TeamSetup _setup);
     virtual ~MouseEscapeSimulation();
     virtual void iterate();
     virtual double fitness();
@@ -52,7 +52,7 @@ public:
     virtual CMAESParameters getCMAESParameters(string _nnFormatFile);
 
 private:
-    void applyUpdateRules(string _agentName, uint _groupNum);
+    void applyUpdateRules(string _agentName, uint _groupNum, uint _index);
     void checkRayObject(int _groupNum, const btCollisionObject* _obj, int& _team, string& _entityName);
     bool crossed(string _agentName);
     double calcCrossVal(vector3 a, vector3 b, vector3 c){

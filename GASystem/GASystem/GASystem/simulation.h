@@ -30,10 +30,17 @@ enum RaycastLevel{
     AGENT = BIT(1)
 };
 
+enum TeamSetup{
+    HOM,
+    HET,
+    SEMIHET,
+    QUARTHET
+};
+
 class Simulation
 {
 public:
-    Simulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager);
+    Simulation(uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, TeamSetup _setup);
     Simulation(const Simulation& other);
     
     virtual ~Simulation();
@@ -64,6 +71,10 @@ public:
     virtual CMAESParameters getCMAESParameters(string _nnFormatFile)=0;
     virtual NEATParameters getNEATParameters(string __nnFormatFile);
 
+    void setTeamSetup(TeamSetup _setup){
+        mTeamSetup = _setup;
+    }
+
 protected:
     vector3 getPositionInfo(string _entityName);
     double getRayCollisionDistance(string _agentName, const btVector3& _ray, RaycastLevel _rclevel);
@@ -93,6 +104,7 @@ protected:
     ResourceManager* mResourceManager;
 
     vector<Fitness*> mFitnessFunctions;
+    TeamSetup mTeamSetup;
 };
 
 #endif

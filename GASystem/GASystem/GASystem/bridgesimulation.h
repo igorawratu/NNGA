@@ -24,7 +24,7 @@ enum AgentType{MOUSE, CAR};
 class BridgeSimulation : public Simulation
 {
 public:
-    BridgeSimulation(double _rangerfinderRadius, uint _numAgents, AgentType _agentType, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed);
+    BridgeSimulation(double _rangerfinderRadius, uint _numAgents, AgentType _agentType, uint _numCycles, uint _cyclesPerDecision, uint _cyclesPerSecond, Solution* _solution, ResourceManager* _resourceManager, int _seed, TeamSetup _setup);
     BridgeSimulation(const BridgeSimulation& other);
     virtual ~BridgeSimulation();
     virtual void iterate();
