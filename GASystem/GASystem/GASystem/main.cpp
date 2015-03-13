@@ -175,7 +175,7 @@ void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inp
                 double duration;
                 start = clock();
 
-                string actualFileName = _inputFile.substr(0, _inputFile.length() - 4) + csu[k] + ".xml";
+                string actualFileName = _inputFile.substr(0, _inputFile.length() - 4) + csu[i] + ".xml";
                 _sim->setTeamSetup(setups[i]);
                 //cout << "ACTUAL INPUT FILE: " << actualInputFile << endl;
 
