@@ -38,7 +38,7 @@ vector<vector<double>> Solution::evaluateAllNeuralNetworks(vector<map<uint, doub
 
 vector<double> Solution::evaluateNeuralNetwork(uint _index, map<uint, double> _inputs){
     if(_index >= mNeuralNets.size()){
-        cerr << "Error: neural network index unknown" << endl;
+        cerr << "Error: neural network index unknown: " << _index << endl;
         return vector<double>();
     }
 

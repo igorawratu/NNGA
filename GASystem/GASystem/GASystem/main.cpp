@@ -153,31 +153,32 @@ void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inp
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 #ifdef TRAIN
-    if(rank == 0){
-        GAEngine gaengine;
-        SimulationContainer cont(_sim);
-        Solution solution;
+    TeamSetup setups[4] = {TeamSetup::HET, TeamSetup::SEMIHET, TeamSetup::QUARTHET, TeamSetup::HOM};
 
-        GeneticAlgorithm* ga = 0;
+    for(uint i = 0; i < 3; ++i){
+        _sim->setTeamSetup(setups[i]);
+        if(rank == 0){
+            GAEngine gaengine;
+            SimulationContainer cont(_sim);
+            Solution solution;
 
-        double somearray[4] = {0.25, 0.5, 1, 2};
+            GeneticAlgorithm* ga = 0;
 
-        string sel[4] = {"TournamentSelection", "LRankSelection", "NLRankSelection", "BoltzmannSelection"};
-        string mut[3] = {"GaussianMutation", "CauchyLorentzMutation", "UniformMutation"};
-        GAType gatypes[4] = {TYPE_STANDARD, TYPE_CMAES, TYPE_ESP, TYPE_NEAT};
-        string ganames[4] = {"CNE", "CMAES", "ESP", "NEAT"};
-        string csu[4] = {"het", "semihet", "quarthet", ""};
-        TeamSetup setups[4] = {TeamSetup::HET, TeamSetup::SEMIHET, TeamSetup::QUARTHET, TeamSetup::HOM};
+            double somearray[4] = {0.25, 0.5, 1, 2};
 
-        for(uint i = 0; i < 3; ++i){
+            string sel[4] = {"TournamentSelection", "LRankSelection", "NLRankSelection", "BoltzmannSelection"};
+            string mut[3] = {"GaussianMutation", "CauchyLorentzMutation", "UniformMutation"};
+            GAType gatypes[4] = {TYPE_STANDARD, TYPE_CMAES, TYPE_ESP, TYPE_NEAT};
+            string ganames[4] = {"CNE", "CMAES", "ESP", "NEAT"};
+            string csu[4] = {"het", "semihet", "quarthet", ""};
+            
             for(uint k = 0; k < iterations; ++k){
                 clock_t start;
                 double duration;
                 start = clock();
 
                 string actualFileName = _inputFile.substr(0, _inputFile.length() - 4) + csu[i] + ".xml";
-                _sim->setTeamSetup(setups[i]);
-                //cout << "ACTUAL INPUT FILE: " << actualInputFile << endl;
+                //cout << "ACTUAL INPUT FILE: " << actualFileName << endl;
 
                 //string resultFileName = _simName + "_" + ganames[i] + "_" + boost::lexical_cast<string>(k);
                 //string resultFileName = _simName;
@@ -211,20 +212,21 @@ void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inp
                 string dat = "Time taken: " + boost::lexical_cast<string>(duration);
                 FileWriter::writeToFile(resultFileName, dat);
             }
+
+            ga->stopSlaves();
+            delete ga;
+
+            cont.resetSimulation();
+            cont.setSolution(&solution);
+            _engine->setSimulation(&cont);
+            
+            _engine->renderSimulation();
         }
-        ga->stopSlaves();
-        delete ga;
+        else{
+            Slave slave(_sim);
 
-        cont.resetSimulation();
-        cont.setSolution(&solution);
-        _engine->setSimulation(&cont);
-        
-        _engine->renderSimulation();
-    }
-    else{
-        Slave slave(_sim);
-
-        slave.run();
+            slave.run();
+        }
     }
 #else
     if(rank == 0){
