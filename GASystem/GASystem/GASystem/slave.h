@@ -13,6 +13,8 @@ public:
 
     void run();
 
+    Simulation* getSim();
+
 private:
     SimulationContainer mSimulationContainer;
 };

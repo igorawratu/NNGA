@@ -154,12 +154,14 @@ void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inp
 
 #ifdef TRAIN
     TeamSetup setups[4] = {TeamSetup::HET, TeamSetup::SEMIHET, TeamSetup::QUARTHET, TeamSetup::HOM};
+    Simulation* currSim = _sim;
 
-    for(uint i = 0; i < 3; ++i){
-        _sim->setTeamSetup(setups[i]);
+    for(uint i = 1; i < 3; ++i){
+        currSim->setTeamSetup(setups[i]);
         if(rank == 0){
             GAEngine gaengine;
-            SimulationContainer cont(_sim);
+            SimulationContainer cont(currSim);
+            cont.resetSimulation();
             Solution solution;
 
             GeneticAlgorithm* ga = 0;
@@ -217,17 +219,22 @@ void runSim(GraphicsEngine* _engine, Simulation* _sim, GAType _type, string _inp
             delete ga;
 
             cont.resetSimulation();
-            cont.setSolution(&solution);
-            _engine->setSimulation(&cont);
+            currSim = cont.getSim();
+            //cont.setSolution(&solution);
+            //_engine->setSimulation(&cont);
             
-            _engine->renderSimulation();
+            //_engine->renderSimulation();
         }
         else{
-            Slave slave(_sim);
+            Slave slave(currSim);
 
             slave.run();
+            
+            currSim = slave.getSim();
         }
     }
+
+    delete currSim;
 #else
     if(rank == 0){
         SimulationContainer cont(_sim);
@@ -267,14 +274,13 @@ int main(int argc, char** argv){
 
     srand(time(0));
 
-    string simName = "EvacuationSimulation";
+    string simName = "BridgeCarSim";
 
     GraphicsEngine* engine = new GraphicsEngine(NULL);
 
     SimInfo simInfo = createSimulation(simName, engine, TeamSetup::HET);
 
     runSim(engine, simInfo.get<0>(), TYPE_STANDARD, simInfo.get<1>(), simInfo.get<2>(), 30, simName);
-    //testCrossoverOp();
 
     delete engine;
 

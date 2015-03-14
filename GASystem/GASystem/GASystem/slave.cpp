@@ -3,6 +3,10 @@
 Slave::Slave(Simulation* _sim) : mSimulationContainer(_sim){
 }
 
+Simulation* Slave::getSim(){
+    return mSimulationContainer.getSim();
+}
+
 void Slave::run(){
     while(true){
         int initialDat[4];

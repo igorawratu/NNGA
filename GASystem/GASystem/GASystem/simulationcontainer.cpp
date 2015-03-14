@@ -5,10 +5,7 @@ SimulationContainer::SimulationContainer(Simulation* _sim){
 }
 
 SimulationContainer::~SimulationContainer(){
-    if(mSim){
-        delete mSim;
-        mSim = 0;
-    }
+    
 }
 
 void SimulationContainer::resetSimulation(){
